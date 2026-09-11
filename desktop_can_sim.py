@@ -165,9 +165,13 @@ def _make_signal_value(signal: cantools.db.Signal, t: float) -> float:
 def main():
     parser = argparse.ArgumentParser(description="Standalone Desktop CAN Simulator for LART Dashboard")
     parser.add_argument("--interface", type=str, default="can0", help="CAN interface to use (default: can0)")
+    parser.add_argument("--bitrate", type=int, help="CAN bitrate in bit/s (default: 500000 for can1, 1000000 otherwise; use 500000 for a powertrain SLCAN adapter). SocketCAN must be configured separately with ip link.")
     parser.add_argument("--dbc-dir", type=str, default="./dbc_signals", help="Directory containing DBC files (default: ./dbc_signals)")
     parser.add_argument("--hz", type=float, default=10.0, help="Publish frequency in Hz (default: 10.0)")
     args = parser.parse_args()
+    bitrate = args.bitrate if args.bitrate is not None else (500000 if args.interface == 'can1' else 1000000)
+    if bitrate <= 0:
+        parser.error("--bitrate must be positive")
 
     print(f"--- Desktop CAN Simulator ---")
     print(f"Interface : {args.interface}")
@@ -225,7 +229,7 @@ def main():
                 tty_part_len = 3
                 if channel.lower().startswith('tty'):
                     channel = f"/dev/tty{channel[tty_part_len:]}"
-            bus_kwargs['bitrate'] = 1000000
+            bus_kwargs['bitrate'] = bitrate
             
         bus = can.interface.Bus(channel=channel, interface=interface_type, **bus_kwargs)
         
@@ -236,7 +240,7 @@ def main():
     except Exception as e:
         print(f"Error: Cannot open {interface_type} bus '{args.interface}': {e}")
         if interface_type == 'socketcan':
-            print("Have you brought up the interface? (e.g. 'sudo ip link set can0 up type can bitrate 1000000')")
+            print(f"Have you brought up the interface? (e.g. 'sudo ip link set {args.interface} up type can bitrate {bitrate}')")
         sys.exit(1)
 
     print("Started publishing. Press Ctrl+C to stop.")

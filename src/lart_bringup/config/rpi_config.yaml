@@ -5,7 +5,7 @@
 
 can_bridge_can0:
   ros__parameters:
-    can_interface: can0          # can0 or can1 from the Waveshare HAT
+    can_interface: can0          # data bus; configure SocketCAN at 1000000 bit/s
     rpm_can_id: 291              # 0x123 — UPDATE to your ECU's RPM message ID
     rpm_start_byte: 0            # byte offset of RPM value inside the CAN frame
     rpm_length_bytes: 2          # number of bytes (big-endian unsigned)
@@ -21,7 +21,7 @@ can_bridge_can0:
 
 can_bridge_can1:
   ros__parameters:
-    can_interface: can1          # can0 or can1 from the Waveshare HAT
+    can_interface: can1          # powertrain bus; configure SocketCAN at 500000 bit/s
     rpm_can_id: 291              # 0x123 — UPDATE to your ECU's RPM message ID
     rpm_start_byte: 0            # byte offset of RPM value inside the CAN frame
     rpm_length_bytes: 2          # number of bytes (big-endian unsigned)

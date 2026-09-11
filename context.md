@@ -13,7 +13,7 @@
 |-----------|---------|
 | **Target audience** | Formula Student team — drivers, engineers, and software developers |
 | **Core problem** | Bridge raw automotive CAN frames to an ergonomic, real-time visual dashboard |
-| **Hardware target** | Raspberry Pi 5 + Waveshare 2-CH CAN HAT+ (`can0`/`can1` at 1 Mbit/s) |
+| **Hardware target** | Raspberry Pi 5 + Waveshare 2-CH CAN HAT+ (`can0` data at 1 Mbit/s, `can1` powertrain at 500 kbit/s) |
 | **UI target** | 800 × 480 px embedded display (HDMI or DSI) |
 | **Developer target** | Any Linux x86-64 workstation via Docker + virtual CAN (`vcan0`) |
 
@@ -369,7 +369,7 @@ ros2 launch lart_bringup sim.launch.py
 
 # Real car (bring CAN interfaces up first):
 sudo ip link set can0 up type can bitrate 1000000
-sudo ip link set can1 up type can bitrate 1000000
+sudo ip link set can1 up type can bitrate 500000
 ros2 launch lart_bringup car.launch.py
 ```
 
@@ -431,7 +431,7 @@ python3 LART_Car_Dashboard_v1/src/ui/generate_dbc_api.py
 | 6 | **Notification API** (`ui_add_notification` / `ui_clear_notification`) must be called from the LVGL thread or through a thread-safe queue — same constraint as rule 4. |
 | 7 | **The native CMake build is authoritative for the vehicle**: `make display-local` (same CMake invocation `autostart_dashboard.sh` falls back to) is what actually has to work on the RPi. `docker compose build display` is a useful amd64 desktop sanity check but does not represent the real (arm64, non-Docker) deployment — don't treat a green Docker build alone as proof the car will boot. |
 | 8 | **GPIO is skipped in sim mode**: `input_handler` reads `sim_mode` from config. Set `sim_mode: true` in `sim.launch.py` to avoid hardware errors on dev machines. |
-| 9 | **CAN bitrate is fixed at 1 Mbit/s** for both `can0` and `can1`. Do not change without updating hardware and all team tooling. |
+| 9 | **CAN bitrate is 1 Mbit/s for `can0` (data) and 500 kbit/s for `can1` (powertrain)**. Keep hardware and team tooling configured to the corresponding bus bitrate. |
 | 10 | **EEZ Studio is the UI layout tool**. Layout changes must be made in the `.eez-project` file via EEZ Studio, then the generated C files committed. Direct edits to `ui.c` will be overwritten. |
 | 11 | **`ROS_DOMAIN_ID` must match to interoperate**: the real car (`autostart_dashboard.sh`) uses `42`; Docker Compose and the native `lart_bringup` launch files default to `0`. Set matching domain IDs if you need path A and path B components to see each other on the same network. |
 

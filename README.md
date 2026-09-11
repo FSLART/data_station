@@ -133,7 +133,7 @@ ros2 launch lart_bringup sim.launch.py
 
 ```bash
 sudo ip link set can0 up type can bitrate 1000000
-sudo ip link set can1 up type can bitrate 1000000
+sudo ip link set can1 up type can bitrate 500000
 ```
 
 2) Launch:
