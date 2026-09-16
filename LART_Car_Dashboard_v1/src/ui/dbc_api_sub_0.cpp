@@ -7,6 +7,7 @@
 #include <vector>
 extern std::mutex dbc_api_mutex;
 #include <lart_msgs/msg/acu.hpp>
+#include <lart_msgs/msg/ams_sdc_feedback.hpp>
 #include <lart_msgs/msg/apps_adc_raw.hpp>
 #include <lart_msgs/msg/aqt1.hpp>
 #include <lart_msgs/msg/aqt2.hpp>
@@ -35,7 +36,6 @@ extern std::mutex dbc_api_mutex;
 #include <lart_msgs/msg/inv1_setdriveenable.hpp>
 #include <lart_msgs/msg/inv1_seterpm.hpp>
 #include <lart_msgs/msg/inv1_setmaxacbrakecurrent.hpp>
-#include <lart_msgs/msg/inv1_setmaxaccurrent.hpp>
 
 void init_dbc_api_subscribers_chunk_0(std::shared_ptr<rclcpp::Node> node, std::vector<rclcpp::SubscriptionBase::SharedPtr>& subs) {
     auto sensor_qos = rclcpp::QoS(10).best_effort();
@@ -53,6 +53,13 @@ void init_dbc_api_subscribers_chunk_0(std::shared_ptr<rclcpp::Node> node, std::v
                 dbc_api.acu.emergency_cause = msg->emergency_cause;
                 dbc_api.acu.ign = msg->ign;
                 dbc_api.acu.mission_select = msg->mission_select;
+            }
+        }));
+    subs.push_back(node->create_subscription<lart_msgs::msg::AmsSdcFeedback>(
+        "/can/dbc/ams_sdc_feedback", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::AmsSdcFeedback> msg) {
+            if (msg) {
+                std::lock_guard<std::mutex> lock(dbc_api_mutex);
+                dbc_api.ams_sdc_feedback.sdc_state = msg->sdc_state;
             }
         }));
     subs.push_back(node->create_subscription<lart_msgs::msg::AppsAdcRaw>(
@@ -325,13 +332,6 @@ void init_dbc_api_subscribers_chunk_0(std::shared_ptr<rclcpp::Node> node, std::v
             if (msg) {
                 std::lock_guard<std::mutex> lock(dbc_api_mutex);
                 dbc_api.inv1_setmaxacbrakecurrent.inv1_cmd_maxacbrakecurrent = msg->inv1_cmd_maxacbrakecurrent;
-            }
-        }));
-    subs.push_back(node->create_subscription<lart_msgs::msg::Inv1Setmaxaccurrent>(
-        "/can/dbc/inv1_setmaxaccurrent", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::Inv1Setmaxaccurrent> msg) {
-            if (msg) {
-                std::lock_guard<std::mutex> lock(dbc_api_mutex);
-                dbc_api.inv1_setmaxaccurrent.inv1_cmd_maxaccurrent = msg->inv1_cmd_maxaccurrent;
             }
         }));
 }

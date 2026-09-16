@@ -19,6 +19,9 @@ typedef struct {
         float mission_select;
     } acu;
     struct {
+        float sdc_state;
+    } ams_sdc_feedback;
+    struct {
         float apps1_raw;
         float apps2_raw;
     } apps_adc_raw;
@@ -206,8 +209,6 @@ typedef struct {
         float inv1_actual_faultcode;
         float inv1_actual_tempcontroller;
         float inv1_actual_tempmotor;
-        float inv1_tempinverter;
-        float inv1_tempmotor;
     } inv1_temperatures;
     struct {
         float inv2_actual_accurrent;
@@ -308,8 +309,6 @@ typedef struct {
         float inv2_actual_faultcode;
         float inv2_actual_tempcontroller;
         float inv2_actual_tempmotor;
-        float inv2_tempinverter;
-        float inv2_tempmotor;
     } inv2_temperatures;
     struct {
         float ivt_id_cmd;
@@ -1192,6 +1191,14 @@ typedef struct {
         float shutdown_signal;
         float vcu_state;
     } vcu_ign_r2d;
+    struct {
+        float inv1_tempinverter;
+        float inv1_tempmotor;
+    } vcu_inv1_temperatures;
+    struct {
+        float inv2_tempinverter;
+        float inv2_tempmotor;
+    } vcu_inv2_temperatures;
     struct {
         float motor_current_left;
         float motor_current_right;

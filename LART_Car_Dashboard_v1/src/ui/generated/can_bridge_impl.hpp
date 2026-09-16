@@ -12,6 +12,7 @@
 #include "autonomous_t26.h"
 
 #include <lart_msgs/msg/acu.hpp>
+#include <lart_msgs/msg/ams_sdc_feedback.hpp>
 #include <lart_msgs/msg/apps_adc_raw.hpp>
 #include <lart_msgs/msg/aqt1.hpp>
 #include <lart_msgs/msg/aqt2.hpp>
@@ -179,6 +180,8 @@
 #include <lart_msgs/msg/start_programmer.hpp>
 #include <lart_msgs/msg/vcu_hv.hpp>
 #include <lart_msgs/msg/vcu_ign_r2d.hpp>
+#include <lart_msgs/msg/vcu_inv1_temperatures.hpp>
+#include <lart_msgs/msg/vcu_inv2_temperatures.hpp>
 #include <lart_msgs/msg/vcu_rpm.hpp>
 #include <lart_msgs/msg/vcu_rpm_target.hpp>
 #include <lart_msgs/msg/vcu_states.hpp>
@@ -200,6 +203,7 @@ private:
 
     // Aggregated publishers by message slug
     rclcpp::Publisher<lart_msgs::msg::Acu>::SharedPtr pub_acu;
+    rclcpp::Publisher<lart_msgs::msg::AmsSdcFeedback>::SharedPtr pub_ams_sdc_feedback;
     rclcpp::Publisher<lart_msgs::msg::AppsAdcRaw>::SharedPtr pub_apps_adc_raw;
     rclcpp::Publisher<lart_msgs::msg::Aqt1>::SharedPtr pub_aqt1;
     rclcpp::Publisher<lart_msgs::msg::Aqt2>::SharedPtr pub_aqt2;
@@ -367,6 +371,8 @@ private:
     rclcpp::Publisher<lart_msgs::msg::StartProgrammer>::SharedPtr pub_start_programmer;
     rclcpp::Publisher<lart_msgs::msg::VcuHv>::SharedPtr pub_vcu_hv;
     rclcpp::Publisher<lart_msgs::msg::VcuIgnR2d>::SharedPtr pub_vcu_ign_r2d;
+    rclcpp::Publisher<lart_msgs::msg::VcuInv1Temperatures>::SharedPtr pub_vcu_inv1_temperatures;
+    rclcpp::Publisher<lart_msgs::msg::VcuInv2Temperatures>::SharedPtr pub_vcu_inv2_temperatures;
     rclcpp::Publisher<lart_msgs::msg::VcuRpm>::SharedPtr pub_vcu_rpm;
     rclcpp::Publisher<lart_msgs::msg::VcuRpmTarget>::SharedPtr pub_vcu_rpm_target;
     rclcpp::Publisher<lart_msgs::msg::VcuStates>::SharedPtr pub_vcu_states;

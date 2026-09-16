@@ -33,7 +33,7 @@ NS_ :
 
 BS_:
 
-BU_: Acquisition_Board2 Acquisition_Board3 Acquisition_Board5 Acquisition_Board6 Acquisition_Board7 Acquisition_Board8 FSIC_INV1 FSIC_INV2 PDM
+BU_: Acquisition_Board2 Acquisition_Board3 Acquisition_Board5 Acquisition_Board6 Acquisition_Board7 Acquisition_Board8 VCU PDM
 
 
 BO_ 3221225472 VECTOR__INDEPENDENT_SIG_MSG: 0 Vector__XXX
@@ -72,11 +72,11 @@ BO_ 1920 AQT8: 6 Acquisition_Board8
  SG_ NTC2 : 16|16@1+ (0.1,0) [0|0] "�C" Vector__XXX
  SG_ NTC3 : 32|16@1+ (0.1,0) [0|0] "�C" Vector__XXX
 
-BO_ 1092 INV1_Temperatures: 8 FSIC_INV1
+BO_ 1092 VCU_INV1_Temperatures: 8 VCU
  SG_ INV1_TempInverter : 7|16@0- (0.1,0) [-55|200] "�C" Vector__XXX
  SG_ INV1_TempMotor : 23|16@0- (0.1,0) [-55|200] "�C" Vector__XXX
 
-BO_ 1093 INV2_Temperatures: 8 FSIC_INV2
+BO_ 1093 VCU_INV2_Temperatures: 8 VCU
  SG_ INV2_TempInverter : 7|16@0- (0.1,0) [-55|200] "�C" Vector__XXX
  SG_ INV2_TempMotor : 23|16@0- (0.1,0) [-55|200] "�C" Vector__XXX
 

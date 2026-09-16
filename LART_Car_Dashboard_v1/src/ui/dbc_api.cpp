@@ -168,11 +168,8 @@ extern "C" void ui_update_telemetry_vars(const void *t_ptr) {
     eez::flow::setGlobalVariable(FLOW_GLOBAL_VARIABLE_LV, eez::FloatValue(lv_val));
 
     // 5. READY (String "READY" / "NOT READY")
-    bool is_ready = (dbc_api.vcu_ign_r2d.r2d_manual == 1.0f || 
-                    dbc_api.vcu_ign_r2d.r2d_auto == 1.0f || 
-                    dbc_api.vcu_ign_r2d.shutdown_signal == 1.0f || 
-                    dbc_api.acu.acu_state == 4.0f || 
-                    dbc_api.acu.acu_state == 5.0f);
+    bool is_ready = (dbc_api.vcu_states.vcu_state == 6.0f ||
+                     dbc_api.vcu_states.vcu_state == 7.0f);
     eez::flow::setGlobalVariable(FLOW_GLOBAL_VARIABLE_READY, eez::StringValue(is_ready ? "READY" : "NOT READY"));
 
     // 6. SPEED (km/h)
