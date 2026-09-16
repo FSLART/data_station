@@ -952,11 +952,11 @@ BO_ 130 Start_Balancing: 1 HOST
 BO_ 220 Start_Programmer: 1 HOST
  SG_ programming_request : 0|1@1+ (1,0) [0|1] "ON/OFF"  AMS
 
-BO_ 1808 APPS_ADC_Raw: 4 Acquisition_Board1
+BO_ 80 APPS_ADC_Raw: 4 Acquisition_Board1
  SG_ apps1_raw : 0|16@1+ (0.1,0) [0|0] "bits" Vector__XXX
  SG_ apps2_raw : 16|16@1+ (0.1,0) [0|0] "bits" Vector__XXX
 
-BO_ 1856 DashBoard: 1 Acquisition_Board4
+BO_ 96 DashBoard: 1 Acquisition_Board4
  SG_ ignition_switch_raw : 0|1@1+ (1,0) [0|0] "" Vector__XXX
  SG_ r2d_button_raw : 1|1@1+ (1,0) [0|0] "" Vector__XXX
 
@@ -1174,10 +1174,13 @@ BO_ 357 INV2_SetMaxDcBrakeCurrent: 2 DTI_commands
  SG_ INV2_CMD_MaxDcBrakeCurrent : 7|16@0- (0.1,0) [-850|0] "A"  DTI_INV2
 
 BO_ 1604 Slave_10_MSC_ID_1: 8 AMS
- SG_ module_voltage_sum : 0|8@1+ (0.001,0) [0|0] "V" Vector__XXX
- SG_ module_voltage_avg : 8|8@1+ (0.001,0) [0|0] "V" Vector__XXX
- SG_ module_voltage_min : 16|8@1+ (0.001,0) [0|0] "V" Vector__XXX
- SG_ module_voltage_max : 24|8@1+ (0.001,0) [0|0] "V" Vector__XXX
+ SG_ module_voltage_sum : 0|16@1+ (0.001,0) [0|0] "V" Vector__XXX
+ SG_ module_voltage_avg : 16|16@1+ (0.001,0) [0|0] "V" Vector__XXX
+ SG_ module_voltage_min : 32|16@1+ (0.001,0) [0|0] "V" Vector__XXX
+ SG_ module_voltage_max : 48|16@1+ (0.001,0) [0|0] "V" Vector__XXX
+
+BO_ 1801 AMS_SDC_Feedback: 1 AMS
+ SG_ SDC_State : 7|8@0+ (1,0) [0|1] ""  HOST,VCU
 
 
 
@@ -1441,3 +1444,4 @@ VAL_ 130 Balancing_Request 0 "BALANCING OFF" 1 "BALANCING ON" ;
 VAL_ 220 programming_request 1 "JumpToBootloader" ;
 VAL_ 129 Charging_Request 0 "CHARGING OFF" 1 "CHARGING ON" ;
 VAL_ 1872 vcu_state 0 "STATE_INIT," 1 "STATE_SHUTDOWN" 2 "STATE_STANDBY" 3 "STATE_PRECHARGE" 4 "STATE_WAITING_FOR_R2D_MANUAL" 5 "STATE_WAITING_FOR_R2D_AUTO" 6 "STATE_READY_MANUAL" 7 "STATE_READY_AUTONOMOUS" 8 "STATE_AS_EMERGENCY" ;
+VAL_ 1801 SDC_State 0 "There is no SDC on the AMS" 1 "We have SDC on the AMS" ;

@@ -3,6 +3,7 @@
 
 void CanBridgeImpl::init_publishers_chunk_5(rclcpp::Node* node) {
     auto sensor_qos = rclcpp::QoS(10).best_effort();
+    pub_slave_11_msc_id_2 = node->create_publisher<lart_msgs::msg::Slave11MscId2>("/can/dbc/slave_11_msc_id_2", sensor_qos);
     pub_slave_11_temperature_id_1 = node->create_publisher<lart_msgs::msg::Slave11TemperatureId1>("/can/dbc/slave_11_temperature_id_1", sensor_qos);
     pub_slave_11_temperature_id_2 = node->create_publisher<lart_msgs::msg::Slave11TemperatureId2>("/can/dbc/slave_11_temperature_id_2", sensor_qos);
     pub_slave_11_voltage_id_1 = node->create_publisher<lart_msgs::msg::Slave11VoltageId1>("/can/dbc/slave_11_voltage_id_1", sensor_qos);
@@ -21,6 +22,8 @@ void CanBridgeImpl::init_publishers_chunk_5(rclcpp::Node* node) {
     pub_start_programmer = node->create_publisher<lart_msgs::msg::StartProgrammer>("/can/dbc/start_programmer", sensor_qos);
     pub_vcu_hv = node->create_publisher<lart_msgs::msg::VcuHv>("/can/dbc/vcu_hv", sensor_qos);
     pub_vcu_ign_r2d = node->create_publisher<lart_msgs::msg::VcuIgnR2d>("/can/dbc/vcu_ign_r2d", sensor_qos);
+    pub_vcu_inv1_temperatures = node->create_publisher<lart_msgs::msg::VcuInv1Temperatures>("/can/dbc/vcu_inv1_temperatures", sensor_qos);
+    pub_vcu_inv2_temperatures = node->create_publisher<lart_msgs::msg::VcuInv2Temperatures>("/can/dbc/vcu_inv2_temperatures", sensor_qos);
     pub_vcu_rpm = node->create_publisher<lart_msgs::msg::VcuRpm>("/can/dbc/vcu_rpm", sensor_qos);
     pub_vcu_rpm_target = node->create_publisher<lart_msgs::msg::VcuRpmTarget>("/can/dbc/vcu_rpm_target", sensor_qos);
     pub_vcu_states = node->create_publisher<lart_msgs::msg::VcuStates>("/can/dbc/vcu_states", sensor_qos);
@@ -31,6 +34,46 @@ bool CanBridgeImpl::handle_frame_chunk_5(uint32_t can_id, const uint8_t* data, s
     (void)data;
     (void)dlc;
     switch (can_id) {
+        case 1617u: {
+            {
+                lart_msgs::msg::Slave12TemperatureId2 out = {};
+                bool decoded_any = false;
+                {
+                    struct powertrain_t26_slave_12_temperature_id_2_t decoded = {};
+                    if (powertrain_t26_slave_12_temperature_id_2_unpack(&decoded, data, dlc) == 0) {
+                        out.temperature_value_5 = powertrain_t26_slave_12_temperature_id_2_temperature_value_5_decode(decoded.temperature_value_5);
+                        out.temperature_value_6 = powertrain_t26_slave_12_temperature_id_2_temperature_value_6_decode(decoded.temperature_value_6);
+                        out.temperature_maximum = powertrain_t26_slave_12_temperature_id_2_temperature_maximum_decode(decoded.temperature_maximum);
+                        out.temperature_delta = powertrain_t26_slave_12_temperature_id_2_temperature_delta_decode(decoded.temperature_delta);
+                        decoded_any = true;
+                    }
+                }
+                if (decoded_any) {
+                    pub_slave_12_temperature_id_2->publish(out);
+                }
+            }
+            return true;
+        }
+        case 1618u: {
+            {
+                lart_msgs::msg::Slave12MscId1 out = {};
+                bool decoded_any = false;
+                {
+                    struct powertrain_t26_slave_12_msc_id_1_t decoded = {};
+                    if (powertrain_t26_slave_12_msc_id_1_unpack(&decoded, data, dlc) == 0) {
+                        out.module_voltage_sum = powertrain_t26_slave_12_msc_id_1_module_voltage_sum_decode(decoded.module_voltage_sum);
+                        out.module_voltage_avg = powertrain_t26_slave_12_msc_id_1_module_voltage_avg_decode(decoded.module_voltage_avg);
+                        out.module_voltage_min = powertrain_t26_slave_12_msc_id_1_module_voltage_min_decode(decoded.module_voltage_min);
+                        out.module_voltage_max = powertrain_t26_slave_12_msc_id_1_module_voltage_max_decode(decoded.module_voltage_max);
+                        decoded_any = true;
+                    }
+                }
+                if (decoded_any) {
+                    pub_slave_12_msc_id_1->publish(out);
+                }
+            }
+            return true;
+        }
         case 1619u: {
             {
                 lart_msgs::msg::Slave12MscId2 out = {};
@@ -174,22 +217,24 @@ bool CanBridgeImpl::handle_frame_chunk_5(uint32_t can_id, const uint8_t* data, s
             }
             return true;
         }
-        case 1808u: {
+        case 1801u: {
             {
-                lart_msgs::msg::AppsAdcRaw out = {};
+                lart_msgs::msg::AmsSdcFeedback out = {};
                 bool decoded_any = false;
                 {
-                    struct powertrain_t26_apps_adc_raw_t decoded = {};
-                    if (powertrain_t26_apps_adc_raw_unpack(&decoded, data, dlc) == 0) {
-                        out.apps1_raw = powertrain_t26_apps_adc_raw_apps1_raw_decode(decoded.apps1_raw);
-                        out.apps2_raw = powertrain_t26_apps_adc_raw_apps2_raw_decode(decoded.apps2_raw);
+                    struct powertrain_t26_ams_sdc_feedback_t decoded = {};
+                    if (powertrain_t26_ams_sdc_feedback_unpack(&decoded, data, dlc) == 0) {
+                        out.sdc_state = powertrain_t26_ams_sdc_feedback_sdc_state_decode(decoded.sdc_state);
                         decoded_any = true;
                     }
                 }
                 if (decoded_any) {
-                    pub_apps_adc_raw->publish(out);
+                    pub_ams_sdc_feedback->publish(out);
                 }
             }
+            return true;
+        }
+        case 1808u: {
             {
                 lart_msgs::msg::Aqt1 out = {};
                 bool decoded_any = false;
@@ -259,21 +304,6 @@ bool CanBridgeImpl::handle_frame_chunk_5(uint32_t can_id, const uint8_t* data, s
             return true;
         }
         case 1856u: {
-            {
-                lart_msgs::msg::Dashboard out = {};
-                bool decoded_any = false;
-                {
-                    struct powertrain_t26_dash_board_t decoded = {};
-                    if (powertrain_t26_dash_board_unpack(&decoded, data, dlc) == 0) {
-                        out.ignition_switch_raw = powertrain_t26_dash_board_ignition_switch_raw_decode(decoded.ignition_switch_raw);
-                        out.r2d_button_raw = powertrain_t26_dash_board_r2d_button_raw_decode(decoded.r2d_button_raw);
-                        decoded_any = true;
-                    }
-                }
-                if (decoded_any) {
-                    pub_dashboard->publish(out);
-                }
-            }
             {
                 lart_msgs::msg::Aqt4 out = {};
                 bool decoded_any = false;

@@ -6,6 +6,7 @@
 #include <mutex>
 #include <vector>
 extern std::mutex dbc_api_mutex;
+#include <lart_msgs/msg/inv1_setmaxaccurrent.hpp>
 #include <lart_msgs/msg/inv1_setmaxdcbrakecurrent.hpp>
 #include <lart_msgs/msg/inv1_setmaxdccurrent.hpp>
 #include <lart_msgs/msg/inv1_setposition.hpp>
@@ -35,11 +36,17 @@ extern std::mutex dbc_api_mutex;
 #include <lart_msgs/msg/inv2_temperatures.hpp>
 #include <lart_msgs/msg/ivt_msg_cmd.hpp>
 #include <lart_msgs/msg/ivt_msg_response.hpp>
-#include <lart_msgs/msg/ivt_msg_result_as.hpp>
 
 void init_dbc_api_subscribers_chunk_1(std::shared_ptr<rclcpp::Node> node, std::vector<rclcpp::SubscriptionBase::SharedPtr>& subs) {
     auto sensor_qos = rclcpp::QoS(10).best_effort();
 
+    subs.push_back(node->create_subscription<lart_msgs::msg::Inv1Setmaxaccurrent>(
+        "/can/dbc/inv1_setmaxaccurrent", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::Inv1Setmaxaccurrent> msg) {
+            if (msg) {
+                std::lock_guard<std::mutex> lock(dbc_api_mutex);
+                dbc_api.inv1_setmaxaccurrent.inv1_cmd_maxaccurrent = msg->inv1_cmd_maxaccurrent;
+            }
+        }));
     subs.push_back(node->create_subscription<lart_msgs::msg::Inv1Setmaxdcbrakecurrent>(
         "/can/dbc/inv1_setmaxdcbrakecurrent", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::Inv1Setmaxdcbrakecurrent> msg) {
             if (msg) {
@@ -92,8 +99,6 @@ void init_dbc_api_subscribers_chunk_1(std::shared_ptr<rclcpp::Node> node, std::v
                 dbc_api.inv1_temperatures.inv1_actual_faultcode = msg->inv1_actual_faultcode;
                 dbc_api.inv1_temperatures.inv1_actual_tempcontroller = msg->inv1_actual_tempcontroller;
                 dbc_api.inv1_temperatures.inv1_actual_tempmotor = msg->inv1_actual_tempmotor;
-                dbc_api.inv1_temperatures.inv1_tempinverter = msg->inv1_tempinverter;
-                dbc_api.inv1_temperatures.inv1_tempmotor = msg->inv1_tempmotor;
             }
         }));
     subs.push_back(node->create_subscription<lart_msgs::msg::Inv2AcDcCurrent>(
@@ -274,8 +279,6 @@ void init_dbc_api_subscribers_chunk_1(std::shared_ptr<rclcpp::Node> node, std::v
                 dbc_api.inv2_temperatures.inv2_actual_faultcode = msg->inv2_actual_faultcode;
                 dbc_api.inv2_temperatures.inv2_actual_tempcontroller = msg->inv2_actual_tempcontroller;
                 dbc_api.inv2_temperatures.inv2_actual_tempmotor = msg->inv2_actual_tempmotor;
-                dbc_api.inv2_temperatures.inv2_tempinverter = msg->inv2_tempinverter;
-                dbc_api.inv2_temperatures.inv2_tempmotor = msg->inv2_tempmotor;
             }
         }));
     subs.push_back(node->create_subscription<lart_msgs::msg::IvtMsgCmd>(
@@ -494,19 +497,6 @@ void init_dbc_api_subscribers_chunk_1(std::shared_ptr<rclcpp::Node> node, std::v
                 dbc_api.ivt_msg_response.val_9d_resp_can_id_val_command = msg->val_9d_resp_can_id_val_command;
                 dbc_api.ivt_msg_response.val_9f_resp_can_id_sn_response = msg->val_9f_resp_can_id_sn_response;
                 dbc_api.ivt_msg_response.val_9f_resp_can_id_val_response = msg->val_9f_resp_can_id_val_response;
-            }
-        }));
-    subs.push_back(node->create_subscription<lart_msgs::msg::IvtMsgResultAs>(
-        "/can/dbc/ivt_msg_result_as", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::IvtMsgResultAs> msg) {
-            if (msg) {
-                std::lock_guard<std::mutex> lock(dbc_api_mutex);
-                dbc_api.ivt_msg_result_as.ivt_id_result_as = msg->ivt_id_result_as;
-                dbc_api.ivt_msg_result_as.ivt_msgcount_result_as = msg->ivt_msgcount_result_as;
-                dbc_api.ivt_msg_result_as.ivt_result_as = msg->ivt_result_as;
-                dbc_api.ivt_msg_result_as.ivt_result_as_channel_error = msg->ivt_result_as_channel_error;
-                dbc_api.ivt_msg_result_as.ivt_result_as_measurement_error = msg->ivt_result_as_measurement_error;
-                dbc_api.ivt_msg_result_as.ivt_result_as_ocs = msg->ivt_result_as_ocs;
-                dbc_api.ivt_msg_result_as.ivt_result_as_system_error = msg->ivt_result_as_system_error;
             }
         }));
 }

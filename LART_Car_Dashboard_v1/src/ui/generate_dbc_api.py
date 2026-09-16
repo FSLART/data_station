@@ -225,6 +225,7 @@ def main():
         "#include \"dbc_api.h\"",
         "#include <string>",
         "#include <cctype>",
+        "#include <cstdio>",
         "#include <cstring>",
         "",
         "DbcApi dbc_api = {};",
@@ -420,6 +421,12 @@ def main():
         "    }",
         "    const char *mission_str = ui_get_mission_name(mission_id);",
         "    eez::flow::setGlobalVariable(FLOW_GLOBAL_VARIABLE_MISSION, eez::StringValue(mission_str));",
+        "",
+        "    // 11. STATE (String) — ACU_STATE (autonomous_t26.dbc VAL_ 81 ACU_STATE)",
+        "    int as_state_id = static_cast<int>(dbc_api.acu.acu_state);",
+        "    static char state_buf[32];",
+        "    snprintf(state_buf, sizeof(state_buf), \": %s\", ui_get_as_state_name(as_state_id));",
+        "    eez::flow::setGlobalVariable(FLOW_GLOBAL_VARIABLE_STATE, eez::StringValue(state_buf));",
         "}",
         "",
         "extern \"C\" const char *ui_get_mission_str() {",
@@ -438,6 +445,25 @@ def main():
         "        default: return \"MANUAL\";",
         "    }",
         "}"
+    ])
+
+    source_lines.extend([
+        "",
+        "extern \"C\" const char *ui_get_as_state_name(int as_state_id) {",
+        "    switch (as_state_id) {",
+        "        case 0: return \"INIT\";",
+        "        case 1: return \"MISSION SELECT\";",
+        "        case 2: return \"JETSON WAITING\";",
+        "        case 3: return \"INIT SEQUENCE\";",
+        "        case 4: return \"READY\";",
+        "        case 5: return \"DRIVING\";",
+        "        case 6: return \"EBS ERROR\";",
+        "        case 7: return \"EMERGENCY\";",
+        "        case 8: return \"FINISHED\";",
+        "        case 9: return \"MANUAL\";",
+        "        default: return \"UNKNOWN\";",
+        "    }",
+        "}",
     ])
 
     error_checking_lines = [

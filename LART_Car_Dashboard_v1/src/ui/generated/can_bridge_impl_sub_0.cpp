@@ -4,6 +4,7 @@
 void CanBridgeImpl::init_publishers_chunk_0(rclcpp::Node* node) {
     auto sensor_qos = rclcpp::QoS(10).best_effort();
     pub_acu = node->create_publisher<lart_msgs::msg::Acu>("/can/dbc/acu", sensor_qos);
+    pub_ams_sdc_feedback = node->create_publisher<lart_msgs::msg::AmsSdcFeedback>("/can/dbc/ams_sdc_feedback", sensor_qos);
     pub_apps_adc_raw = node->create_publisher<lart_msgs::msg::AppsAdcRaw>("/can/dbc/apps_adc_raw", sensor_qos);
     pub_aqt1 = node->create_publisher<lart_msgs::msg::Aqt1>("/can/dbc/aqt1", sensor_qos);
     pub_aqt2 = node->create_publisher<lart_msgs::msg::Aqt2>("/can/dbc/aqt2", sensor_qos);
@@ -32,7 +33,6 @@ void CanBridgeImpl::init_publishers_chunk_0(rclcpp::Node* node) {
     pub_inv1_setdriveenable = node->create_publisher<lart_msgs::msg::Inv1Setdriveenable>("/can/dbc/inv1_setdriveenable", sensor_qos);
     pub_inv1_seterpm = node->create_publisher<lart_msgs::msg::Inv1Seterpm>("/can/dbc/inv1_seterpm", sensor_qos);
     pub_inv1_setmaxacbrakecurrent = node->create_publisher<lart_msgs::msg::Inv1Setmaxacbrakecurrent>("/can/dbc/inv1_setmaxacbrakecurrent", sensor_qos);
-    pub_inv1_setmaxaccurrent = node->create_publisher<lart_msgs::msg::Inv1Setmaxaccurrent>("/can/dbc/inv1_setmaxaccurrent", sensor_qos);
 }
 
 bool CanBridgeImpl::handle_frame_chunk_0(uint32_t can_id, const uint8_t* data, size_t dlc) {
@@ -107,6 +107,24 @@ bool CanBridgeImpl::handle_frame_chunk_0(uint32_t can_id, const uint8_t* data, s
             }
             return true;
         }
+        case 80u: {
+            {
+                lart_msgs::msg::AppsAdcRaw out = {};
+                bool decoded_any = false;
+                {
+                    struct powertrain_t26_apps_adc_raw_t decoded = {};
+                    if (powertrain_t26_apps_adc_raw_unpack(&decoded, data, dlc) == 0) {
+                        out.apps1_raw = powertrain_t26_apps_adc_raw_apps1_raw_decode(decoded.apps1_raw);
+                        out.apps2_raw = powertrain_t26_apps_adc_raw_apps2_raw_decode(decoded.apps2_raw);
+                        decoded_any = true;
+                    }
+                }
+                if (decoded_any) {
+                    pub_apps_adc_raw->publish(out);
+                }
+            }
+            return true;
+        }
         case 81u: {
             {
                 lart_msgs::msg::Acu out = {};
@@ -128,6 +146,24 @@ bool CanBridgeImpl::handle_frame_chunk_0(uint32_t can_id, const uint8_t* data, s
                 }
                 if (decoded_any) {
                     pub_acu->publish(out);
+                }
+            }
+            return true;
+        }
+        case 96u: {
+            {
+                lart_msgs::msg::Dashboard out = {};
+                bool decoded_any = false;
+                {
+                    struct powertrain_t26_dash_board_t decoded = {};
+                    if (powertrain_t26_dash_board_unpack(&decoded, data, dlc) == 0) {
+                        out.ignition_switch_raw = powertrain_t26_dash_board_ignition_switch_raw_decode(decoded.ignition_switch_raw);
+                        out.r2d_button_raw = powertrain_t26_dash_board_r2d_button_raw_decode(decoded.r2d_button_raw);
+                        decoded_any = true;
+                    }
+                }
+                if (decoded_any) {
+                    pub_dashboard->publish(out);
                 }
             }
             return true;
@@ -546,40 +582,6 @@ bool CanBridgeImpl::handle_frame_chunk_0(uint32_t can_id, const uint8_t* data, s
                 }
                 if (decoded_any) {
                     pub_inv2_setmaxdcbrakecurrent->publish(out);
-                }
-            }
-            return true;
-        }
-        case 388u: {
-            {
-                lart_msgs::msg::Inv1Setdriveenable out = {};
-                bool decoded_any = false;
-                {
-                    struct powertrain_t26_inv1_set_drive_enable_t decoded = {};
-                    if (powertrain_t26_inv1_set_drive_enable_unpack(&decoded, data, dlc) == 0) {
-                        out.inv1_cmd_driveenable = powertrain_t26_inv1_set_drive_enable_inv1_cmd_drive_enable_decode(decoded.inv1_cmd_drive_enable);
-                        decoded_any = true;
-                    }
-                }
-                if (decoded_any) {
-                    pub_inv1_setdriveenable->publish(out);
-                }
-            }
-            return true;
-        }
-        case 389u: {
-            {
-                lart_msgs::msg::Inv2Setdriveenable out = {};
-                bool decoded_any = false;
-                {
-                    struct powertrain_t26_inv2_set_drive_enable_t decoded = {};
-                    if (powertrain_t26_inv2_set_drive_enable_unpack(&decoded, data, dlc) == 0) {
-                        out.inv2_cmd_driveenable = powertrain_t26_inv2_set_drive_enable_inv2_cmd_drive_enable_decode(decoded.inv2_cmd_drive_enable);
-                        decoded_any = true;
-                    }
-                }
-                if (decoded_any) {
-                    pub_inv2_setdriveenable->publish(out);
                 }
             }
             return true;

@@ -6,6 +6,7 @@
 #include <mutex>
 #include <vector>
 extern std::mutex dbc_api_mutex;
+#include <lart_msgs/msg/ivt_msg_result_as.hpp>
 #include <lart_msgs/msg/ivt_msg_result_i.hpp>
 #include <lart_msgs/msg/ivt_msg_result_t.hpp>
 #include <lart_msgs/msg/ivt_msg_result_u1.hpp>
@@ -35,11 +36,23 @@ extern std::mutex dbc_api_mutex;
 #include <lart_msgs/msg/slave02_msc_id2.hpp>
 #include <lart_msgs/msg/slave02_temperature_id1.hpp>
 #include <lart_msgs/msg/slave02_temperature_id2.hpp>
-#include <lart_msgs/msg/slave02_voltage_id1.hpp>
 
 void init_dbc_api_subscribers_chunk_2(std::shared_ptr<rclcpp::Node> node, std::vector<rclcpp::SubscriptionBase::SharedPtr>& subs) {
     auto sensor_qos = rclcpp::QoS(10).best_effort();
 
+    subs.push_back(node->create_subscription<lart_msgs::msg::IvtMsgResultAs>(
+        "/can/dbc/ivt_msg_result_as", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::IvtMsgResultAs> msg) {
+            if (msg) {
+                std::lock_guard<std::mutex> lock(dbc_api_mutex);
+                dbc_api.ivt_msg_result_as.ivt_id_result_as = msg->ivt_id_result_as;
+                dbc_api.ivt_msg_result_as.ivt_msgcount_result_as = msg->ivt_msgcount_result_as;
+                dbc_api.ivt_msg_result_as.ivt_result_as = msg->ivt_result_as;
+                dbc_api.ivt_msg_result_as.ivt_result_as_channel_error = msg->ivt_result_as_channel_error;
+                dbc_api.ivt_msg_result_as.ivt_result_as_measurement_error = msg->ivt_result_as_measurement_error;
+                dbc_api.ivt_msg_result_as.ivt_result_as_ocs = msg->ivt_result_as_ocs;
+                dbc_api.ivt_msg_result_as.ivt_result_as_system_error = msg->ivt_result_as_system_error;
+            }
+        }));
     subs.push_back(node->create_subscription<lart_msgs::msg::IvtMsgResultI>(
         "/can/dbc/ivt_msg_result_i", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::IvtMsgResultI> msg) {
             if (msg) {
@@ -351,16 +364,6 @@ void init_dbc_api_subscribers_chunk_2(std::shared_ptr<rclcpp::Node> node, std::v
                 dbc_api.slave_02_temperature_id_2.temperature_maximum = msg->temperature_maximum;
                 dbc_api.slave_02_temperature_id_2.temperature_value_5 = msg->temperature_value_5;
                 dbc_api.slave_02_temperature_id_2.temperature_value_6 = msg->temperature_value_6;
-            }
-        }));
-    subs.push_back(node->create_subscription<lart_msgs::msg::Slave02VoltageId1>(
-        "/can/dbc/slave_02_voltage_id_1", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::Slave02VoltageId1> msg) {
-            if (msg) {
-                std::lock_guard<std::mutex> lock(dbc_api_mutex);
-                dbc_api.slave_02_voltage_id_1.cell_voltage_1 = msg->cell_voltage_1;
-                dbc_api.slave_02_voltage_id_1.cell_voltage_2 = msg->cell_voltage_2;
-                dbc_api.slave_02_voltage_id_1.cell_voltage_3 = msg->cell_voltage_3;
-                dbc_api.slave_02_voltage_id_1.cell_voltage_4 = msg->cell_voltage_4;
             }
         }));
 }

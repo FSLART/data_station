@@ -6,6 +6,7 @@
 #include <mutex>
 #include <vector>
 extern std::mutex dbc_api_mutex;
+#include <lart_msgs/msg/slave11_msc_id2.hpp>
 #include <lart_msgs/msg/slave11_temperature_id1.hpp>
 #include <lart_msgs/msg/slave11_temperature_id2.hpp>
 #include <lart_msgs/msg/slave11_voltage_id1.hpp>
@@ -24,6 +25,8 @@ extern std::mutex dbc_api_mutex;
 #include <lart_msgs/msg/start_programmer.hpp>
 #include <lart_msgs/msg/vcu_hv.hpp>
 #include <lart_msgs/msg/vcu_ign_r2d.hpp>
+#include <lart_msgs/msg/vcu_inv1_temperatures.hpp>
+#include <lart_msgs/msg/vcu_inv2_temperatures.hpp>
 #include <lart_msgs/msg/vcu_rpm.hpp>
 #include <lart_msgs/msg/vcu_rpm_target.hpp>
 #include <lart_msgs/msg/vcu_states.hpp>
@@ -32,6 +35,16 @@ extern std::mutex dbc_api_mutex;
 void init_dbc_api_subscribers_chunk_5(std::shared_ptr<rclcpp::Node> node, std::vector<rclcpp::SubscriptionBase::SharedPtr>& subs) {
     auto sensor_qos = rclcpp::QoS(10).best_effort();
 
+    subs.push_back(node->create_subscription<lart_msgs::msg::Slave11MscId2>(
+        "/can/dbc/slave_11_msc_id_2", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::Slave11MscId2> msg) {
+            if (msg) {
+                std::lock_guard<std::mutex> lock(dbc_api_mutex);
+                dbc_api.slave_11_msc_id_2.module_ic_temperature = msg->module_ic_temperature;
+                dbc_api.slave_11_msc_id_2.module_ic_voltage = msg->module_ic_voltage;
+                dbc_api.slave_11_msc_id_2.module_open_wire = msg->module_open_wire;
+                dbc_api.slave_11_msc_id_2.module_voltage_delta = msg->module_voltage_delta;
+            }
+        }));
     subs.push_back(node->create_subscription<lart_msgs::msg::Slave11TemperatureId1>(
         "/can/dbc/slave_11_temperature_id_1", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::Slave11TemperatureId1> msg) {
             if (msg) {
@@ -201,6 +214,22 @@ void init_dbc_api_subscribers_chunk_5(std::shared_ptr<rclcpp::Node> node, std::v
                 dbc_api.vcu_ign_r2d.r2d_manual = msg->r2d_manual;
                 dbc_api.vcu_ign_r2d.shutdown_signal = msg->shutdown_signal;
                 dbc_api.vcu_ign_r2d.vcu_state = msg->vcu_state;
+            }
+        }));
+    subs.push_back(node->create_subscription<lart_msgs::msg::VcuInv1Temperatures>(
+        "/can/dbc/vcu_inv1_temperatures", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::VcuInv1Temperatures> msg) {
+            if (msg) {
+                std::lock_guard<std::mutex> lock(dbc_api_mutex);
+                dbc_api.vcu_inv1_temperatures.inv1_tempinverter = msg->inv1_tempinverter;
+                dbc_api.vcu_inv1_temperatures.inv1_tempmotor = msg->inv1_tempmotor;
+            }
+        }));
+    subs.push_back(node->create_subscription<lart_msgs::msg::VcuInv2Temperatures>(
+        "/can/dbc/vcu_inv2_temperatures", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::VcuInv2Temperatures> msg) {
+            if (msg) {
+                std::lock_guard<std::mutex> lock(dbc_api_mutex);
+                dbc_api.vcu_inv2_temperatures.inv2_tempinverter = msg->inv2_tempinverter;
+                dbc_api.vcu_inv2_temperatures.inv2_tempmotor = msg->inv2_tempmotor;
             }
         }));
     subs.push_back(node->create_subscription<lart_msgs::msg::VcuRpm>(
