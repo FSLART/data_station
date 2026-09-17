@@ -469,7 +469,25 @@ int main(int argc, char **argv) {
         assert(eez::flow::getGlobalVariable(FLOW_GLOBAL_VARIABLE_LAP_COUNT).getInt() == 5);
         assert(std::strcmp(eez::flow::getGlobalVariable(FLOW_GLOBAL_VARIABLE_MISSION).getString(), "ACCEL") == 0);
 
-        // Test 3: Test emergency screen transition on as_state = 4
+        // Test 3: HV ON overlay triggers on the transition to precharge state 16
+        assert(lv_obj_has_flag(objects.hv_on_overlay, LV_OBJ_FLAG_HIDDEN));
+        dbc_api.master_precharge_id_1.precharge_state = 16.0f;
+        ui_tick();
+        assert(!lv_obj_has_flag(objects.hv_on_overlay, LV_OBJ_FLAG_HIDDEN));
+        assert(std::strcmp(lv_label_get_text(objects.hv_on_label), "HV ON") == 0);
+
+        lv_tick_inc(3999);
+        ui_tick();
+        assert(!lv_obj_has_flag(objects.hv_on_overlay, LV_OBJ_FLAG_HIDDEN));
+        lv_tick_inc(1);
+        ui_tick();
+        assert(lv_obj_has_flag(objects.hv_on_overlay, LV_OBJ_FLAG_HIDDEN));
+
+        // Remaining in state 16 must not retrigger the overlay.
+        ui_tick();
+        assert(lv_obj_has_flag(objects.hv_on_overlay, LV_OBJ_FLAG_HIDDEN));
+
+        // Test 4: Test emergency screen transition on as_state = 4
         // The default screen after ui_init is SCREEN_ID_DRIVER_VIEW (1)
         assert(eez_flow_get_current_screen() == SCREEN_ID_DRIVER_VIEW);
 

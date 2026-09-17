@@ -435,6 +435,9 @@ class CanSimulatorNode(Node):
         # signal when Mission_select is 0. Change live with:
         #   ros2 param set /can_simulator as_mission_value <0-7>
         self.declare_parameter('as_mission_value', 0.0)
+        # Manual override for Master_PreCharge precharge_state. -1 keeps the
+        # normal generated value; 16 is the HV_ON choice used by dashboard tests.
+        self.declare_parameter('precharge_state_value', -1.0)
 
         iface = self.get_parameter('can_interface').value
         dbc_path = self.get_parameter('dbc_path').value
@@ -556,6 +559,13 @@ class CanSimulatorNode(Node):
                 elif sig.name == 'AS_MISSION':
                     as_mission_val = self.get_parameter('as_mission_value').value
                     signals[sig.name] = _make_signal_value(sig, self._t, mission_override=as_mission_val)
+                elif sig.name == 'precharge_state':
+                    precharge_val = self.get_parameter('precharge_state_value').value
+                    if precharge_val >= 0.0:
+                        enc_min, enc_max = _encodable_range(sig)
+                        signals[sig.name] = _clamp(precharge_val, enc_min, enc_max)
+                    else:
+                        signals[sig.name] = _make_signal_value(sig, self._t)
                 else:
                     signals[sig.name] = _make_signal_value(sig, self._t)
 
