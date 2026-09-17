@@ -58,7 +58,7 @@ def main():
         for sig_slug in sorted(list(sig_slugs)):
             lines.append(f"float32 {sig_slug}")
             
-        with open(msg_path, "w") as mf:
+        with open(msg_path, "w", encoding="utf-8") as mf:
             mf.write("\n".join(lines) + "\n")
         generated_msg_files.append(msg_filename)
         
@@ -89,7 +89,7 @@ def main():
         "",
         "ament_package()"
     ])
-    with open(cmake_path, "w") as cf:
+    with open(cmake_path, "w", encoding="utf-8") as cf:
         cf.write("\n".join(cmake_lines) + "\n")
     print(f"Generated {len(generated_msg_files)} .msg files and updated CMakeLists.txt")
             
@@ -152,7 +152,7 @@ def main():
     ])
     
     header_path = os.path.join(script_dir, "dbc_api.h")
-    with open(header_path, "w") as f:
+    with open(header_path, "w", encoding="utf-8") as f:
         f.write("\n".join(header_lines) + "\n")
     print(f"Generated: {header_path}")
     
@@ -215,7 +215,7 @@ def main():
         ])
         
         sub_path = os.path.join(script_dir, f"dbc_api_sub_{idx}.cpp")
-        with open(sub_path, "w") as sf:
+        with open(sub_path, "w", encoding="utf-8") as sf:
             sf.write("\n".join(sub_lines) + "\n")
         print(f"Generated: {sub_path}")
 
@@ -518,7 +518,7 @@ def main():
     source_lines.extend(error_checking_lines)
 
     source_path = os.path.join(script_dir, "dbc_api.cpp")
-    with open(source_path, "w") as f:
+    with open(source_path, "w", encoding="utf-8") as f:
         f.write("\n".join(source_lines) + "\n")
     print(f"Generated: {source_path}")
 
