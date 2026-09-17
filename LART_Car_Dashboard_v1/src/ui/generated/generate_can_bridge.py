@@ -214,7 +214,7 @@ def main():
                 class_name = ''.join(word.capitalize() for word in msg_slug.split('_') if word)
                 sub_lines.extend([
                     f"            {{",
-                    f"                lart_msgs::msg::{class_name} out = {{}};",
+                    f"                lart_msgs::msg::{class_name} out;",
                     f"                bool decoded_any = false;"
                 ])
 

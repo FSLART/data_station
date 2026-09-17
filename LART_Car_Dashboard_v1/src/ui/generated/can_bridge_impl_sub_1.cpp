@@ -41,7 +41,7 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
     switch (can_id) {
         case 388u: {
             {
-                lart_msgs::msg::Inv1Setdriveenable out = {};
+                lart_msgs::msg::Inv1Setdriveenable out;
                 bool decoded_any = false;
                 {
                     struct powertrain_t26_inv1_set_drive_enable_t decoded = {};
@@ -58,7 +58,7 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
         }
         case 389u: {
             {
-                lart_msgs::msg::Inv2Setdriveenable out = {};
+                lart_msgs::msg::Inv2Setdriveenable out;
                 bool decoded_any = false;
                 {
                     struct powertrain_t26_inv2_set_drive_enable_t decoded = {};
@@ -75,7 +75,7 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
         }
         case 401u: {
             {
-                lart_msgs::msg::Res out = {};
+                lart_msgs::msg::Res out;
                 bool decoded_any = false;
                 {
                     struct autonomous_t26_res_t decoded = {};
@@ -92,7 +92,7 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
         }
         case 528u: {
             {
-                lart_msgs::msg::PdmLv out = {};
+                lart_msgs::msg::PdmLv out;
                 bool decoded_any = false;
                 {
                     struct data_t26_pdm_lv_t decoded = {};
@@ -109,7 +109,7 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
         }
         case 544u: {
             {
-                lart_msgs::msg::PdmCooling out = {};
+                lart_msgs::msg::PdmCooling out;
                 bool decoded_any = false;
                 {
                     struct data_t26_pdm_cooling_t decoded = {};
@@ -127,7 +127,7 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
         }
         case 996u: {
             {
-                lart_msgs::msg::Inv1Targetiq out = {};
+                lart_msgs::msg::Inv1Targetiq out;
                 bool decoded_any = false;
                 {
                     struct powertrain_t26_inv1_target_iq_t decoded = {};
@@ -147,7 +147,7 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
         }
         case 997u: {
             {
-                lart_msgs::msg::Inv2Targetiq out = {};
+                lart_msgs::msg::Inv2Targetiq out;
                 bool decoded_any = false;
                 {
                     struct powertrain_t26_inv2_target_iq_t decoded = {};
@@ -167,7 +167,7 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
         }
         case 1028u: {
             {
-                lart_msgs::msg::Inv1ErpmDutyVoltage out = {};
+                lart_msgs::msg::Inv1ErpmDutyVoltage out;
                 bool decoded_any = false;
                 {
                     struct powertrain_t26_inv1_erpm_duty_voltage_t decoded = {};
@@ -186,7 +186,7 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
         }
         case 1029u: {
             {
-                lart_msgs::msg::Inv2ErpmDutyVoltage out = {};
+                lart_msgs::msg::Inv2ErpmDutyVoltage out;
                 bool decoded_any = false;
                 {
                     struct powertrain_t26_inv2_erpm_duty_voltage_t decoded = {};
@@ -205,7 +205,7 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
         }
         case 1041u: {
             {
-                lart_msgs::msg::IvtMsgCmd out = {};
+                lart_msgs::msg::IvtMsgCmd out;
                 bool decoded_any = false;
                 {
                     struct powertrain_t26_ivt_msg_cmd_t decoded = {};
@@ -327,7 +327,7 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
         }
         case 1060u: {
             {
-                lart_msgs::msg::Inv1AcDcCurrent out = {};
+                lart_msgs::msg::Inv1AcDcCurrent out;
                 bool decoded_any = false;
                 {
                     struct powertrain_t26_inv1_ac_dc_current_t decoded = {};
@@ -345,7 +345,7 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
         }
         case 1061u: {
             {
-                lart_msgs::msg::Inv2AcDcCurrent out = {};
+                lart_msgs::msg::Inv2AcDcCurrent out;
                 bool decoded_any = false;
                 {
                     struct powertrain_t26_inv2_ac_dc_current_t decoded = {};
@@ -363,7 +363,7 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
         }
         case 1092u: {
             {
-                lart_msgs::msg::VcuInv1Temperatures out = {};
+                lart_msgs::msg::VcuInv1Temperatures out;
                 bool decoded_any = false;
                 {
                     struct data_t26_vcu_inv1_temperatures_t decoded = {};
@@ -378,7 +378,7 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
                 }
             }
             {
-                lart_msgs::msg::Inv1Temperatures out = {};
+                lart_msgs::msg::Inv1Temperatures out;
                 bool decoded_any = false;
                 {
                     struct powertrain_t26_inv1_temperatures_t decoded = {};
@@ -397,7 +397,7 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
         }
         case 1093u: {
             {
-                lart_msgs::msg::VcuInv2Temperatures out = {};
+                lart_msgs::msg::VcuInv2Temperatures out;
                 bool decoded_any = false;
                 {
                     struct data_t26_vcu_inv2_temperatures_t decoded = {};
@@ -412,7 +412,7 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
                 }
             }
             {
-                lart_msgs::msg::Inv2Temperatures out = {};
+                lart_msgs::msg::Inv2Temperatures out;
                 bool decoded_any = false;
                 {
                     struct powertrain_t26_inv2_temperatures_t decoded = {};
@@ -431,7 +431,7 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
         }
         case 1124u: {
             {
-                lart_msgs::msg::Inv1Foc out = {};
+                lart_msgs::msg::Inv1Foc out;
                 bool decoded_any = false;
                 {
                     struct powertrain_t26_inv1_foc_t decoded = {};
@@ -449,7 +449,7 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
         }
         case 1125u: {
             {
-                lart_msgs::msg::Inv2Foc out = {};
+                lart_msgs::msg::Inv2Foc out;
                 bool decoded_any = false;
                 {
                     struct powertrain_t26_inv2_foc_t decoded = {};
@@ -467,7 +467,7 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
         }
         case 1128u: {
             {
-                lart_msgs::msg::CubemarsPositionLoop out = {};
+                lart_msgs::msg::CubemarsPositionLoop out;
                 bool decoded_any = false;
                 {
                     struct autonomous_t26_cube_mars_position_loop_t decoded = {};
@@ -484,7 +484,7 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
         }
         case 1156u: {
             {
-                lart_msgs::msg::Inv1Misc out = {};
+                lart_msgs::msg::Inv1Misc out;
                 bool decoded_any = false;
                 {
                     struct powertrain_t26_inv1_misc_t decoded = {};
@@ -523,7 +523,7 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
         }
         case 1157u: {
             {
-                lart_msgs::msg::Inv2Misc out = {};
+                lart_msgs::msg::Inv2Misc out;
                 bool decoded_any = false;
                 {
                     struct powertrain_t26_inv2_misc_t decoded = {};
@@ -562,7 +562,7 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
         }
         case 1177u: {
             {
-                lart_msgs::msg::VcuRpmTarget out = {};
+                lart_msgs::msg::VcuRpmTarget out;
                 bool decoded_any = false;
                 {
                     struct autonomous_t26_vcu_rpm_target_t decoded = {};
@@ -579,7 +579,7 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
         }
         case 1178u: {
             {
-                lart_msgs::msg::VcuTorqueTarget out = {};
+                lart_msgs::msg::VcuTorqueTarget out;
                 bool decoded_any = false;
                 {
                     struct autonomous_t26_vcu_torque_target_t decoded = {};
@@ -596,7 +596,7 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
         }
         case 1188u: {
             {
-                lart_msgs::msg::Inv1Minmaxaccurrent out = {};
+                lart_msgs::msg::Inv1Minmaxaccurrent out;
                 bool decoded_any = false;
                 {
                     struct powertrain_t26_inv1_min_max_ac_current_t decoded = {};
@@ -616,7 +616,7 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
         }
         case 1189u: {
             {
-                lart_msgs::msg::Inv2Minmaxaccurrent out = {};
+                lart_msgs::msg::Inv2Minmaxaccurrent out;
                 bool decoded_any = false;
                 {
                     struct powertrain_t26_inv2_min_max_ac_current_t decoded = {};
@@ -636,7 +636,7 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
         }
         case 1220u: {
             {
-                lart_msgs::msg::Inv1Minmaxdccurrent out = {};
+                lart_msgs::msg::Inv1Minmaxdccurrent out;
                 bool decoded_any = false;
                 {
                     struct powertrain_t26_inv1_min_max_dc_current_t decoded = {};
@@ -656,7 +656,7 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
         }
         case 1221u: {
             {
-                lart_msgs::msg::Inv2Minmaxdccurrent out = {};
+                lart_msgs::msg::Inv2Minmaxdccurrent out;
                 bool decoded_any = false;
                 {
                     struct powertrain_t26_inv2_min_max_dc_current_t decoded = {};
@@ -676,7 +676,7 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
         }
         case 1280u: {
             {
-                lart_msgs::msg::DvDynamics1 out = {};
+                lart_msgs::msg::DvDynamics1 out;
                 bool decoded_any = false;
                 {
                     struct autonomous_t26_dv_dynamics_1_t decoded = {};
@@ -700,7 +700,7 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
         }
         case 1281u: {
             {
-                lart_msgs::msg::DvDynamics2 out = {};
+                lart_msgs::msg::DvDynamics2 out;
                 bool decoded_any = false;
                 {
                     struct autonomous_t26_dv_dynamics_2_t decoded = {};
@@ -719,7 +719,7 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
         }
         case 1282u: {
             {
-                lart_msgs::msg::DvStatus out = {};
+                lart_msgs::msg::DvStatus out;
                 bool decoded_any = false;
                 {
                     struct autonomous_t26_dv_status_t decoded = {};
@@ -743,7 +743,7 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
         }
         case 1285u: {
             {
-                lart_msgs::msg::SlamStatsCan out = {};
+                lart_msgs::msg::SlamStatsCan out;
                 bool decoded_any = false;
                 {
                     struct autonomous_t26_slam_stats_can_t decoded = {};
@@ -762,7 +762,7 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
         }
         case 1289u: {
             {
-                lart_msgs::msg::VcuRpm out = {};
+                lart_msgs::msg::VcuRpm out;
                 bool decoded_any = false;
                 {
                     struct autonomous_t26_vcu_rpm_t decoded = {};
