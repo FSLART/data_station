@@ -72,11 +72,6 @@ else()
 endif()
 
 # Installation targets
-install(TARGETS ros2subscriber
-    ARCHIVE DESTINATION lib
-    LIBRARY DESTINATION lib
-    RUNTIME DESTINATION bin
-)
 install(FILES ros2subscriber.h DESTINATION include/${PROJECT_NAME})
 
 if(SDL2_FOUND AND LVGL_SOURCES)
@@ -110,6 +105,10 @@ if(SDL2_FOUND AND LVGL_SOURCES)
     )
 
     add_executable(ui_runner ${UI_SOURCES})
+
+    install(TARGETS ui_runner
+        RUNTIME DESTINATION bin
+    )
 
     target_compile_features(ui_runner PUBLIC cxx_std_17)
     target_include_directories(ui_runner PRIVATE
