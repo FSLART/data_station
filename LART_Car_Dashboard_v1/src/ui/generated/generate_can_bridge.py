@@ -136,7 +136,7 @@ def main():
     ])
 
     hpp_path = os.path.join(script_dir, "can_bridge_impl.hpp")
-    with open(hpp_path, "w") as f:
+    with open(hpp_path, "w", encoding="utf-8") as f:
         f.write("\n".join(hpp_lines) + "\n")
     print(f"Generated: {hpp_path}")
 
@@ -169,7 +169,7 @@ def main():
     ])
 
     cpp_path = os.path.join(script_dir, "can_bridge_impl.cpp")
-    with open(cpp_path, "w") as f:
+    with open(cpp_path, "w", encoding="utf-8") as f:
         f.write("\n".join(cpp_lines) + "\n")
     print(f"Generated: {cpp_path}")
 
@@ -214,7 +214,7 @@ def main():
                 class_name = ''.join(word.capitalize() for word in msg_slug.split('_') if word)
                 sub_lines.extend([
                     f"            {{",
-                    f"                lart_msgs::msg::{class_name} out = {{}};",
+                    f"                lart_msgs::msg::{class_name} out;",
                     f"                bool decoded_any = false;"
                 ])
 
@@ -260,7 +260,7 @@ def main():
         ])
 
         sub_path = os.path.join(script_dir, f"can_bridge_impl_sub_{idx}.cpp")
-        with open(sub_path, "w") as sf:
+        with open(sub_path, "w", encoding="utf-8") as sf:
             sf.write("\n".join(sub_lines) + "\n")
         print(f"Generated: {sub_path}")
 

@@ -41,7 +41,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
     switch (can_id) {
         case 1297u: {
             {
-                lart_msgs::msg::IvtMsgResponse out = {};
+                lart_msgs::msg::IvtMsgResponse out;
                 bool decoded_any = false;
                 {
                     struct powertrain_t26_ivt_msg_response_t decoded = {};
@@ -154,7 +154,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
                 }
             }
             {
-                lart_msgs::msg::AsfSignals out = {};
+                lart_msgs::msg::AsfSignals out;
                 bool decoded_any = false;
                 {
                     struct autonomous_t26_asf_signals_t decoded = {};
@@ -174,7 +174,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
         }
         case 1313u: {
             {
-                lart_msgs::msg::IvtMsgResultI out = {};
+                lart_msgs::msg::IvtMsgResultI out;
                 bool decoded_any = false;
                 {
                     struct powertrain_t26_ivt_msg_result_i_t decoded = {};
@@ -197,7 +197,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
         }
         case 1314u: {
             {
-                lart_msgs::msg::IvtMsgResultU1 out = {};
+                lart_msgs::msg::IvtMsgResultU1 out;
                 bool decoded_any = false;
                 {
                     struct powertrain_t26_ivt_msg_result_u1_t decoded = {};
@@ -220,7 +220,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
         }
         case 1315u: {
             {
-                lart_msgs::msg::IvtMsgResultU2 out = {};
+                lart_msgs::msg::IvtMsgResultU2 out;
                 bool decoded_any = false;
                 {
                     struct powertrain_t26_ivt_msg_result_u2_t decoded = {};
@@ -243,7 +243,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
         }
         case 1316u: {
             {
-                lart_msgs::msg::IvtMsgResultU3 out = {};
+                lart_msgs::msg::IvtMsgResultU3 out;
                 bool decoded_any = false;
                 {
                     struct powertrain_t26_ivt_msg_result_u3_t decoded = {};
@@ -266,7 +266,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
         }
         case 1317u: {
             {
-                lart_msgs::msg::IvtMsgResultT out = {};
+                lart_msgs::msg::IvtMsgResultT out;
                 bool decoded_any = false;
                 {
                     struct powertrain_t26_ivt_msg_result_t_t decoded = {};
@@ -289,7 +289,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
         }
         case 1318u: {
             {
-                lart_msgs::msg::IvtMsgResultW out = {};
+                lart_msgs::msg::IvtMsgResultW out;
                 bool decoded_any = false;
                 {
                     struct powertrain_t26_ivt_msg_result_w_t decoded = {};
@@ -312,7 +312,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
         }
         case 1319u: {
             {
-                lart_msgs::msg::IvtMsgResultAs out = {};
+                lart_msgs::msg::IvtMsgResultAs out;
                 bool decoded_any = false;
                 {
                     struct powertrain_t26_ivt_msg_result_as_t decoded = {};
@@ -335,7 +335,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
         }
         case 1320u: {
             {
-                lart_msgs::msg::IvtMsgResultWh out = {};
+                lart_msgs::msg::IvtMsgResultWh out;
                 bool decoded_any = false;
                 {
                     struct powertrain_t26_ivt_msg_result_wh_t decoded = {};
@@ -358,7 +358,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
         }
         case 1536u: {
             {
-                lart_msgs::msg::Slave01VoltageId1 out = {};
+                lart_msgs::msg::Slave01VoltageId1 out;
                 bool decoded_any = false;
                 {
                     struct powertrain_t26_slave_01_voltage_id_1_t decoded = {};
@@ -375,7 +375,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
                 }
             }
             {
-                lart_msgs::msg::VcuIgnR2d out = {};
+                lart_msgs::msg::VcuIgnR2d out;
                 bool decoded_any = false;
                 {
                     struct autonomous_t26_vcu_ign_r2_d_t decoded = {};
@@ -399,7 +399,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
         }
         case 1537u: {
             {
-                lart_msgs::msg::Slave01VoltageId2 out = {};
+                lart_msgs::msg::Slave01VoltageId2 out;
                 bool decoded_any = false;
                 {
                     struct powertrain_t26_slave_01_voltage_id_2_t decoded = {};
@@ -419,7 +419,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
         }
         case 1538u: {
             {
-                lart_msgs::msg::Slave01VoltageId3 out = {};
+                lart_msgs::msg::Slave01VoltageId3 out;
                 bool decoded_any = false;
                 {
                     struct powertrain_t26_slave_01_voltage_id_3_t decoded = {};
@@ -439,7 +439,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
         }
         case 1539u: {
             {
-                lart_msgs::msg::Slave01TemperatureId1 out = {};
+                lart_msgs::msg::Slave01TemperatureId1 out;
                 bool decoded_any = false;
                 {
                     struct powertrain_t26_slave_01_temperature_id_1_t decoded = {};
@@ -459,7 +459,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
         }
         case 1540u: {
             {
-                lart_msgs::msg::Slave01TemperatureId2 out = {};
+                lart_msgs::msg::Slave01TemperatureId2 out;
                 bool decoded_any = false;
                 {
                     struct powertrain_t26_slave_01_temperature_id_2_t decoded = {};
@@ -479,7 +479,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
         }
         case 1541u: {
             {
-                lart_msgs::msg::Slave01MscId1 out = {};
+                lart_msgs::msg::Slave01MscId1 out;
                 bool decoded_any = false;
                 {
                     struct powertrain_t26_slave_01_msc_id_1_t decoded = {};
@@ -499,7 +499,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
         }
         case 1542u: {
             {
-                lart_msgs::msg::Slave01MscId2 out = {};
+                lart_msgs::msg::Slave01MscId2 out;
                 bool decoded_any = false;
                 {
                     struct powertrain_t26_slave_01_msc_id_2_t decoded = {};
@@ -522,7 +522,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
         }
         case 1543u: {
             {
-                lart_msgs::msg::Slave02VoltageId1 out = {};
+                lart_msgs::msg::Slave02VoltageId1 out;
                 bool decoded_any = false;
                 {
                     struct powertrain_t26_slave_02_voltage_id_1_t decoded = {};
@@ -542,7 +542,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
         }
         case 1544u: {
             {
-                lart_msgs::msg::Slave02VoltageId2 out = {};
+                lart_msgs::msg::Slave02VoltageId2 out;
                 bool decoded_any = false;
                 {
                     struct powertrain_t26_slave_02_voltage_id_2_t decoded = {};
@@ -562,7 +562,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
         }
         case 1545u: {
             {
-                lart_msgs::msg::Slave02VoltageId3 out = {};
+                lart_msgs::msg::Slave02VoltageId3 out;
                 bool decoded_any = false;
                 {
                     struct powertrain_t26_slave_02_voltage_id_3_t decoded = {};
@@ -582,7 +582,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
         }
         case 1546u: {
             {
-                lart_msgs::msg::Slave02TemperatureId1 out = {};
+                lart_msgs::msg::Slave02TemperatureId1 out;
                 bool decoded_any = false;
                 {
                     struct powertrain_t26_slave_02_temperature_id_1_t decoded = {};
@@ -602,7 +602,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
         }
         case 1547u: {
             {
-                lart_msgs::msg::Slave02TemperatureId2 out = {};
+                lart_msgs::msg::Slave02TemperatureId2 out;
                 bool decoded_any = false;
                 {
                     struct powertrain_t26_slave_02_temperature_id_2_t decoded = {};
@@ -622,7 +622,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
         }
         case 1548u: {
             {
-                lart_msgs::msg::Slave02MscId1 out = {};
+                lart_msgs::msg::Slave02MscId1 out;
                 bool decoded_any = false;
                 {
                     struct powertrain_t26_slave_02_msc_id_1_t decoded = {};
@@ -642,7 +642,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
         }
         case 1549u: {
             {
-                lart_msgs::msg::Slave02MscId2 out = {};
+                lart_msgs::msg::Slave02MscId2 out;
                 bool decoded_any = false;
                 {
                     struct powertrain_t26_slave_02_msc_id_2_t decoded = {};
@@ -665,7 +665,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
         }
         case 1550u: {
             {
-                lart_msgs::msg::Slave03VoltageId1 out = {};
+                lart_msgs::msg::Slave03VoltageId1 out;
                 bool decoded_any = false;
                 {
                     struct powertrain_t26_slave_03_voltage_id_1_t decoded = {};
@@ -685,7 +685,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
         }
         case 1551u: {
             {
-                lart_msgs::msg::Slave03VoltageId2 out = {};
+                lart_msgs::msg::Slave03VoltageId2 out;
                 bool decoded_any = false;
                 {
                     struct powertrain_t26_slave_03_voltage_id_2_t decoded = {};
@@ -705,7 +705,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
         }
         case 1552u: {
             {
-                lart_msgs::msg::Slave03VoltageId3 out = {};
+                lart_msgs::msg::Slave03VoltageId3 out;
                 bool decoded_any = false;
                 {
                     struct powertrain_t26_slave_03_voltage_id_3_t decoded = {};
@@ -725,7 +725,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
         }
         case 1553u: {
             {
-                lart_msgs::msg::Slave03TemperatureId1 out = {};
+                lart_msgs::msg::Slave03TemperatureId1 out;
                 bool decoded_any = false;
                 {
                     struct powertrain_t26_slave_03_temperature_id_1_t decoded = {};
@@ -745,7 +745,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
         }
         case 1554u: {
             {
-                lart_msgs::msg::Slave03TemperatureId2 out = {};
+                lart_msgs::msg::Slave03TemperatureId2 out;
                 bool decoded_any = false;
                 {
                     struct powertrain_t26_slave_03_temperature_id_2_t decoded = {};
@@ -765,7 +765,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
         }
         case 1555u: {
             {
-                lart_msgs::msg::Slave03MscId1 out = {};
+                lart_msgs::msg::Slave03MscId1 out;
                 bool decoded_any = false;
                 {
                     struct powertrain_t26_slave_03_msc_id_1_t decoded = {};
@@ -785,7 +785,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
         }
         case 1556u: {
             {
-                lart_msgs::msg::Slave03MscId2 out = {};
+                lart_msgs::msg::Slave03MscId2 out;
                 bool decoded_any = false;
                 {
                     struct powertrain_t26_slave_03_msc_id_2_t decoded = {};
