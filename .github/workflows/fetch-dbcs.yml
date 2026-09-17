@@ -1,0 +1,55 @@
+name: Sync T26 DBC Files
+
+on:
+  # Allows manual execution from GitHub Actions
+  workflow_dispatch:
+
+  # Check every 30 minutes
+  schedule:
+    - cron: "*/30 * * * *"
+
+permissions:
+  contents: write
+
+jobs:
+  sync-dbc:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout destination repository
+        uses: actions/checkout@v4
+
+      - name: Download T26 DBC files
+        run: |
+          mkdir -p dbc_signals
+
+          BASE_URL="https://raw.githubusercontent.com/FSLART/T26_DBC/main"
+
+          curl -fsSL "$BASE_URL/data_t26.dbc" \
+            -o dbc_signals/data_t26.dbc
+
+          curl -fsSL "$BASE_URL/autonomous_t26.dbc" \
+            -o dbc_signals/autonomous_t26.dbc
+
+          curl -fsSL "$BASE_URL/powertrain_t26.dbc" \
+            -o dbc_signals/powertrain_t26.dbc
+
+      - name: Check for changes
+        id: changes
+        run: |
+          if git diff --quiet -- dbc_signals/; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Commit and push changes
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add dbc_signals/
+
+          git commit -m "chore: update T26 DBC files"
+          git push
