@@ -192,7 +192,9 @@ static const char *object_names[] = {
     "autonomous_debug_text_4",
     "autonomous_debug_text_5",
     "temp_max_container",
-    "temp_max_label"
+    "temp_max_label",
+    "hv_on_overlay",
+    "hv_on_label"
 };
 
 //
@@ -200,6 +202,25 @@ static const char *object_names[] = {
 //
 
 lv_obj_t *tick_value_change_obj;
+
+static uint32_t hv_on_overlay_started_at;
+static float previous_precharge_state = -1.0f;
+
+static void update_hv_on_overlay(void) {
+    const float precharge_state = dbc_api.master_precharge_id_1.precharge_state;
+
+    if (precharge_state == 16.0f && previous_precharge_state != 16.0f) {
+        hv_on_overlay_started_at = lv_tick_get();
+        lv_obj_clear_flag(objects.hv_on_overlay, LV_OBJ_FLAG_HIDDEN);
+    }
+
+    if (!lv_obj_has_flag(objects.hv_on_overlay, LV_OBJ_FLAG_HIDDEN) &&
+        lv_tick_elaps(hv_on_overlay_started_at) >= 3000) {
+        lv_obj_add_flag(objects.hv_on_overlay, LV_OBJ_FLAG_HIDDEN);
+    }
+
+    previous_precharge_state = precharge_state;
+}
 
 //
 // Screens
@@ -641,6 +662,26 @@ void create_screen_driver_view() {
             add_style_text(obj);
             lv_label_set_text_static(obj, "STATUS");
         }
+        {
+            // HV ON overlay
+            lv_obj_t *obj = lv_obj_create(parent_obj);
+            objects.hv_on_overlay = obj;
+            lv_obj_set_pos(obj, 0, 0);
+            lv_obj_set_size(obj, 800, 480);
+            lv_obj_set_style_bg_color(obj, lv_color_hex(0xff0000), LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_bg_opa(obj, LV_OPA_COVER, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_border_width(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_radius(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
+
+            lv_obj_t *label = lv_label_create(obj);
+            objects.hv_on_label = label;
+            lv_label_set_text(label, "HV ON");
+            lv_obj_set_style_text_color(label, lv_color_hex(0xffffff), LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_font(label, &ui_font_orbiter_bold_100 , LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_center(label);
+            lv_obj_add_flag(obj, LV_OBJ_FLAG_HIDDEN);
+        }
     }
     
     tick_screen_driver_view();
@@ -649,6 +690,7 @@ void create_screen_driver_view() {
 void tick_screen_driver_view() {
     ui_update_telemetry_vars(NULL);
     ui_update_network_status();
+    update_hv_on_overlay();
     {
         bool eth_ok = ui_is_ethernet_connected();
         lv_led_set_color(objects.eth_led, eth_ok ? lv_color_hex(0x00ff00) : lv_color_hex(0xff0000));

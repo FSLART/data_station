@@ -146,6 +146,7 @@ show_menu() {
     echo "b) Start/Stop bag record"
     echo "c) Set Mission_select (autonomous mission select)"
     echo "d) Set AS_MISSION (mission fallback signal)"
+    echo "e) Set Master_PreCharge to HV ON (state 16)"
     echo "0) Exit"
     echo ""
 }
@@ -276,6 +277,14 @@ set_as_mission() {
     echo "✓ AS_MISSION set to $mission"
 }
 
+set_hv_on() {
+    if ! ros2 param set /can_simulator precharge_state_value "16.0"; then
+        echo "✗ Failed to set precharge_state_value (is the CAN simulator running? option 'a')"
+        return 1
+    fi
+    echo "✓ Master_PreCharge set to HV ON (state 16)"
+}
+
 publish_screen() {
     local screen_id=$1
     echo "Publishing screen change: id=$screen_id to $SCREEN_TOPIC..."
@@ -354,6 +363,8 @@ Test Scenarios:
   d. AS_MISSION - Set the CAN simulator's AS_MISSION value (0-7) via
                   ros2 param set /can_simulator as_mission_value
                   (dashboard falls back to this when Mission_select is 0)
+  e. HV ON - Set the CAN simulator's Master_PreCharge precharge_state to 16
+             via ros2 param set /can_simulator precharge_state_value
 
 Prerequisites:
   - ROS 2 Jazzy must be installed and sourced.
@@ -382,7 +393,7 @@ EOF
 while true; do
     echo ""
     show_menu
-    read -p "Select option [0-9/a/b/c/d]: " choice
+    read -p "Select option [0-9/a/b/c/d/e]: " choice
 
     case $choice in
         1) test_idle; echo ""; read -p "Press Enter to continue..." ;;
@@ -398,12 +409,13 @@ while true; do
         b|B) toggle_bag_record; echo ""; read -p "Press Enter to continue..." ;;
         c|C) set_mission_select; echo ""; read -p "Press Enter to continue..." ;;
         d|D) set_as_mission; echo ""; read -p "Press Enter to continue..." ;;
+        e|E) set_hv_on; echo ""; read -p "Press Enter to continue..." ;;
         0)
             echo "Goodbye!"
             exit 0
             ;;
         *)
-            echo "✗ Invalid option. Please select 0-9, a, b, c, or d."
+            echo "✗ Invalid option. Please select 0-9, a, b, c, d, or e."
             echo ""
             read -p "Press Enter to continue..."
             ;;
