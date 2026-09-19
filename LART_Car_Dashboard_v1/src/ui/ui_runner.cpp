@@ -404,6 +404,7 @@ int main(int argc, char **argv) {
         dbc_api.ivt_msg_result_u3.ivt_result_u3 = 24300.0f;
         dbc_api.vcu_ign_r2d.r2d_manual = 1.0f;
         dbc_api.dv_dynamics_1.speed_actual = 55.4f;
+        dbc_api.inv1_erpm_duty_voltage.inv1_actual_erpm = 1000.0f;
         dbc_api.inv1_temperatures.inv1_actual_tempcontroller = 38.2f;
         dbc_api.inv1_temperatures.inv1_actual_tempmotor = 62.1f;
         dbc_api.slam_stats_can.lap_counter = 3.0f;
@@ -428,7 +429,7 @@ int main(int argc, char **argv) {
         assert(std::strcmp(val_ready.getString(), "READY") == 0);
 
         auto val_speed = eez::flow::getGlobalVariable(FLOW_GLOBAL_VARIABLE_SPEED);
-        assert(std::abs(val_speed.getFloat() - 55.4f) < 0.01f);
+        assert(std::abs(val_speed.getFloat() - 20.802334f) < 0.01f);
 
         auto val_temp_inv = eez::flow::getGlobalVariable(FLOW_GLOBAL_VARIABLE_TEMP_INV);
         assert(std::abs(val_temp_inv.getFloat() - 38.2f) < 0.01f);
@@ -451,6 +452,7 @@ int main(int argc, char **argv) {
         t.vcu_r2d_man = 0.0f;
         t.rear_r2d = 1.0f; // Ready
         t.dv_spd_act = 10.0f;
+        t.inv_erpm = 2000.0f;
         t.inv_temp_ctrl = 30.0f;
         t.inv_temp_mot = 40.0f;
         t.slam_laps = 5.0f;
@@ -463,7 +465,7 @@ int main(int argc, char **argv) {
         assert(eez::flow::getGlobalVariable(FLOW_GLOBAL_VARIABLE_SOC).getInt() == 80);
         assert(std::abs(eez::flow::getGlobalVariable(FLOW_GLOBAL_VARIABLE_LV).getFloat() - 25.0f) < 0.01f);
         assert(std::strcmp(eez::flow::getGlobalVariable(FLOW_GLOBAL_VARIABLE_READY).getString(), "READY") == 0);
-        assert(std::abs(eez::flow::getGlobalVariable(FLOW_GLOBAL_VARIABLE_SPEED).getFloat() - 10.0f) < 0.01f);
+        assert(std::abs(eez::flow::getGlobalVariable(FLOW_GLOBAL_VARIABLE_SPEED).getFloat() - 41.604668f) < 0.01f);
         assert(std::abs(eez::flow::getGlobalVariable(FLOW_GLOBAL_VARIABLE_TEMP_INV).getFloat() - 30.0f) < 0.01f);
         assert(std::abs(eez::flow::getGlobalVariable(FLOW_GLOBAL_VARIABLE_TEMP_MOTOR).getFloat() - 40.0f) < 0.01f);
         assert(eez::flow::getGlobalVariable(FLOW_GLOBAL_VARIABLE_LAP_COUNT).getInt() == 5);
