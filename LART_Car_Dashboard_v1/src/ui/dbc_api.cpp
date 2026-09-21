@@ -181,7 +181,7 @@ extern "C" void ui_update_telemetry_vars(const void *t_ptr) {
     constexpr float tire_radius_m = 0.2032f;
     constexpr float gear_ratio = 14.73f;
     constexpr float pi = 3.14159265358979323846f;
-    const float motor_rpm = dbc_api.inv1_erpm_duty_voltage.inv1_actual_erpm * 4.0f;
+    const float motor_rpm = dbc_api.inv1_erpm_duty_voltage.inv1_actual_erpm / 4.0f;
     const float wheel_rpm = motor_rpm / gear_ratio;
     const float speed_kph = wheel_rpm * (2.0f * pi * tire_radius_m) * 60.0f / 1000.0f;
     float speed_val = speed_kph >= 0.0f ? speed_kph : 0.0f;
