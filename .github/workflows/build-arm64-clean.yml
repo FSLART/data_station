@@ -1,28 +1,25 @@
-name: Build ARM64 (Clean)
+name: faster build
 
 on:
-  workflow_dispatch:
+  push:
+    branches: [master]
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
-  group: build-arm64-clean
+  group: build-arm64
   cancel-in-progress: true
 
 jobs:
-  build-arm64-clean:
+  faster:
+    name: faster build
     runs-on: ubuntu-24.04-arm
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           submodules: recursive
-
-      - name: Remove generated outputs
-        run: |
-          rm -rf build install log
-          rm -rf LART_Car_Dashboard_v1/build/ui-build
 
       - name: Add ROS2 apt repository
         run: |
@@ -31,6 +28,12 @@ jobs:
           sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg
           echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" | sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null
           sudo apt-get update
+
+      - name: Cache apt archives
+        uses: actions/cache@v4
+        with:
+          path: /var/cache/apt/archives
+          key: apt-arm64-jazzy-${{ hashFiles('.github/workflows/faster.yml') }}
 
       - name: Install ROS2 and build tooling
         run: |
@@ -46,33 +49,37 @@ jobs:
             cmake \
             pkg-config \
             libsdl2-dev
+          sudo chown -R "$(id -u):$(id -g)" /var/cache/apt/archives
+
+      - name: Cache colcon build
+        uses: actions/cache@v4
+        with:
+          path: |
+            build
+            install
+            log
+          key: colcon-arm64-${{ hashFiles('src/**/CMakeLists.txt', 'src/**/package.xml', 'src/**/*.cpp', 'src/**/*.hpp', 'src/**/*.h', 'src/**/*.py') }}
+          restore-keys: |
+            colcon-arm64-
 
       - name: Build ROS2 workspace
         run: |
           source /opt/ros/jazzy/setup.bash
-          colcon build --parallel-workers "$(nproc)" \
-            --cmake-args \
-              -DCMAKE_BUILD_TYPE=Release
+          colcon build --parallel-workers $(nproc)
 
       - name: Build dashboard UI
         run: |
           source /opt/ros/jazzy/setup.bash
           source install/setup.bash
-          cmake -S LART_Car_Dashboard_v1/src/ui \
-            -B LART_Car_Dashboard_v1/build/ui-build \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_INSTALL_PREFIX="$GITHUB_WORKSPACE/install"
-          cmake --build LART_Car_Dashboard_v1/build/ui-build --parallel "$(nproc)"
-          cmake --install LART_Car_Dashboard_v1/build/ui-build
+          cmake -S LART_Car_Dashboard_v1/src/ui -B LART_Car_Dashboard_v1/build/ui-build -DCMAKE_BUILD_TYPE=Release
+          cmake --build LART_Car_Dashboard_v1/build/ui-build --parallel $(nproc)
 
       - name: Package artifact
-        run: |
-          find install -type f -name '*.a' -delete
-          tar czf lart-dashboard-arm64.tar.gz install
+        run: tar czf lart-dashboard-arm64.tar.gz install LART_Car_Dashboard_v1/build/ui-build
 
-      - name: Upload clean build artifact
-        uses: actions/upload-artifact@v4
+      - name: Publish release
+        uses: softprops/action-gh-release@v3
         with:
-          name: lart-dashboard-arm64-clean
-          path: lart-dashboard-arm64.tar.gz
-          if-no-files-found: error
+          tag_name: latest-arm64
+          name: "Latest ARM64 build"
+          files: fast-lart-dashboard-arm64.tar.gz
