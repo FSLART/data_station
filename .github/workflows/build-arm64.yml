@@ -1,7 +1,6 @@
-name: Build ARM64 (Cached)
+name: Build ARM64
 
 on:
-  workflow_dispatch:
   push:
     branches: [master]
 
@@ -15,8 +14,6 @@ concurrency:
 jobs:
   build-arm64:
     runs-on: ubuntu-24.04-arm
-    env:
-      CCACHE_DIR: ${{ github.workspace }}/.ccache
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -48,72 +45,39 @@ jobs:
             ros-jazzy-rosidl-default-runtime \
             python3-colcon-common-extensions \
             build-essential \
-            ccache \
             cmake \
             pkg-config \
             libsdl2-dev
           sudo chown -R "$(id -u):$(id -g)" /var/cache/apt/archives
 
-      - name: Restore build cache
-        id: build-cache
-        uses: actions/cache/restore@v4
+      - name: Cache colcon build
+        uses: actions/cache@v4
         with:
           path: |
             build
             install
             log
-            LART_Car_Dashboard_v1/build/ui-build
-            .ccache
-          key: colcon-arm64-${{ hashFiles('src/**', 'LART_Car_Dashboard_v1/src/**', '.github/workflows/build-arm64.yml') }}
+          key: colcon-arm64-${{ hashFiles('src/**/CMakeLists.txt', 'src/**/package.xml', 'src/**/*.cpp', 'src/**/*.hpp', 'src/**/*.h', 'src/**/*.py') }}
           restore-keys: |
             colcon-arm64-
-
-      - name: Configure compiler cache
-        run: |
-          ccache --set-config=max_size=1G
-          ccache --zero-stats
 
       - name: Build ROS2 workspace
         run: |
           source /opt/ros/jazzy/setup.bash
-          colcon build --parallel-workers $(nproc) \
-            --cmake-args \
-              -DCMAKE_BUILD_TYPE=Release \
-              -DCMAKE_C_COMPILER_LAUNCHER=ccache \
-              -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          colcon build --parallel-workers $(nproc)
 
       - name: Build dashboard UI
         run: |
           source /opt/ros/jazzy/setup.bash
           source install/setup.bash
-          cmake -S LART_Car_Dashboard_v1/src/ui \
-            -B LART_Car_Dashboard_v1/build/ui-build \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_INSTALL_PREFIX="$GITHUB_WORKSPACE/install" \
-            -DCMAKE_C_COMPILER_LAUNCHER=ccache \
-            -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          cmake -S LART_Car_Dashboard_v1/src/ui -B LART_Car_Dashboard_v1/build/ui-build -DCMAKE_BUILD_TYPE=Release
           cmake --build LART_Car_Dashboard_v1/build/ui-build --parallel $(nproc)
-          cmake --install LART_Car_Dashboard_v1/build/ui-build
-
-      - name: Save build cache
-        if: steps.build-cache.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
-        with:
-          path: |
-            build
-            install
-            log
-            LART_Car_Dashboard_v1/build/ui-build
-            .ccache
-          key: colcon-arm64-${{ hashFiles('src/**', 'LART_Car_Dashboard_v1/src/**', '.github/workflows/build-arm64.yml') }}
 
       - name: Package artifact
-        run: |
-          find install -type f -name '*.a' -delete
-          tar czf lart-dashboard-arm64.tar.gz install
+        run: tar czf lart-dashboard-arm64.tar.gz install LART_Car_Dashboard_v1/build/ui-build
 
       - name: Publish release
-        uses: softprops/action-gh-release@v3
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: latest-arm64
           name: "Latest ARM64 build"
