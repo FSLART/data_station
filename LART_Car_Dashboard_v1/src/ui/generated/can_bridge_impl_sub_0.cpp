@@ -21,6 +21,9 @@ void CanBridgeImpl::init_publishers_chunk_0(rclcpp::Node* node) {
     pub_dv_dynamics_1 = node->create_publisher<lart_msgs::msg::DvDynamics1>("/can/dbc/dv_dynamics_1", sensor_qos);
     pub_dv_dynamics_2 = node->create_publisher<lart_msgs::msg::DvDynamics2>("/can/dbc/dv_dynamics_2", sensor_qos);
     pub_dv_status = node->create_publisher<lart_msgs::msg::DvStatus>("/can/dbc/dv_status", sensor_qos);
+    pub_icd_request = node->create_publisher<lart_msgs::msg::IcdRequest>("/can/dbc/icd_request", sensor_qos);
+    pub_icd_response = node->create_publisher<lart_msgs::msg::IcdResponse>("/can/dbc/icd_response", sensor_qos);
+    pub_icd_result = node->create_publisher<lart_msgs::msg::IcdResult>("/can/dbc/icd_result", sensor_qos);
     pub_inv1_ac_dc_current = node->create_publisher<lart_msgs::msg::Inv1AcDcCurrent>("/can/dbc/inv1_ac_dc_current", sensor_qos);
     pub_inv1_erpm_duty_voltage = node->create_publisher<lart_msgs::msg::Inv1ErpmDutyVoltage>("/can/dbc/inv1_erpm_duty_voltage", sensor_qos);
     pub_inv1_foc = node->create_publisher<lart_msgs::msg::Inv1Foc>("/can/dbc/inv1_foc", sensor_qos);
@@ -30,9 +33,6 @@ void CanBridgeImpl::init_publishers_chunk_0(rclcpp::Node* node) {
     pub_inv1_setaccurrent = node->create_publisher<lart_msgs::msg::Inv1Setaccurrent>("/can/dbc/inv1_setaccurrent", sensor_qos);
     pub_inv1_setbrakecurrent = node->create_publisher<lart_msgs::msg::Inv1Setbrakecurrent>("/can/dbc/inv1_setbrakecurrent", sensor_qos);
     pub_inv1_setdigoutput = node->create_publisher<lart_msgs::msg::Inv1Setdigoutput>("/can/dbc/inv1_setdigoutput", sensor_qos);
-    pub_inv1_setdriveenable = node->create_publisher<lart_msgs::msg::Inv1Setdriveenable>("/can/dbc/inv1_setdriveenable", sensor_qos);
-    pub_inv1_seterpm = node->create_publisher<lart_msgs::msg::Inv1Seterpm>("/can/dbc/inv1_seterpm", sensor_qos);
-    pub_inv1_setmaxacbrakecurrent = node->create_publisher<lart_msgs::msg::Inv1Setmaxacbrakecurrent>("/can/dbc/inv1_setmaxacbrakecurrent", sensor_qos);
 }
 
 bool CanBridgeImpl::handle_frame_chunk_0(uint32_t can_id, const uint8_t* data, size_t dlc) {
@@ -43,7 +43,7 @@ bool CanBridgeImpl::handle_frame_chunk_0(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Inv1Setaccurrent out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_inv1_set_ac_current_t decoded = {};
                     if (powertrain_t26_inv1_set_ac_current_unpack(&decoded, data, dlc) == 0) {
                         out.inv1_cmd_targetaccurrent = powertrain_t26_inv1_set_ac_current_inv1_cmd_target_ac_current_decode(decoded.inv1_cmd_target_ac_current);
@@ -60,7 +60,7 @@ bool CanBridgeImpl::handle_frame_chunk_0(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Inv2Setaccurrent out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_inv2_set_ac_current_t decoded = {};
                     if (powertrain_t26_inv2_set_ac_current_unpack(&decoded, data, dlc) == 0) {
                         out.inv2_cmd_targetaccurrent = powertrain_t26_inv2_set_ac_current_inv2_cmd_target_ac_current_decode(decoded.inv2_cmd_target_ac_current);
@@ -77,7 +77,7 @@ bool CanBridgeImpl::handle_frame_chunk_0(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Inv1Setbrakecurrent out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_inv1_set_brake_current_t decoded = {};
                     if (powertrain_t26_inv1_set_brake_current_unpack(&decoded, data, dlc) == 0) {
                         out.inv1_cmd_targetbrakecurrent = powertrain_t26_inv1_set_brake_current_inv1_cmd_target_brake_current_decode(decoded.inv1_cmd_target_brake_current);
@@ -94,7 +94,7 @@ bool CanBridgeImpl::handle_frame_chunk_0(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Inv2Setbrakecurrent out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_inv2_set_brake_current_t decoded = {};
                     if (powertrain_t26_inv2_set_brake_current_unpack(&decoded, data, dlc) == 0) {
                         out.inv2_cmd_targetbrakecurrent = powertrain_t26_inv2_set_brake_current_inv2_cmd_target_brake_current_decode(decoded.inv2_cmd_target_brake_current);
@@ -111,7 +111,7 @@ bool CanBridgeImpl::handle_frame_chunk_0(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::AppsAdcRaw out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_apps_adc_raw_t decoded = {};
                     if (powertrain_t26_apps_adc_raw_unpack(&decoded, data, dlc) == 0) {
                         out.apps1_raw = powertrain_t26_apps_adc_raw_apps1_raw_decode(decoded.apps1_raw);
@@ -129,7 +129,7 @@ bool CanBridgeImpl::handle_frame_chunk_0(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Acu out;
                 bool decoded_any = false;
-                {
+                if (database_ == "autonomous_t26") {
                     struct autonomous_t26_acu_t decoded = {};
                     if (autonomous_t26_acu_unpack(&decoded, data, dlc) == 0) {
                         out.assi_state = autonomous_t26_acu_assi_state_decode(decoded.assi_state);
@@ -154,7 +154,7 @@ bool CanBridgeImpl::handle_frame_chunk_0(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Dashboard out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_dash_board_t decoded = {};
                     if (powertrain_t26_dash_board_unpack(&decoded, data, dlc) == 0) {
                         out.ignition_switch_raw = powertrain_t26_dash_board_ignition_switch_raw_decode(decoded.ignition_switch_raw);
@@ -172,7 +172,7 @@ bool CanBridgeImpl::handle_frame_chunk_0(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Jetson out;
                 bool decoded_any = false;
-                {
+                if (database_ == "autonomous_t26") {
                     struct autonomous_t26_jetson_t decoded = {};
                     if (autonomous_t26_jetson_unpack(&decoded, data, dlc) == 0) {
                         out.as_state = autonomous_t26_jetson_as_state_decode(decoded.as_state);
@@ -194,7 +194,7 @@ bool CanBridgeImpl::handle_frame_chunk_0(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Inv1Seterpm out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_inv1_set_erpm_t decoded = {};
                     if (powertrain_t26_inv1_set_erpm_unpack(&decoded, data, dlc) == 0) {
                         out.inv1_cmd_targetspeed = powertrain_t26_inv1_set_erpm_inv1_cmd_target_speed_decode(decoded.inv1_cmd_target_speed);
@@ -211,7 +211,7 @@ bool CanBridgeImpl::handle_frame_chunk_0(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Inv2Seterpm out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_inv2_set_erpm_t decoded = {};
                     if (powertrain_t26_inv2_set_erpm_unpack(&decoded, data, dlc) == 0) {
                         out.inv2_cmd_targetspeed = powertrain_t26_inv2_set_erpm_inv2_cmd_target_speed_decode(decoded.inv2_cmd_target_speed);
@@ -228,7 +228,7 @@ bool CanBridgeImpl::handle_frame_chunk_0(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::StartCharging out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_start_charging_t decoded = {};
                     if (powertrain_t26_start_charging_unpack(&decoded, data, dlc) == 0) {
                         out.charging_request = powertrain_t26_start_charging_charging_request_decode(decoded.charging_request);
@@ -242,7 +242,7 @@ bool CanBridgeImpl::handle_frame_chunk_0(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::VcuHv out;
                 bool decoded_any = false;
-                {
+                if (database_ == "autonomous_t26") {
                     struct autonomous_t26_vcu_hv_t decoded = {};
                     if (autonomous_t26_vcu_hv_unpack(&decoded, data, dlc) == 0) {
                         out.hv = autonomous_t26_vcu_hv_hv_decode(decoded.hv);
@@ -261,7 +261,7 @@ bool CanBridgeImpl::handle_frame_chunk_0(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::StartBalancing out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_start_balancing_t decoded = {};
                     if (powertrain_t26_start_balancing_unpack(&decoded, data, dlc) == 0) {
                         out.balancing_request = powertrain_t26_start_balancing_balancing_request_decode(decoded.balancing_request);
@@ -278,7 +278,7 @@ bool CanBridgeImpl::handle_frame_chunk_0(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::StartPrecharge out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_start_pre_charge_t decoded = {};
                     if (powertrain_t26_start_pre_charge_unpack(&decoded, data, dlc) == 0) {
                         out.precharge_request = powertrain_t26_start_pre_charge_precharge_request_decode(decoded.precharge_request);
@@ -295,7 +295,7 @@ bool CanBridgeImpl::handle_frame_chunk_0(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Inv1Setposition out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_inv1_set_position_t decoded = {};
                     if (powertrain_t26_inv1_set_position_unpack(&decoded, data, dlc) == 0) {
                         out.inv1_cmd_targetposition = powertrain_t26_inv1_set_position_inv1_cmd_target_position_decode(decoded.inv1_cmd_target_position);
@@ -312,7 +312,7 @@ bool CanBridgeImpl::handle_frame_chunk_0(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Inv2Setposition out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_inv2_set_position_t decoded = {};
                     if (powertrain_t26_inv2_set_position_unpack(&decoded, data, dlc) == 0) {
                         out.inv2_cmd_targetposition = powertrain_t26_inv2_set_position_inv2_cmd_target_position_decode(decoded.inv2_cmd_target_position);
@@ -329,7 +329,7 @@ bool CanBridgeImpl::handle_frame_chunk_0(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Inv1Setrelcurrent out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_inv1_set_rel_current_t decoded = {};
                     if (powertrain_t26_inv1_set_rel_current_unpack(&decoded, data, dlc) == 0) {
                         out.inv1_cmd_targetrelativecurrent = powertrain_t26_inv1_set_rel_current_inv1_cmd_target_relative_current_decode(decoded.inv1_cmd_target_relative_current);
@@ -346,7 +346,7 @@ bool CanBridgeImpl::handle_frame_chunk_0(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Inv2Setrelcurrent out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_inv2_set_rel_current_t decoded = {};
                     if (powertrain_t26_inv2_set_rel_current_unpack(&decoded, data, dlc) == 0) {
                         out.inv2_cmd_targetrelativecurrent = powertrain_t26_inv2_set_rel_current_inv2_cmd_target_relative_current_decode(decoded.inv2_cmd_target_relative_current);
@@ -363,7 +363,7 @@ bool CanBridgeImpl::handle_frame_chunk_0(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Inv1Setrelbrakecurrent out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_inv1_set_rel_brake_current_t decoded = {};
                     if (powertrain_t26_inv1_set_rel_brake_current_unpack(&decoded, data, dlc) == 0) {
                         out.inv1_cmd_tgtrelbrakecurrent = powertrain_t26_inv1_set_rel_brake_current_inv1_cmd_tgt_rel_brake_current_decode(decoded.inv1_cmd_tgt_rel_brake_current);
@@ -380,7 +380,7 @@ bool CanBridgeImpl::handle_frame_chunk_0(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Inv2Setrelbrakecurrent out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_inv2_set_rel_brake_current_t decoded = {};
                     if (powertrain_t26_inv2_set_rel_brake_current_unpack(&decoded, data, dlc) == 0) {
                         out.inv2_cmd_tgtrelbrakecurrent = powertrain_t26_inv2_set_rel_brake_current_inv2_cmd_tgt_rel_brake_current_decode(decoded.inv2_cmd_tgt_rel_brake_current);
@@ -397,7 +397,7 @@ bool CanBridgeImpl::handle_frame_chunk_0(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::StartProgrammer out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_start_programmer_t decoded = {};
                     if (powertrain_t26_start_programmer_unpack(&decoded, data, dlc) == 0) {
                         out.programming_request = powertrain_t26_start_programmer_programming_request_decode(decoded.programming_request);
@@ -414,7 +414,7 @@ bool CanBridgeImpl::handle_frame_chunk_0(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Inv1Setdigoutput out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_inv1_set_dig_output_t decoded = {};
                     if (powertrain_t26_inv1_set_dig_output_unpack(&decoded, data, dlc) == 0) {
                         out.inv1_cmd_setdigoutput4 = powertrain_t26_inv1_set_dig_output_inv1_cmd_set_dig_output4_decode(decoded.inv1_cmd_set_dig_output4);
@@ -434,7 +434,7 @@ bool CanBridgeImpl::handle_frame_chunk_0(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Inv2Setdigoutput out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_inv2_set_dig_output_t decoded = {};
                     if (powertrain_t26_inv2_set_dig_output_unpack(&decoded, data, dlc) == 0) {
                         out.inv2_cmd_setdigoutput4 = powertrain_t26_inv2_set_dig_output_inv2_cmd_set_dig_output4_decode(decoded.inv2_cmd_set_dig_output4);
@@ -454,7 +454,7 @@ bool CanBridgeImpl::handle_frame_chunk_0(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Inv1Setmaxaccurrent out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_inv1_set_max_ac_current_t decoded = {};
                     if (powertrain_t26_inv1_set_max_ac_current_unpack(&decoded, data, dlc) == 0) {
                         out.inv1_cmd_maxaccurrent = powertrain_t26_inv1_set_max_ac_current_inv1_cmd_max_ac_current_decode(decoded.inv1_cmd_max_ac_current);
@@ -471,7 +471,7 @@ bool CanBridgeImpl::handle_frame_chunk_0(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Inv2Setmaxaccurrent out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_inv2_set_max_ac_current_t decoded = {};
                     if (powertrain_t26_inv2_set_max_ac_current_unpack(&decoded, data, dlc) == 0) {
                         out.inv2_cmd_maxaccurrent = powertrain_t26_inv2_set_max_ac_current_inv2_cmd_max_ac_current_decode(decoded.inv2_cmd_max_ac_current);
@@ -488,7 +488,7 @@ bool CanBridgeImpl::handle_frame_chunk_0(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Inv1Setmaxacbrakecurrent out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_inv1_set_max_ac_brake_current_t decoded = {};
                     if (powertrain_t26_inv1_set_max_ac_brake_current_unpack(&decoded, data, dlc) == 0) {
                         out.inv1_cmd_maxacbrakecurrent = powertrain_t26_inv1_set_max_ac_brake_current_inv1_cmd_max_ac_brake_current_decode(decoded.inv1_cmd_max_ac_brake_current);
@@ -505,7 +505,7 @@ bool CanBridgeImpl::handle_frame_chunk_0(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Inv2Setmaxacbrakecurrent out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_inv2_set_max_ac_brake_current_t decoded = {};
                     if (powertrain_t26_inv2_set_max_ac_brake_current_unpack(&decoded, data, dlc) == 0) {
                         out.inv2_cmd_maxacbrakecurrent = powertrain_t26_inv2_set_max_ac_brake_current_inv2_cmd_max_ac_brake_current_decode(decoded.inv2_cmd_max_ac_brake_current);
@@ -522,7 +522,7 @@ bool CanBridgeImpl::handle_frame_chunk_0(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Inv1Setmaxdccurrent out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_inv1_set_max_dc_current_t decoded = {};
                     if (powertrain_t26_inv1_set_max_dc_current_unpack(&decoded, data, dlc) == 0) {
                         out.inv1_cmd_maxdccurrent = powertrain_t26_inv1_set_max_dc_current_inv1_cmd_max_dc_current_decode(decoded.inv1_cmd_max_dc_current);
@@ -539,7 +539,7 @@ bool CanBridgeImpl::handle_frame_chunk_0(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Inv2Setmaxdccurrent out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_inv2_set_max_dc_current_t decoded = {};
                     if (powertrain_t26_inv2_set_max_dc_current_unpack(&decoded, data, dlc) == 0) {
                         out.inv2_cmd_maxdccurrent = powertrain_t26_inv2_set_max_dc_current_inv2_cmd_max_dc_current_decode(decoded.inv2_cmd_max_dc_current);
@@ -556,7 +556,7 @@ bool CanBridgeImpl::handle_frame_chunk_0(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Inv1Setmaxdcbrakecurrent out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_inv1_set_max_dc_brake_current_t decoded = {};
                     if (powertrain_t26_inv1_set_max_dc_brake_current_unpack(&decoded, data, dlc) == 0) {
                         out.inv1_cmd_maxdcbrakecurrent = powertrain_t26_inv1_set_max_dc_brake_current_inv1_cmd_max_dc_brake_current_decode(decoded.inv1_cmd_max_dc_brake_current);
@@ -573,7 +573,7 @@ bool CanBridgeImpl::handle_frame_chunk_0(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Inv2Setmaxdcbrakecurrent out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_inv2_set_max_dc_brake_current_t decoded = {};
                     if (powertrain_t26_inv2_set_max_dc_brake_current_unpack(&decoded, data, dlc) == 0) {
                         out.inv2_cmd_maxdcbrakecurrent = powertrain_t26_inv2_set_max_dc_brake_current_inv2_cmd_max_dc_brake_current_decode(decoded.inv2_cmd_max_dc_brake_current);

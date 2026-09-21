@@ -3,6 +3,9 @@
 
 void CanBridgeImpl::init_publishers_chunk_1(rclcpp::Node* node) {
     auto sensor_qos = rclcpp::QoS(10).best_effort();
+    pub_inv1_setdriveenable = node->create_publisher<lart_msgs::msg::Inv1Setdriveenable>("/can/dbc/inv1_setdriveenable", sensor_qos);
+    pub_inv1_seterpm = node->create_publisher<lart_msgs::msg::Inv1Seterpm>("/can/dbc/inv1_seterpm", sensor_qos);
+    pub_inv1_setmaxacbrakecurrent = node->create_publisher<lart_msgs::msg::Inv1Setmaxacbrakecurrent>("/can/dbc/inv1_setmaxacbrakecurrent", sensor_qos);
     pub_inv1_setmaxaccurrent = node->create_publisher<lart_msgs::msg::Inv1Setmaxaccurrent>("/can/dbc/inv1_setmaxaccurrent", sensor_qos);
     pub_inv1_setmaxdcbrakecurrent = node->create_publisher<lart_msgs::msg::Inv1Setmaxdcbrakecurrent>("/can/dbc/inv1_setmaxdcbrakecurrent", sensor_qos);
     pub_inv1_setmaxdccurrent = node->create_publisher<lart_msgs::msg::Inv1Setmaxdccurrent>("/can/dbc/inv1_setmaxdccurrent", sensor_qos);
@@ -30,9 +33,6 @@ void CanBridgeImpl::init_publishers_chunk_1(rclcpp::Node* node) {
     pub_inv2_setrelbrakecurrent = node->create_publisher<lart_msgs::msg::Inv2Setrelbrakecurrent>("/can/dbc/inv2_setrelbrakecurrent", sensor_qos);
     pub_inv2_setrelcurrent = node->create_publisher<lart_msgs::msg::Inv2Setrelcurrent>("/can/dbc/inv2_setrelcurrent", sensor_qos);
     pub_inv2_targetiq = node->create_publisher<lart_msgs::msg::Inv2Targetiq>("/can/dbc/inv2_targetiq", sensor_qos);
-    pub_inv2_temperatures = node->create_publisher<lart_msgs::msg::Inv2Temperatures>("/can/dbc/inv2_temperatures", sensor_qos);
-    pub_ivt_msg_cmd = node->create_publisher<lart_msgs::msg::IvtMsgCmd>("/can/dbc/ivt_msg_cmd", sensor_qos);
-    pub_ivt_msg_response = node->create_publisher<lart_msgs::msg::IvtMsgResponse>("/can/dbc/ivt_msg_response", sensor_qos);
 }
 
 bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, size_t dlc) {
@@ -43,7 +43,7 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Inv1Setdriveenable out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_inv1_set_drive_enable_t decoded = {};
                     if (powertrain_t26_inv1_set_drive_enable_unpack(&decoded, data, dlc) == 0) {
                         out.inv1_cmd_driveenable = powertrain_t26_inv1_set_drive_enable_inv1_cmd_drive_enable_decode(decoded.inv1_cmd_drive_enable);
@@ -60,7 +60,7 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Inv2Setdriveenable out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_inv2_set_drive_enable_t decoded = {};
                     if (powertrain_t26_inv2_set_drive_enable_unpack(&decoded, data, dlc) == 0) {
                         out.inv2_cmd_driveenable = powertrain_t26_inv2_set_drive_enable_inv2_cmd_drive_enable_decode(decoded.inv2_cmd_drive_enable);
@@ -77,7 +77,7 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Res out;
                 bool decoded_any = false;
-                {
+                if (database_ == "autonomous_t26") {
                     struct autonomous_t26_res_t decoded = {};
                     if (autonomous_t26_res_unpack(&decoded, data, dlc) == 0) {
                         out.signal = autonomous_t26_res_signal_decode(decoded.signal);
@@ -94,7 +94,7 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::PdmLv out;
                 bool decoded_any = false;
-                {
+                if (database_ == "data_t26") {
                     struct data_t26_pdm_lv_t decoded = {};
                     if (data_t26_pdm_lv_unpack(&decoded, data, dlc) == 0) {
                         out.lv_voltage_mv = data_t26_pdm_lv_lv_voltage_m_v_decode(decoded.lv_voltage_m_v);
@@ -111,7 +111,7 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::PdmCooling out;
                 bool decoded_any = false;
-                {
+                if (database_ == "data_t26") {
                     struct data_t26_pdm_cooling_t decoded = {};
                     if (data_t26_pdm_cooling_unpack(&decoded, data, dlc) == 0) {
                         out.waterpump_pwm = data_t26_pdm_cooling_water_pump_pwm_decode(decoded.water_pump_pwm);
@@ -129,7 +129,7 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Inv1Targetiq out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_inv1_target_iq_t decoded = {};
                     if (powertrain_t26_inv1_target_iq_unpack(&decoded, data, dlc) == 0) {
                         out.inv1_controlmode = powertrain_t26_inv1_target_iq_inv1_control_mode_decode(decoded.inv1_control_mode);
@@ -149,7 +149,7 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Inv2Targetiq out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_inv2_target_iq_t decoded = {};
                     if (powertrain_t26_inv2_target_iq_unpack(&decoded, data, dlc) == 0) {
                         out.inv2_controlmode = powertrain_t26_inv2_target_iq_inv2_control_mode_decode(decoded.inv2_control_mode);
@@ -169,7 +169,7 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Inv1ErpmDutyVoltage out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_inv1_erpm_duty_voltage_t decoded = {};
                     if (powertrain_t26_inv1_erpm_duty_voltage_unpack(&decoded, data, dlc) == 0) {
                         out.inv1_actual_erpm = powertrain_t26_inv1_erpm_duty_voltage_inv1_actual_erpm_decode(decoded.inv1_actual_erpm);
@@ -188,7 +188,7 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Inv2ErpmDutyVoltage out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_inv2_erpm_duty_voltage_t decoded = {};
                     if (powertrain_t26_inv2_erpm_duty_voltage_unpack(&decoded, data, dlc) == 0) {
                         out.inv2_actual_erpm = powertrain_t26_inv2_erpm_duty_voltage_inv2_actual_erpm_decode(decoded.inv2_actual_erpm);
@@ -207,115 +207,115 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::IvtMsgCmd out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_ivt_msg_cmd_t decoded = {};
                     if (powertrain_t26_ivt_msg_cmd_unpack(&decoded, data, dlc) == 0) {
                         out.ivt_id_cmd = powertrain_t26_ivt_msg_cmd_ivt_id_cmd_decode(decoded.ivt_id_cmd);
-                        out.val_31_trigger_spare = powertrain_t26_ivt_msg_cmd__31_trigger_spare_decode(decoded._31_trigger_spare);
-                        out.val_10_set_can_id_val_i = powertrain_t26_ivt_msg_cmd__10_set_can_id_val_i_decode(decoded._10_set_can_id_val_i);
-                        out.val_11_set_can_id_val_u1 = powertrain_t26_ivt_msg_cmd__11_set_can_id_val_u1_decode(decoded._11_set_can_id_val_u1);
-                        out.val_12_set_can_id_val_u2 = powertrain_t26_ivt_msg_cmd__12_set_can_id_val_u2_decode(decoded._12_set_can_id_val_u2);
-                        out.val_13_set_can_id_val_u3 = powertrain_t26_ivt_msg_cmd__13_set_can_id_val_u3_decode(decoded._13_set_can_id_val_u3);
-                        out.val_14_set_can_id_val_t = powertrain_t26_ivt_msg_cmd__14_set_can_id_val_t_decode(decoded._14_set_can_id_val_t);
-                        out.val_15_set_can_id_val_w = powertrain_t26_ivt_msg_cmd__15_set_can_id_val_w_decode(decoded._15_set_can_id_val_w);
-                        out.val_16_set_can_id_val_as = powertrain_t26_ivt_msg_cmd__16_set_can_id_val_as_decode(decoded._16_set_can_id_val_as);
-                        out.val_17_set_can_id_val_wh = powertrain_t26_ivt_msg_cmd__17_set_can_id_val_wh_decode(decoded._17_set_can_id_val_wh);
-                        out.val_1d_set_can_id_val_command = powertrain_t26_ivt_msg_cmd__1_d_set_can_id_val_command_decode(decoded._1_d_set_can_id_val_command);
-                        out.val_1f_set_can_id_val_response = powertrain_t26_ivt_msg_cmd__1_f_set_can_id_val_response_decode(decoded._1_f_set_can_id_val_response);
-                        out.val_20_conf_sign_i = powertrain_t26_ivt_msg_cmd__20_conf_sign_i_decode(decoded._20_conf_sign_i);
-                        out.val_21_conf_sign_u1 = powertrain_t26_ivt_msg_cmd__21_conf_sign_u1_decode(decoded._21_conf_sign_u1);
-                        out.val_22_conf_sign_u2 = powertrain_t26_ivt_msg_cmd__22_conf_sign_u2_decode(decoded._22_conf_sign_u2);
-                        out.val_23_conf_sign_u3 = powertrain_t26_ivt_msg_cmd__23_conf_sign_u3_decode(decoded._23_conf_sign_u3);
-                        out.val_24_conf_sign_t = powertrain_t26_ivt_msg_cmd__24_conf_sign_t_decode(decoded._24_conf_sign_t);
-                        out.val_25_conf_sign_w = powertrain_t26_ivt_msg_cmd__25_conf_sign_w_decode(decoded._25_conf_sign_w);
-                        out.val_26_conf_sign_as = powertrain_t26_ivt_msg_cmd__26_conf_sign_as_decode(decoded._26_conf_sign_as);
-                        out.val_27_conf_sign_wh = powertrain_t26_ivt_msg_cmd__27_conf_sign_wh_decode(decoded._27_conf_sign_wh);
-                        out.val_30_reset_item = powertrain_t26_ivt_msg_cmd__30_reset_item_decode(decoded._30_reset_item);
-                        out.val_32_store_dummy = powertrain_t26_ivt_msg_cmd__32_store_dummy_decode(decoded._32_store_dummy);
-                        out.val_33_oc_test_time = powertrain_t26_ivt_msg_cmd__33_oc_test_time_decode(decoded._33_oc_test_time);
-                        out.val_35_oc_pos_set_threshold = powertrain_t26_ivt_msg_cmd__35_oc_pos_set_threshold_decode(decoded._35_oc_pos_set_threshold);
-                        out.val_36_oc_neg_set_threshold = powertrain_t26_ivt_msg_cmd__36_oc_neg_set_threshold_decode(decoded._36_oc_neg_set_threshold);
-                        out.val_3a_restart_to_bitrate = powertrain_t26_ivt_msg_cmd__3_a_restart_to_bitrate_decode(decoded._3_a_restart_to_bitrate);
-                        out.val_3d_restart_default_dummy = powertrain_t26_ivt_msg_cmd__3_d_restart_default_dummy_decode(decoded._3_d_restart_default_dummy);
-                        out.val_3f_restart_dummy = powertrain_t26_ivt_msg_cmd__3_f_restart_dummy_decode(decoded._3_f_restart_dummy);
-                        out.val_40_get_measerror_item = powertrain_t26_ivt_msg_cmd__40_get_meas_error_item_decode(decoded._40_get_meas_error_item);
-                        out.val_41_get_systemerror_item = powertrain_t26_ivt_msg_cmd__41_get_system_error_item_decode(decoded._41_get_system_error_item);
-                        out.val_42_get_alllogdata_item = powertrain_t26_ivt_msg_cmd__42_get_all_log_data_item_decode(decoded._42_get_all_log_data_item);
-                        out.val_43_get_logdata_item = powertrain_t26_ivt_msg_cmd__43_get_log_data_item_decode(decoded._43_get_log_data_item);
-                        out.val_60_get_result_dummy_i = powertrain_t26_ivt_msg_cmd__60_get_result_dummy_i_decode(decoded._60_get_result_dummy_i);
-                        out.val_61_get_result_dummy_u1 = powertrain_t26_ivt_msg_cmd__61_get_result_dummy_u1_decode(decoded._61_get_result_dummy_u1);
-                        out.val_62_get_result_dummy_u2 = powertrain_t26_ivt_msg_cmd__62_get_result_dummy_u2_decode(decoded._62_get_result_dummy_u2);
-                        out.val_63_get_result_dummy_u3 = powertrain_t26_ivt_msg_cmd__63_get_result_dummy_u3_decode(decoded._63_get_result_dummy_u3);
-                        out.val_64_get_result_dummy_t = powertrain_t26_ivt_msg_cmd__64_get_result_dummy_t_decode(decoded._64_get_result_dummy_t);
-                        out.val_65_get_result_dummy_w = powertrain_t26_ivt_msg_cmd__65_get_result_dummy_w_decode(decoded._65_get_result_dummy_w);
-                        out.val_66_get_result_dummy_as = powertrain_t26_ivt_msg_cmd__66_get_result_dummy_as_decode(decoded._66_get_result_dummy_as);
-                        out.val_67_get_result_dummy_wh = powertrain_t26_ivt_msg_cmd__67_get_result_dummy_wh_decode(decoded._67_get_result_dummy_wh);
-                        out.val_73_get_oc_test_dummy = powertrain_t26_ivt_msg_cmd__73_get_oc_test_dummy_decode(decoded._73_get_oc_test_dummy);
-                        out.val_74_get_mode_dummy = powertrain_t26_ivt_msg_cmd__74_get_mode_dummy_decode(decoded._74_get_mode_dummy);
-                        out.val_75_get_oc_pos_dummy = powertrain_t26_ivt_msg_cmd__75_get_oc_pos_dummy_decode(decoded._75_get_oc_pos_dummy);
-                        out.val_76_get_oc_neg_dummy = powertrain_t26_ivt_msg_cmd__76_get_oc_neg_dummy_decode(decoded._76_get_oc_neg_dummy);
-                        out.val_79_get_device_id_dummy = powertrain_t26_ivt_msg_cmd__79_get_device_id_dummy_decode(decoded._79_get_device_id_dummy);
-                        out.val_7a_get_sw_version_dummy = powertrain_t26_ivt_msg_cmd__7_a_get_sw_version_dummy_decode(decoded._7_a_get_sw_version_dummy);
-                        out.val_7b_get_serien_nr_dummy = powertrain_t26_ivt_msg_cmd__7_b_get_serien_nr_dummy_decode(decoded._7_b_get_serien_nr_dummy);
-                        out.val_7c_get_art_nr_dummy = powertrain_t26_ivt_msg_cmd__7_c_get_art_nr_dummy_decode(decoded._7_c_get_art_nr_dummy);
-                        out.val_20_conf_endianess_i = powertrain_t26_ivt_msg_cmd__20_conf_endianess_i_decode(decoded._20_conf_endianess_i);
-                        out.val_21_conf_endianess_u1 = powertrain_t26_ivt_msg_cmd__21_conf_endianess_u1_decode(decoded._21_conf_endianess_u1);
-                        out.val_22_conf_endianess_u2 = powertrain_t26_ivt_msg_cmd__22_conf_endianess_u2_decode(decoded._22_conf_endianess_u2);
-                        out.val_23_conf_endianess_u3 = powertrain_t26_ivt_msg_cmd__23_conf_endianess_u3_decode(decoded._23_conf_endianess_u3);
-                        out.val_24_conf_endianess_t = powertrain_t26_ivt_msg_cmd__24_conf_endianess_t_decode(decoded._24_conf_endianess_t);
-                        out.val_25_conf_endianess_w = powertrain_t26_ivt_msg_cmd__25_conf_endianess_w_decode(decoded._25_conf_endianess_w);
-                        out.val_26_conf_endianess_as = powertrain_t26_ivt_msg_cmd__26_conf_endianess_as_decode(decoded._26_conf_endianess_as);
-                        out.val_27_conf_endianess_wh = powertrain_t26_ivt_msg_cmd__27_conf_endianess_wh_decode(decoded._27_conf_endianess_wh);
-                        out.val_20_conf_triggermode_i = powertrain_t26_ivt_msg_cmd__20_conf_trigger_mode_i_decode(decoded._20_conf_trigger_mode_i);
-                        out.val_21_conf_triggermode_u1 = powertrain_t26_ivt_msg_cmd__21_conf_trigger_mode_u1_decode(decoded._21_conf_trigger_mode_u1);
-                        out.val_22_conf_triggermode_u2 = powertrain_t26_ivt_msg_cmd__22_conf_trigger_mode_u2_decode(decoded._22_conf_trigger_mode_u2);
-                        out.val_23_conf_triggermode_u3 = powertrain_t26_ivt_msg_cmd__23_conf_trigger_mode_u3_decode(decoded._23_conf_trigger_mode_u3);
-                        out.val_24_conf_triggermode_t = powertrain_t26_ivt_msg_cmd__24_conf_trigger_mode_t_decode(decoded._24_conf_trigger_mode_t);
-                        out.val_25_conf_triggermode_w = powertrain_t26_ivt_msg_cmd__25_conf_trigger_mode_w_decode(decoded._25_conf_trigger_mode_w);
-                        out.val_26_conf_triggermode_as = powertrain_t26_ivt_msg_cmd__26_conf_trigger_mode_as_decode(decoded._26_conf_trigger_mode_as);
-                        out.val_27_conf_triggermode_wh = powertrain_t26_ivt_msg_cmd__27_conf_trigger_mode_wh_decode(decoded._27_conf_trigger_mode_wh);
-                        out.val_34_actual_mode = powertrain_t26_ivt_msg_cmd__34_actual_mode_decode(decoded._34_actual_mode);
-                        out.val_31_07_trigger_wh = powertrain_t26_ivt_msg_cmd__31_07_trigger_wh_decode(decoded._31_07_trigger_wh);
-                        out.val_20_conf_cycletime_i = powertrain_t26_ivt_msg_cmd__20_conf_cycle_time_i_decode(decoded._20_conf_cycle_time_i);
-                        out.val_21_conf_cycletime_u1 = powertrain_t26_ivt_msg_cmd__21_conf_cycle_time_u1_decode(decoded._21_conf_cycle_time_u1);
-                        out.val_22_conf_cycletime_u2 = powertrain_t26_ivt_msg_cmd__22_conf_cycle_time_u2_decode(decoded._22_conf_cycle_time_u2);
-                        out.val_23_conf_cycletime_u3 = powertrain_t26_ivt_msg_cmd__23_conf_cycle_time_u3_decode(decoded._23_conf_cycle_time_u3);
-                        out.val_24_conf_cycletime_t = powertrain_t26_ivt_msg_cmd__24_conf_cycle_time_t_decode(decoded._24_conf_cycle_time_t);
-                        out.val_25_conf_cycletime_w = powertrain_t26_ivt_msg_cmd__25_conf_cycle_time_w_decode(decoded._25_conf_cycle_time_w);
-                        out.val_26_conf_cycletime_as = powertrain_t26_ivt_msg_cmd__26_conf_cycle_time_as_decode(decoded._26_conf_cycle_time_as);
-                        out.val_27_conf_cycletime_wh = powertrain_t26_ivt_msg_cmd__27_conf_cycle_time_wh_decode(decoded._27_conf_cycle_time_wh);
-                        out.val_31_06_trigger_as = powertrain_t26_ivt_msg_cmd__31_06_trigger_as_decode(decoded._31_06_trigger_as);
-                        out.val_31_05_trigger_w = powertrain_t26_ivt_msg_cmd__31_05_trigger_w_decode(decoded._31_05_trigger_w);
-                        out.val_31_04_trigger_t = powertrain_t26_ivt_msg_cmd__31_04_trigger_t_decode(decoded._31_04_trigger_t);
-                        out.val_31_03_trigger_u3 = powertrain_t26_ivt_msg_cmd__31_03_trigger_u3_decode(decoded._31_03_trigger_u3);
-                        out.val_31_02_trigger_u2 = powertrain_t26_ivt_msg_cmd__31_02_trigger_u2_decode(decoded._31_02_trigger_u2);
-                        out.val_31_01_trigger_u1 = powertrain_t26_ivt_msg_cmd__31_01_trigger_u1_decode(decoded._31_01_trigger_u1);
-                        out.val_31_00_trigger_i = powertrain_t26_ivt_msg_cmd__31_00_trigger_i_decode(decoded._31_00_trigger_i);
-                        out.val_34_startup_mode = powertrain_t26_ivt_msg_cmd__34_startup_mode_decode(decoded._34_startup_mode);
-                        out.val_10_set_can_id_sn_i = powertrain_t26_ivt_msg_cmd__10_set_can_id_sn_i_decode(decoded._10_set_can_id_sn_i);
-                        out.val_11_set_can_id_sn_u1 = powertrain_t26_ivt_msg_cmd__11_set_can_id_sn_u1_decode(decoded._11_set_can_id_sn_u1);
-                        out.val_12_set_can_id_sn_u2 = powertrain_t26_ivt_msg_cmd__12_set_can_id_sn_u2_decode(decoded._12_set_can_id_sn_u2);
-                        out.val_13_set_can_id_sn_u3 = powertrain_t26_ivt_msg_cmd__13_set_can_id_sn_u3_decode(decoded._13_set_can_id_sn_u3);
-                        out.val_14_set_can_id_sn_t = powertrain_t26_ivt_msg_cmd__14_set_can_id_sn_t_decode(decoded._14_set_can_id_sn_t);
-                        out.val_15_set_can_id_sn_w = powertrain_t26_ivt_msg_cmd__15_set_can_id_sn_w_decode(decoded._15_set_can_id_sn_w);
-                        out.val_16_set_can_id_sn_as = powertrain_t26_ivt_msg_cmd__16_set_can_id_sn_as_decode(decoded._16_set_can_id_sn_as);
-                        out.val_17_set_can_id_sn_wh = powertrain_t26_ivt_msg_cmd__17_set_can_id_sn_wh_decode(decoded._17_set_can_id_sn_wh);
-                        out.val_1d_set_can_id_sn_command = powertrain_t26_ivt_msg_cmd__1_d_set_can_id_sn_command_decode(decoded._1_d_set_can_id_sn_command);
-                        out.val_1f_set_can_id_sn_response = powertrain_t26_ivt_msg_cmd__1_f_set_can_id_sn_response_decode(decoded._1_f_set_can_id_sn_response);
-                        out.val_30_reset_device_sn = powertrain_t26_ivt_msg_cmd__30_reset_device_sn_decode(decoded._30_reset_device_sn);
-                        out.val_34_code_level = powertrain_t26_ivt_msg_cmd__34_code_level_decode(decoded._34_code_level);
-                        out.val_35_oc_pos_reset_threshold = powertrain_t26_ivt_msg_cmd__35_oc_pos_reset_threshold_decode(decoded._35_oc_pos_reset_threshold);
-                        out.val_36_oc_neg_reset_threshold = powertrain_t26_ivt_msg_cmd__36_oc_neg_reset_threshold_decode(decoded._36_oc_neg_reset_threshold);
-                        out.val_50_get_can_id_sn_i = powertrain_t26_ivt_msg_cmd__50_get_can_id_sn_i_decode(decoded._50_get_can_id_sn_i);
-                        out.val_51_get_can_id_sn_u1 = powertrain_t26_ivt_msg_cmd__51_get_can_id_sn_u1_decode(decoded._51_get_can_id_sn_u1);
-                        out.val_52_get_can_id_sn_u2 = powertrain_t26_ivt_msg_cmd__52_get_can_id_sn_u2_decode(decoded._52_get_can_id_sn_u2);
-                        out.val_53_get_can_id_sn_u3 = powertrain_t26_ivt_msg_cmd__53_get_can_id_sn_u3_decode(decoded._53_get_can_id_sn_u3);
-                        out.val_54_get_can_id_sn_t = powertrain_t26_ivt_msg_cmd__54_get_can_id_sn_t_decode(decoded._54_get_can_id_sn_t);
-                        out.val_55_get_can_id_sn_w = powertrain_t26_ivt_msg_cmd__55_get_can_id_sn_w_decode(decoded._55_get_can_id_sn_w);
-                        out.val_56_get_can_id_sn_as = powertrain_t26_ivt_msg_cmd__56_get_can_id_sn_as_decode(decoded._56_get_can_id_sn_as);
-                        out.val_57_get_can_id_sn_wh = powertrain_t26_ivt_msg_cmd__57_get_can_id_sn_wh_decode(decoded._57_get_can_id_sn_wh);
-                        out.val_5d_get_can_id_sn_command = powertrain_t26_ivt_msg_cmd__5_d_get_can_id_sn_command_decode(decoded._5_d_get_can_id_sn_command);
-                        out.val_5f_get_can_id_sn_response = powertrain_t26_ivt_msg_cmd__5_f_get_can_id_sn_response_decode(decoded._5_f_get_can_id_sn_response);
+                        if (decoded.ivt_id_cmd == 49) { out.val_31_trigger_spare = powertrain_t26_ivt_msg_cmd__31_trigger_spare_decode(decoded._31_trigger_spare); }
+                        if (decoded.ivt_id_cmd == 16) { out.val_10_set_can_id_val_i = powertrain_t26_ivt_msg_cmd__10_set_can_id_val_i_decode(decoded._10_set_can_id_val_i); }
+                        if (decoded.ivt_id_cmd == 17) { out.val_11_set_can_id_val_u1 = powertrain_t26_ivt_msg_cmd__11_set_can_id_val_u1_decode(decoded._11_set_can_id_val_u1); }
+                        if (decoded.ivt_id_cmd == 18) { out.val_12_set_can_id_val_u2 = powertrain_t26_ivt_msg_cmd__12_set_can_id_val_u2_decode(decoded._12_set_can_id_val_u2); }
+                        if (decoded.ivt_id_cmd == 19) { out.val_13_set_can_id_val_u3 = powertrain_t26_ivt_msg_cmd__13_set_can_id_val_u3_decode(decoded._13_set_can_id_val_u3); }
+                        if (decoded.ivt_id_cmd == 20) { out.val_14_set_can_id_val_t = powertrain_t26_ivt_msg_cmd__14_set_can_id_val_t_decode(decoded._14_set_can_id_val_t); }
+                        if (decoded.ivt_id_cmd == 21) { out.val_15_set_can_id_val_w = powertrain_t26_ivt_msg_cmd__15_set_can_id_val_w_decode(decoded._15_set_can_id_val_w); }
+                        if (decoded.ivt_id_cmd == 22) { out.val_16_set_can_id_val_as = powertrain_t26_ivt_msg_cmd__16_set_can_id_val_as_decode(decoded._16_set_can_id_val_as); }
+                        if (decoded.ivt_id_cmd == 23) { out.val_17_set_can_id_val_wh = powertrain_t26_ivt_msg_cmd__17_set_can_id_val_wh_decode(decoded._17_set_can_id_val_wh); }
+                        if (decoded.ivt_id_cmd == 29) { out.val_1d_set_can_id_val_command = powertrain_t26_ivt_msg_cmd__1_d_set_can_id_val_command_decode(decoded._1_d_set_can_id_val_command); }
+                        if (decoded.ivt_id_cmd == 31) { out.val_1f_set_can_id_val_response = powertrain_t26_ivt_msg_cmd__1_f_set_can_id_val_response_decode(decoded._1_f_set_can_id_val_response); }
+                        if (decoded.ivt_id_cmd == 32) { out.val_20_conf_sign_i = powertrain_t26_ivt_msg_cmd__20_conf_sign_i_decode(decoded._20_conf_sign_i); }
+                        if (decoded.ivt_id_cmd == 33) { out.val_21_conf_sign_u1 = powertrain_t26_ivt_msg_cmd__21_conf_sign_u1_decode(decoded._21_conf_sign_u1); }
+                        if (decoded.ivt_id_cmd == 34) { out.val_22_conf_sign_u2 = powertrain_t26_ivt_msg_cmd__22_conf_sign_u2_decode(decoded._22_conf_sign_u2); }
+                        if (decoded.ivt_id_cmd == 35) { out.val_23_conf_sign_u3 = powertrain_t26_ivt_msg_cmd__23_conf_sign_u3_decode(decoded._23_conf_sign_u3); }
+                        if (decoded.ivt_id_cmd == 36) { out.val_24_conf_sign_t = powertrain_t26_ivt_msg_cmd__24_conf_sign_t_decode(decoded._24_conf_sign_t); }
+                        if (decoded.ivt_id_cmd == 37) { out.val_25_conf_sign_w = powertrain_t26_ivt_msg_cmd__25_conf_sign_w_decode(decoded._25_conf_sign_w); }
+                        if (decoded.ivt_id_cmd == 38) { out.val_26_conf_sign_as = powertrain_t26_ivt_msg_cmd__26_conf_sign_as_decode(decoded._26_conf_sign_as); }
+                        if (decoded.ivt_id_cmd == 39) { out.val_27_conf_sign_wh = powertrain_t26_ivt_msg_cmd__27_conf_sign_wh_decode(decoded._27_conf_sign_wh); }
+                        if (decoded.ivt_id_cmd == 48) { out.val_30_reset_item = powertrain_t26_ivt_msg_cmd__30_reset_item_decode(decoded._30_reset_item); }
+                        if (decoded.ivt_id_cmd == 50) { out.val_32_store_dummy = powertrain_t26_ivt_msg_cmd__32_store_dummy_decode(decoded._32_store_dummy); }
+                        if (decoded.ivt_id_cmd == 51) { out.val_33_oc_test_time = powertrain_t26_ivt_msg_cmd__33_oc_test_time_decode(decoded._33_oc_test_time); }
+                        if (decoded.ivt_id_cmd == 53) { out.val_35_oc_pos_set_threshold = powertrain_t26_ivt_msg_cmd__35_oc_pos_set_threshold_decode(decoded._35_oc_pos_set_threshold); }
+                        if (decoded.ivt_id_cmd == 54) { out.val_36_oc_neg_set_threshold = powertrain_t26_ivt_msg_cmd__36_oc_neg_set_threshold_decode(decoded._36_oc_neg_set_threshold); }
+                        if (decoded.ivt_id_cmd == 58) { out.val_3a_restart_to_bitrate = powertrain_t26_ivt_msg_cmd__3_a_restart_to_bitrate_decode(decoded._3_a_restart_to_bitrate); }
+                        if (decoded.ivt_id_cmd == 61) { out.val_3d_restart_default_dummy = powertrain_t26_ivt_msg_cmd__3_d_restart_default_dummy_decode(decoded._3_d_restart_default_dummy); }
+                        if (decoded.ivt_id_cmd == 63) { out.val_3f_restart_dummy = powertrain_t26_ivt_msg_cmd__3_f_restart_dummy_decode(decoded._3_f_restart_dummy); }
+                        if (decoded.ivt_id_cmd == 64) { out.val_40_get_measerror_item = powertrain_t26_ivt_msg_cmd__40_get_meas_error_item_decode(decoded._40_get_meas_error_item); }
+                        if (decoded.ivt_id_cmd == 65) { out.val_41_get_systemerror_item = powertrain_t26_ivt_msg_cmd__41_get_system_error_item_decode(decoded._41_get_system_error_item); }
+                        if (decoded.ivt_id_cmd == 66) { out.val_42_get_alllogdata_item = powertrain_t26_ivt_msg_cmd__42_get_all_log_data_item_decode(decoded._42_get_all_log_data_item); }
+                        if (decoded.ivt_id_cmd == 67) { out.val_43_get_logdata_item = powertrain_t26_ivt_msg_cmd__43_get_log_data_item_decode(decoded._43_get_log_data_item); }
+                        if (decoded.ivt_id_cmd == 96) { out.val_60_get_result_dummy_i = powertrain_t26_ivt_msg_cmd__60_get_result_dummy_i_decode(decoded._60_get_result_dummy_i); }
+                        if (decoded.ivt_id_cmd == 97) { out.val_61_get_result_dummy_u1 = powertrain_t26_ivt_msg_cmd__61_get_result_dummy_u1_decode(decoded._61_get_result_dummy_u1); }
+                        if (decoded.ivt_id_cmd == 98) { out.val_62_get_result_dummy_u2 = powertrain_t26_ivt_msg_cmd__62_get_result_dummy_u2_decode(decoded._62_get_result_dummy_u2); }
+                        if (decoded.ivt_id_cmd == 99) { out.val_63_get_result_dummy_u3 = powertrain_t26_ivt_msg_cmd__63_get_result_dummy_u3_decode(decoded._63_get_result_dummy_u3); }
+                        if (decoded.ivt_id_cmd == 100) { out.val_64_get_result_dummy_t = powertrain_t26_ivt_msg_cmd__64_get_result_dummy_t_decode(decoded._64_get_result_dummy_t); }
+                        if (decoded.ivt_id_cmd == 101) { out.val_65_get_result_dummy_w = powertrain_t26_ivt_msg_cmd__65_get_result_dummy_w_decode(decoded._65_get_result_dummy_w); }
+                        if (decoded.ivt_id_cmd == 102) { out.val_66_get_result_dummy_as = powertrain_t26_ivt_msg_cmd__66_get_result_dummy_as_decode(decoded._66_get_result_dummy_as); }
+                        if (decoded.ivt_id_cmd == 103) { out.val_67_get_result_dummy_wh = powertrain_t26_ivt_msg_cmd__67_get_result_dummy_wh_decode(decoded._67_get_result_dummy_wh); }
+                        if (decoded.ivt_id_cmd == 115) { out.val_73_get_oc_test_dummy = powertrain_t26_ivt_msg_cmd__73_get_oc_test_dummy_decode(decoded._73_get_oc_test_dummy); }
+                        if (decoded.ivt_id_cmd == 116) { out.val_74_get_mode_dummy = powertrain_t26_ivt_msg_cmd__74_get_mode_dummy_decode(decoded._74_get_mode_dummy); }
+                        if (decoded.ivt_id_cmd == 117) { out.val_75_get_oc_pos_dummy = powertrain_t26_ivt_msg_cmd__75_get_oc_pos_dummy_decode(decoded._75_get_oc_pos_dummy); }
+                        if (decoded.ivt_id_cmd == 118) { out.val_76_get_oc_neg_dummy = powertrain_t26_ivt_msg_cmd__76_get_oc_neg_dummy_decode(decoded._76_get_oc_neg_dummy); }
+                        if (decoded.ivt_id_cmd == 121) { out.val_79_get_device_id_dummy = powertrain_t26_ivt_msg_cmd__79_get_device_id_dummy_decode(decoded._79_get_device_id_dummy); }
+                        if (decoded.ivt_id_cmd == 122) { out.val_7a_get_sw_version_dummy = powertrain_t26_ivt_msg_cmd__7_a_get_sw_version_dummy_decode(decoded._7_a_get_sw_version_dummy); }
+                        if (decoded.ivt_id_cmd == 123) { out.val_7b_get_serien_nr_dummy = powertrain_t26_ivt_msg_cmd__7_b_get_serien_nr_dummy_decode(decoded._7_b_get_serien_nr_dummy); }
+                        if (decoded.ivt_id_cmd == 124) { out.val_7c_get_art_nr_dummy = powertrain_t26_ivt_msg_cmd__7_c_get_art_nr_dummy_decode(decoded._7_c_get_art_nr_dummy); }
+                        if (decoded.ivt_id_cmd == 32) { out.val_20_conf_endianess_i = powertrain_t26_ivt_msg_cmd__20_conf_endianess_i_decode(decoded._20_conf_endianess_i); }
+                        if (decoded.ivt_id_cmd == 33) { out.val_21_conf_endianess_u1 = powertrain_t26_ivt_msg_cmd__21_conf_endianess_u1_decode(decoded._21_conf_endianess_u1); }
+                        if (decoded.ivt_id_cmd == 34) { out.val_22_conf_endianess_u2 = powertrain_t26_ivt_msg_cmd__22_conf_endianess_u2_decode(decoded._22_conf_endianess_u2); }
+                        if (decoded.ivt_id_cmd == 35) { out.val_23_conf_endianess_u3 = powertrain_t26_ivt_msg_cmd__23_conf_endianess_u3_decode(decoded._23_conf_endianess_u3); }
+                        if (decoded.ivt_id_cmd == 36) { out.val_24_conf_endianess_t = powertrain_t26_ivt_msg_cmd__24_conf_endianess_t_decode(decoded._24_conf_endianess_t); }
+                        if (decoded.ivt_id_cmd == 37) { out.val_25_conf_endianess_w = powertrain_t26_ivt_msg_cmd__25_conf_endianess_w_decode(decoded._25_conf_endianess_w); }
+                        if (decoded.ivt_id_cmd == 38) { out.val_26_conf_endianess_as = powertrain_t26_ivt_msg_cmd__26_conf_endianess_as_decode(decoded._26_conf_endianess_as); }
+                        if (decoded.ivt_id_cmd == 39) { out.val_27_conf_endianess_wh = powertrain_t26_ivt_msg_cmd__27_conf_endianess_wh_decode(decoded._27_conf_endianess_wh); }
+                        if (decoded.ivt_id_cmd == 32) { out.val_20_conf_triggermode_i = powertrain_t26_ivt_msg_cmd__20_conf_trigger_mode_i_decode(decoded._20_conf_trigger_mode_i); }
+                        if (decoded.ivt_id_cmd == 33) { out.val_21_conf_triggermode_u1 = powertrain_t26_ivt_msg_cmd__21_conf_trigger_mode_u1_decode(decoded._21_conf_trigger_mode_u1); }
+                        if (decoded.ivt_id_cmd == 34) { out.val_22_conf_triggermode_u2 = powertrain_t26_ivt_msg_cmd__22_conf_trigger_mode_u2_decode(decoded._22_conf_trigger_mode_u2); }
+                        if (decoded.ivt_id_cmd == 35) { out.val_23_conf_triggermode_u3 = powertrain_t26_ivt_msg_cmd__23_conf_trigger_mode_u3_decode(decoded._23_conf_trigger_mode_u3); }
+                        if (decoded.ivt_id_cmd == 36) { out.val_24_conf_triggermode_t = powertrain_t26_ivt_msg_cmd__24_conf_trigger_mode_t_decode(decoded._24_conf_trigger_mode_t); }
+                        if (decoded.ivt_id_cmd == 37) { out.val_25_conf_triggermode_w = powertrain_t26_ivt_msg_cmd__25_conf_trigger_mode_w_decode(decoded._25_conf_trigger_mode_w); }
+                        if (decoded.ivt_id_cmd == 38) { out.val_26_conf_triggermode_as = powertrain_t26_ivt_msg_cmd__26_conf_trigger_mode_as_decode(decoded._26_conf_trigger_mode_as); }
+                        if (decoded.ivt_id_cmd == 39) { out.val_27_conf_triggermode_wh = powertrain_t26_ivt_msg_cmd__27_conf_trigger_mode_wh_decode(decoded._27_conf_trigger_mode_wh); }
+                        if (decoded.ivt_id_cmd == 52) { out.val_34_actual_mode = powertrain_t26_ivt_msg_cmd__34_actual_mode_decode(decoded._34_actual_mode); }
+                        if (decoded.ivt_id_cmd == 49) { out.val_31_07_trigger_wh = powertrain_t26_ivt_msg_cmd__31_07_trigger_wh_decode(decoded._31_07_trigger_wh); }
+                        if (decoded.ivt_id_cmd == 32) { out.val_20_conf_cycletime_i = powertrain_t26_ivt_msg_cmd__20_conf_cycle_time_i_decode(decoded._20_conf_cycle_time_i); }
+                        if (decoded.ivt_id_cmd == 33) { out.val_21_conf_cycletime_u1 = powertrain_t26_ivt_msg_cmd__21_conf_cycle_time_u1_decode(decoded._21_conf_cycle_time_u1); }
+                        if (decoded.ivt_id_cmd == 34) { out.val_22_conf_cycletime_u2 = powertrain_t26_ivt_msg_cmd__22_conf_cycle_time_u2_decode(decoded._22_conf_cycle_time_u2); }
+                        if (decoded.ivt_id_cmd == 35) { out.val_23_conf_cycletime_u3 = powertrain_t26_ivt_msg_cmd__23_conf_cycle_time_u3_decode(decoded._23_conf_cycle_time_u3); }
+                        if (decoded.ivt_id_cmd == 36) { out.val_24_conf_cycletime_t = powertrain_t26_ivt_msg_cmd__24_conf_cycle_time_t_decode(decoded._24_conf_cycle_time_t); }
+                        if (decoded.ivt_id_cmd == 37) { out.val_25_conf_cycletime_w = powertrain_t26_ivt_msg_cmd__25_conf_cycle_time_w_decode(decoded._25_conf_cycle_time_w); }
+                        if (decoded.ivt_id_cmd == 38) { out.val_26_conf_cycletime_as = powertrain_t26_ivt_msg_cmd__26_conf_cycle_time_as_decode(decoded._26_conf_cycle_time_as); }
+                        if (decoded.ivt_id_cmd == 39) { out.val_27_conf_cycletime_wh = powertrain_t26_ivt_msg_cmd__27_conf_cycle_time_wh_decode(decoded._27_conf_cycle_time_wh); }
+                        if (decoded.ivt_id_cmd == 49) { out.val_31_06_trigger_as = powertrain_t26_ivt_msg_cmd__31_06_trigger_as_decode(decoded._31_06_trigger_as); }
+                        if (decoded.ivt_id_cmd == 49) { out.val_31_05_trigger_w = powertrain_t26_ivt_msg_cmd__31_05_trigger_w_decode(decoded._31_05_trigger_w); }
+                        if (decoded.ivt_id_cmd == 49) { out.val_31_04_trigger_t = powertrain_t26_ivt_msg_cmd__31_04_trigger_t_decode(decoded._31_04_trigger_t); }
+                        if (decoded.ivt_id_cmd == 49) { out.val_31_03_trigger_u3 = powertrain_t26_ivt_msg_cmd__31_03_trigger_u3_decode(decoded._31_03_trigger_u3); }
+                        if (decoded.ivt_id_cmd == 49) { out.val_31_02_trigger_u2 = powertrain_t26_ivt_msg_cmd__31_02_trigger_u2_decode(decoded._31_02_trigger_u2); }
+                        if (decoded.ivt_id_cmd == 49) { out.val_31_01_trigger_u1 = powertrain_t26_ivt_msg_cmd__31_01_trigger_u1_decode(decoded._31_01_trigger_u1); }
+                        if (decoded.ivt_id_cmd == 49) { out.val_31_00_trigger_i = powertrain_t26_ivt_msg_cmd__31_00_trigger_i_decode(decoded._31_00_trigger_i); }
+                        if (decoded.ivt_id_cmd == 52) { out.val_34_startup_mode = powertrain_t26_ivt_msg_cmd__34_startup_mode_decode(decoded._34_startup_mode); }
+                        if (decoded.ivt_id_cmd == 16) { out.val_10_set_can_id_sn_i = powertrain_t26_ivt_msg_cmd__10_set_can_id_sn_i_decode(decoded._10_set_can_id_sn_i); }
+                        if (decoded.ivt_id_cmd == 17) { out.val_11_set_can_id_sn_u1 = powertrain_t26_ivt_msg_cmd__11_set_can_id_sn_u1_decode(decoded._11_set_can_id_sn_u1); }
+                        if (decoded.ivt_id_cmd == 18) { out.val_12_set_can_id_sn_u2 = powertrain_t26_ivt_msg_cmd__12_set_can_id_sn_u2_decode(decoded._12_set_can_id_sn_u2); }
+                        if (decoded.ivt_id_cmd == 19) { out.val_13_set_can_id_sn_u3 = powertrain_t26_ivt_msg_cmd__13_set_can_id_sn_u3_decode(decoded._13_set_can_id_sn_u3); }
+                        if (decoded.ivt_id_cmd == 20) { out.val_14_set_can_id_sn_t = powertrain_t26_ivt_msg_cmd__14_set_can_id_sn_t_decode(decoded._14_set_can_id_sn_t); }
+                        if (decoded.ivt_id_cmd == 21) { out.val_15_set_can_id_sn_w = powertrain_t26_ivt_msg_cmd__15_set_can_id_sn_w_decode(decoded._15_set_can_id_sn_w); }
+                        if (decoded.ivt_id_cmd == 22) { out.val_16_set_can_id_sn_as = powertrain_t26_ivt_msg_cmd__16_set_can_id_sn_as_decode(decoded._16_set_can_id_sn_as); }
+                        if (decoded.ivt_id_cmd == 23) { out.val_17_set_can_id_sn_wh = powertrain_t26_ivt_msg_cmd__17_set_can_id_sn_wh_decode(decoded._17_set_can_id_sn_wh); }
+                        if (decoded.ivt_id_cmd == 29) { out.val_1d_set_can_id_sn_command = powertrain_t26_ivt_msg_cmd__1_d_set_can_id_sn_command_decode(decoded._1_d_set_can_id_sn_command); }
+                        if (decoded.ivt_id_cmd == 31) { out.val_1f_set_can_id_sn_response = powertrain_t26_ivt_msg_cmd__1_f_set_can_id_sn_response_decode(decoded._1_f_set_can_id_sn_response); }
+                        if (decoded.ivt_id_cmd == 48) { out.val_30_reset_device_sn = powertrain_t26_ivt_msg_cmd__30_reset_device_sn_decode(decoded._30_reset_device_sn); }
+                        if (decoded.ivt_id_cmd == 52) { out.val_34_code_level = powertrain_t26_ivt_msg_cmd__34_code_level_decode(decoded._34_code_level); }
+                        if (decoded.ivt_id_cmd == 53) { out.val_35_oc_pos_reset_threshold = powertrain_t26_ivt_msg_cmd__35_oc_pos_reset_threshold_decode(decoded._35_oc_pos_reset_threshold); }
+                        if (decoded.ivt_id_cmd == 54) { out.val_36_oc_neg_reset_threshold = powertrain_t26_ivt_msg_cmd__36_oc_neg_reset_threshold_decode(decoded._36_oc_neg_reset_threshold); }
+                        if (decoded.ivt_id_cmd == 80) { out.val_50_get_can_id_sn_i = powertrain_t26_ivt_msg_cmd__50_get_can_id_sn_i_decode(decoded._50_get_can_id_sn_i); }
+                        if (decoded.ivt_id_cmd == 81) { out.val_51_get_can_id_sn_u1 = powertrain_t26_ivt_msg_cmd__51_get_can_id_sn_u1_decode(decoded._51_get_can_id_sn_u1); }
+                        if (decoded.ivt_id_cmd == 82) { out.val_52_get_can_id_sn_u2 = powertrain_t26_ivt_msg_cmd__52_get_can_id_sn_u2_decode(decoded._52_get_can_id_sn_u2); }
+                        if (decoded.ivt_id_cmd == 83) { out.val_53_get_can_id_sn_u3 = powertrain_t26_ivt_msg_cmd__53_get_can_id_sn_u3_decode(decoded._53_get_can_id_sn_u3); }
+                        if (decoded.ivt_id_cmd == 84) { out.val_54_get_can_id_sn_t = powertrain_t26_ivt_msg_cmd__54_get_can_id_sn_t_decode(decoded._54_get_can_id_sn_t); }
+                        if (decoded.ivt_id_cmd == 85) { out.val_55_get_can_id_sn_w = powertrain_t26_ivt_msg_cmd__55_get_can_id_sn_w_decode(decoded._55_get_can_id_sn_w); }
+                        if (decoded.ivt_id_cmd == 86) { out.val_56_get_can_id_sn_as = powertrain_t26_ivt_msg_cmd__56_get_can_id_sn_as_decode(decoded._56_get_can_id_sn_as); }
+                        if (decoded.ivt_id_cmd == 87) { out.val_57_get_can_id_sn_wh = powertrain_t26_ivt_msg_cmd__57_get_can_id_sn_wh_decode(decoded._57_get_can_id_sn_wh); }
+                        if (decoded.ivt_id_cmd == 93) { out.val_5d_get_can_id_sn_command = powertrain_t26_ivt_msg_cmd__5_d_get_can_id_sn_command_decode(decoded._5_d_get_can_id_sn_command); }
+                        if (decoded.ivt_id_cmd == 95) { out.val_5f_get_can_id_sn_response = powertrain_t26_ivt_msg_cmd__5_f_get_can_id_sn_response_decode(decoded._5_f_get_can_id_sn_response); }
                         decoded_any = true;
                     }
                 }
@@ -329,7 +329,7 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Inv1AcDcCurrent out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_inv1_ac_dc_current_t decoded = {};
                     if (powertrain_t26_inv1_ac_dc_current_unpack(&decoded, data, dlc) == 0) {
                         out.inv1_actual_accurrent = powertrain_t26_inv1_ac_dc_current_inv1_actual_ac_current_decode(decoded.inv1_actual_ac_current);
@@ -347,7 +347,7 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Inv2AcDcCurrent out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_inv2_ac_dc_current_t decoded = {};
                     if (powertrain_t26_inv2_ac_dc_current_unpack(&decoded, data, dlc) == 0) {
                         out.inv2_actual_accurrent = powertrain_t26_inv2_ac_dc_current_inv2_actual_ac_current_decode(decoded.inv2_actual_ac_current);
@@ -365,7 +365,7 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::VcuInv1Temperatures out;
                 bool decoded_any = false;
-                {
+                if (database_ == "data_t26") {
                     struct data_t26_vcu_inv1_temperatures_t decoded = {};
                     if (data_t26_vcu_inv1_temperatures_unpack(&decoded, data, dlc) == 0) {
                         out.inv1_tempinverter = data_t26_vcu_inv1_temperatures_inv1_temp_inverter_decode(decoded.inv1_temp_inverter);
@@ -380,7 +380,7 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Inv1Temperatures out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_inv1_temperatures_t decoded = {};
                     if (powertrain_t26_inv1_temperatures_unpack(&decoded, data, dlc) == 0) {
                         out.inv1_actual_tempcontroller = powertrain_t26_inv1_temperatures_inv1_actual_temp_controller_decode(decoded.inv1_actual_temp_controller);
@@ -399,7 +399,7 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::VcuInv2Temperatures out;
                 bool decoded_any = false;
-                {
+                if (database_ == "data_t26") {
                     struct data_t26_vcu_inv2_temperatures_t decoded = {};
                     if (data_t26_vcu_inv2_temperatures_unpack(&decoded, data, dlc) == 0) {
                         out.inv2_tempinverter = data_t26_vcu_inv2_temperatures_inv2_temp_inverter_decode(decoded.inv2_temp_inverter);
@@ -414,7 +414,7 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Inv2Temperatures out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_inv2_temperatures_t decoded = {};
                     if (powertrain_t26_inv2_temperatures_unpack(&decoded, data, dlc) == 0) {
                         out.inv2_actual_tempcontroller = powertrain_t26_inv2_temperatures_inv2_actual_temp_controller_decode(decoded.inv2_actual_temp_controller);
@@ -433,7 +433,7 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Inv1Foc out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_inv1_foc_t decoded = {};
                     if (powertrain_t26_inv1_foc_unpack(&decoded, data, dlc) == 0) {
                         out.inv1_actual_foc_id = powertrain_t26_inv1_foc_inv1_actual_foc_id_decode(decoded.inv1_actual_foc_id);
@@ -451,7 +451,7 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Inv2Foc out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_inv2_foc_t decoded = {};
                     if (powertrain_t26_inv2_foc_unpack(&decoded, data, dlc) == 0) {
                         out.inv2_actual_foc_id = powertrain_t26_inv2_foc_inv2_actual_foc_id_decode(decoded.inv2_actual_foc_id);
@@ -469,7 +469,7 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::CubemarsPositionLoop out;
                 bool decoded_any = false;
-                {
+                if (database_ == "autonomous_t26") {
                     struct autonomous_t26_cube_mars_position_loop_t decoded = {};
                     if (autonomous_t26_cube_mars_position_loop_unpack(&decoded, data, dlc) == 0) {
                         out.position = autonomous_t26_cube_mars_position_loop_position_decode(decoded.position);
@@ -486,7 +486,7 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Inv1Misc out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_inv1_misc_t decoded = {};
                     if (powertrain_t26_inv1_misc_unpack(&decoded, data, dlc) == 0) {
                         out.inv1_actual_throttle = powertrain_t26_inv1_misc_inv1_actual_throttle_decode(decoded.inv1_actual_throttle);
@@ -525,7 +525,7 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Inv2Misc out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_inv2_misc_t decoded = {};
                     if (powertrain_t26_inv2_misc_unpack(&decoded, data, dlc) == 0) {
                         out.inv2_actual_throttle = powertrain_t26_inv2_misc_inv2_actual_throttle_decode(decoded.inv2_actual_throttle);
@@ -564,7 +564,7 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::VcuRpmTarget out;
                 bool decoded_any = false;
-                {
+                if (database_ == "autonomous_t26") {
                     struct autonomous_t26_vcu_rpm_target_t decoded = {};
                     if (autonomous_t26_vcu_rpm_target_unpack(&decoded, data, dlc) == 0) {
                         out.rpm_target = autonomous_t26_vcu_rpm_target_rpm_target_decode(decoded.rpm_target);
@@ -581,7 +581,7 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::VcuTorqueTarget out;
                 bool decoded_any = false;
-                {
+                if (database_ == "autonomous_t26") {
                     struct autonomous_t26_vcu_torque_target_t decoded = {};
                     if (autonomous_t26_vcu_torque_target_unpack(&decoded, data, dlc) == 0) {
                         out.torque_target = autonomous_t26_vcu_torque_target_torque_target_decode(decoded.torque_target);
@@ -598,7 +598,7 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Inv1Minmaxaccurrent out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_inv1_min_max_ac_current_t decoded = {};
                     if (powertrain_t26_inv1_min_max_ac_current_unpack(&decoded, data, dlc) == 0) {
                         out.inv1_maxaccurrent = powertrain_t26_inv1_min_max_ac_current_inv1_max_ac_current_decode(decoded.inv1_max_ac_current);
@@ -618,7 +618,7 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Inv2Minmaxaccurrent out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_inv2_min_max_ac_current_t decoded = {};
                     if (powertrain_t26_inv2_min_max_ac_current_unpack(&decoded, data, dlc) == 0) {
                         out.inv2_maxaccurrent = powertrain_t26_inv2_min_max_ac_current_inv2_max_ac_current_decode(decoded.inv2_max_ac_current);
@@ -638,7 +638,7 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Inv1Minmaxdccurrent out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_inv1_min_max_dc_current_t decoded = {};
                     if (powertrain_t26_inv1_min_max_dc_current_unpack(&decoded, data, dlc) == 0) {
                         out.inv1_maxdccurrent = powertrain_t26_inv1_min_max_dc_current_inv1_max_dc_current_decode(decoded.inv1_max_dc_current);
@@ -658,7 +658,7 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Inv2Minmaxdccurrent out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_inv2_min_max_dc_current_t decoded = {};
                     if (powertrain_t26_inv2_min_max_dc_current_unpack(&decoded, data, dlc) == 0) {
                         out.inv2_maxdccurrent = powertrain_t26_inv2_min_max_dc_current_inv2_max_dc_current_decode(decoded.inv2_max_dc_current);
@@ -676,9 +676,57 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
         }
         case 1280u: {
             {
+                lart_msgs::msg::IcdRequest out;
+                bool decoded_any = false;
+                if (database_ == "data_t26") {
+                    struct data_t26_icd_request_t decoded = {};
+                    if (data_t26_icd_request_unpack(&decoded, data, dlc) == 0) {
+                        out.req_muxid = decoded.req_mux_id;
+                        if (decoded.req_mux_id == 16) { out.req_opmode = decoded.req_op_mode; }
+                        if (decoded.req_mux_id == 17) { out.req_accessmode = decoded.req_access_mode; }
+                        if (decoded.req_mux_id == 32) { out.req_averaging = decoded.req_averaging; }
+                        if (decoded.req_mux_id == 33) { out.req_oclimitpos = decoded.req_oc_limit_pos; }
+                        if (decoded.req_mux_id == 34) { out.req_canbaudrate = decoded.req_can_baudrate; }
+                        if (decoded.req_mux_id == 35) { out.req_canidreq_sn = decoded.req_can_id_req_sn; }
+                        if (decoded.req_mux_id == 36) { out.req_canidresp_sn = decoded.req_can_id_resp_sn; }
+                        if (decoded.req_mux_id == 37) { out.req_canidres_sn = decoded.req_can_id_res_sn; }
+                        if (decoded.req_mux_id == 38) { out.req_newpw1 = decoded.req_new_pw1; }
+                        if (decoded.req_mux_id == 64) { out.req_resetoption = decoded.req_reset_option; }
+                        if (decoded.req_mux_id == 65) { out.req_waketimer = decoded.req_wake_timer; }
+                        if (decoded.req_mux_id == 65) { out.req_wakeithreshold = decoded.req_wake_i_threshold; }
+                        if (decoded.req_mux_id == 65) { out.req_wakeahthreshold = decoded.req_wake_ah_threshold; }
+                        if (decoded.req_mux_id == 16) { out.req_opoutputrate = decoded.req_op_output_rate; }
+                        if (decoded.req_mux_id == 17) { out.req_accesspw1 = decoded.req_access_pw1; }
+                        if (decoded.req_mux_id == 34) { out.req_canmode = decoded.req_can_mode; }
+                        if (decoded.req_mux_id == 38) { out.req_newpw2 = decoded.req_new_pw2; }
+                        if (decoded.req_mux_id == 65) { out.req_sleeptimer = decoded.req_sleep_timer; }
+                        if (decoded.req_mux_id == 17) { out.req_accesspw2 = decoded.req_access_pw2; }
+                        if (decoded.req_mux_id == 38) { out.req_newpw3 = decoded.req_new_pw3; }
+                        if (decoded.req_mux_id == 16) { out.req_opinvertcurrent = decoded.req_op_invert_current; }
+                        if (decoded.req_mux_id == 17) { out.req_accesspw3 = decoded.req_access_pw3; }
+                        if (decoded.req_mux_id == 33) { out.req_oclimitneg = decoded.req_oc_limit_neg; }
+                        if (decoded.req_mux_id == 35) { out.req_canidreq_id = decoded.req_can_id_req_id; }
+                        if (decoded.req_mux_id == 36) { out.req_canidresp_id = decoded.req_can_id_resp_id; }
+                        if (decoded.req_mux_id == 37) { out.req_canidres_id = decoded.req_can_id_res_id; }
+                        if (decoded.req_mux_id == 38) { out.req_newpw4 = decoded.req_new_pw4; }
+                        if (decoded.req_mux_id == 65) { out.req_sleepithreshold = decoded.req_sleep_i_threshold; }
+                        if (decoded.req_mux_id == 17) { out.req_accesspw4 = decoded.req_access_pw4; }
+                        if (decoded.req_mux_id == 38) { out.req_newpw5 = decoded.req_new_pw5; }
+                        if (decoded.req_mux_id == 17) { out.req_accesspw5 = decoded.req_access_pw5; }
+                        if (decoded.req_mux_id == 38) { out.req_newpw6 = decoded.req_new_pw6; }
+                        if (decoded.req_mux_id == 65) { out.req_sleepahthreshold = decoded.req_sleep_ah_threshold; }
+                        if (decoded.req_mux_id == 17) { out.req_accesspw6 = decoded.req_access_pw6; }
+                        decoded_any = true;
+                    }
+                }
+                if (decoded_any) {
+                    pub_icd_request->publish(out);
+                }
+            }
+            {
                 lart_msgs::msg::DvDynamics1 out;
                 bool decoded_any = false;
-                {
+                if (database_ == "autonomous_t26") {
                     struct autonomous_t26_dv_dynamics_1_t decoded = {};
                     if (autonomous_t26_dv_dynamics_1_unpack(&decoded, data, dlc) == 0) {
                         out.speed_actual = autonomous_t26_dv_dynamics_1_speed_actual_decode(decoded.speed_actual);
@@ -700,9 +748,108 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
         }
         case 1281u: {
             {
+                lart_msgs::msg::IcdResponse out;
+                bool decoded_any = false;
+                if (database_ == "data_t26") {
+                    struct data_t26_icd_response_t decoded = {};
+                    if (data_t26_icd_response_unpack(&decoded, data, dlc) == 0) {
+                        out.resp_muxid = decoded.resp_mux_id;
+                        if (decoded.resp_mux_id == 145) { out.resp_tchip = data_t26_icd_response_resp_tchip_decode(decoded.resp_tchip); }
+                        if (decoded.resp_mux_id == 146) { out.resp_ahcounter = decoded.resp_ah_counter; }
+                        if (decoded.resp_mux_id == 160) { out.resp_opmode = decoded.resp_op_mode; }
+                        if (decoded.resp_mux_id == 161) { out.resp_accessmode = decoded.resp_access_mode; }
+                        if (decoded.resp_mux_id == 176) { out.resp_averaging = decoded.resp_averaging; }
+                        if (decoded.resp_mux_id == 177) { out.resp_oclimitpos = decoded.resp_oc_limit_pos; }
+                        if (decoded.resp_mux_id == 178) { out.resp_canbaudrate = decoded.resp_can_baudrate; }
+                        if (decoded.resp_mux_id == 179) { out.resp_canidreq_sn = decoded.resp_can_id_req_sn; }
+                        if (decoded.resp_mux_id == 180) { out.resp_canidresp_sn = decoded.resp_can_id_resp_sn; }
+                        if (decoded.resp_mux_id == 181) { out.resp_canidres_sn = decoded.resp_can_id_res_sn; }
+                        if (decoded.resp_mux_id == 182) { out.resp_pw1 = decoded.resp_pw1; }
+                        if (decoded.resp_mux_id == 208) { out.resp_resetoption = decoded.resp_reset_option; }
+                        if (decoded.resp_mux_id == 209) { out.resp_waketimer = decoded.resp_wake_timer; }
+                        if (decoded.resp_mux_id == 224) { out.resp_devid_frame = decoded.resp_dev_id_frame; }
+                        if (decoded.resp_mux_id == 225) { out.resp_fwmajor = data_t26_icd_response_resp_fw_major_decode(decoded.resp_fw_major); }
+                        if (decoded.resp_mux_id == 226) { out.resp_serialnumber = decoded.resp_serial_number; }
+                        if (decoded.resp_mux_id == 227) { out.resp_hwver_frame = decoded.resp_hw_ver_frame; }
+                        if (decoded.resp_mux_id == 228) { out.resp_articlenumber = decoded.resp_article_number; }
+                        if (decoded.resp_mux_id == 230) { out.resp_uptime = decoded.resp_up_time; }
+                        if (decoded.resp_mux_id == 231) { out.resp_lifetime = decoded.resp_lifetime; }
+                        if (decoded.resp_mux_id == 235) { out.resp_evtmeastype = decoded.resp_evt_meas_type; }
+                        if (decoded.resp_mux_id == 209) { out.resp_wakeithreshold = decoded.resp_wake_i_threshold; }
+                        if (decoded.resp_mux_id == 209) { out.resp_wakeahthreshold = decoded.resp_wake_ah_threshold; }
+                        if (decoded.resp_mux_id == 160) { out.resp_opoutputrate = decoded.resp_op_output_rate; }
+                        if (decoded.resp_mux_id == 178) { out.resp_canmode = decoded.resp_can_mode; }
+                        if (decoded.resp_mux_id == 182) { out.resp_pw2 = decoded.resp_pw2; }
+                        if (decoded.resp_mux_id == 209) { out.resp_sleeptimer = decoded.resp_sleep_timer; }
+                        if (decoded.resp_mux_id == 224) { out.resp_devid_char1 = decoded.resp_dev_id_char1; }
+                        if (decoded.resp_mux_id == 225) { out.resp_fwminor = data_t26_icd_response_resp_fw_minor_decode(decoded.resp_fw_minor); }
+                        if (decoded.resp_mux_id == 227) { out.resp_hwver_char1 = decoded.resp_hw_ver_char1; }
+                        if (decoded.resp_mux_id == 235) { out.resp_evtsystype = decoded.resp_evt_sys_type; }
+                        if (decoded.resp_mux_id == 145) { out.resp_text = data_t26_icd_response_resp_text_decode(decoded.resp_text); }
+                        if (decoded.resp_mux_id == 182) { out.resp_pw3 = decoded.resp_pw3; }
+                        if (decoded.resp_mux_id == 224) { out.resp_devid_char2 = decoded.resp_dev_id_char2; }
+                        if (decoded.resp_mux_id == 225) { out.resp_fwrelease = data_t26_icd_response_resp_fw_release_decode(decoded.resp_fw_release); }
+                        if (decoded.resp_mux_id == 227) { out.resp_hwver_char2 = decoded.resp_hw_ver_char2; }
+                        if (decoded.resp_mux_id == 232) { out.resp_ms_calibrationdata = decoded.resp_ms_calibration_data; }
+                        if (decoded.resp_mux_id == 235) { out.resp_evtmeascount = decoded.resp_evt_meas_count; }
+                        if (decoded.resp_mux_id == 232) { out.resp_ms_ocsactive = decoded.resp_ms_ocs_active; }
+                        if (decoded.resp_mux_id == 160) { out.resp_opinvertcurrent = decoded.resp_op_invert_current; }
+                        if (decoded.resp_mux_id == 177) { out.resp_oclimitneg = decoded.resp_oc_limit_neg; }
+                        if (decoded.resp_mux_id == 179) { out.resp_canidreq_id = decoded.resp_can_id_req_id; }
+                        if (decoded.resp_mux_id == 180) { out.resp_canidresp_id = decoded.resp_can_id_resp_id; }
+                        if (decoded.resp_mux_id == 181) { out.resp_canidres_id = decoded.resp_can_id_res_id; }
+                        if (decoded.resp_mux_id == 182) { out.resp_pw4 = decoded.resp_pw4; }
+                        if (decoded.resp_mux_id == 209) { out.resp_sleepithreshold = decoded.resp_sleep_i_threshold; }
+                        if (decoded.resp_mux_id == 224) { out.resp_devid_char3 = decoded.resp_dev_id_char3; }
+                        if (decoded.resp_mux_id == 227) { out.resp_hwver_char3 = decoded.resp_hw_ver_char3; }
+                        if (decoded.resp_mux_id == 229) { out.resp_rev_digit1 = data_t26_icd_response_resp_rev_digit1_decode(decoded.resp_rev_digit1); }
+                        if (decoded.resp_mux_id == 232) { out.resp_ms_adcinterrupt = decoded.resp_ms_adc_interrupt; }
+                        if (decoded.resp_mux_id == 232) { out.resp_ms_overflowadcch1 = decoded.resp_ms_overflow_adc_ch1; }
+                        if (decoded.resp_mux_id == 232) { out.resp_ms_overflowadcch2 = decoded.resp_ms_overflow_adc_ch2; }
+                        if (decoded.resp_mux_id == 232) { out.resp_ms_overflowadcch3 = decoded.resp_ms_overflow_adc_ch3; }
+                        if (decoded.resp_mux_id == 232) { out.resp_ms_opencircuiti = decoded.resp_ms_open_circuit_i; }
+                        if (decoded.resp_mux_id == 232) { out.resp_ms_opencircuitu = decoded.resp_ms_open_circuit_u; }
+                        if (decoded.resp_mux_id == 232) { out.resp_ms_opencircuittchip = decoded.resp_ms_open_circuit_tchip; }
+                        if (decoded.resp_mux_id == 232) { out.resp_ms_opencircuittext = decoded.resp_ms_open_circuit_text; }
+                        if (decoded.resp_mux_id == 182) { out.resp_pw5 = decoded.resp_pw5; }
+                        if (decoded.resp_mux_id == 224) { out.resp_devid_char4 = decoded.resp_dev_id_char4; }
+                        if (decoded.resp_mux_id == 227) { out.resp_hwver_char4 = decoded.resp_hw_ver_char4; }
+                        if (decoded.resp_mux_id == 229) { out.resp_rev_digit2 = data_t26_icd_response_resp_rev_digit2_decode(decoded.resp_rev_digit2); }
+                        if (decoded.resp_mux_id == 232) { out.resp_ss_systeminit = decoded.resp_ss_system_init; }
+                        if (decoded.resp_mux_id == 235) { out.resp_evtsyscount = decoded.resp_evt_sys_count; }
+                        if (decoded.resp_mux_id == 232) { out.resp_ss_configuration = decoded.resp_ss_configuration; }
+                        if (decoded.resp_mux_id == 232) { out.resp_ss_eepromrw = decoded.resp_ss_eeprom_rw; }
+                        if (decoded.resp_mux_id == 232) { out.resp_ss_poweronreset = decoded.resp_ss_power_on_reset; }
+                        if (decoded.resp_mux_id == 232) { out.resp_ss_lowvoltagereset = decoded.resp_ss_low_voltage_reset; }
+                        if (decoded.resp_mux_id == 232) { out.resp_ss_extpinreset = decoded.resp_ss_ext_pin_reset; }
+                        if (decoded.resp_mux_id == 232) { out.resp_ss_clockmonreset = decoded.resp_ss_clock_mon_reset; }
+                        if (decoded.resp_mux_id == 232) { out.resp_ss_copwdreset = decoded.resp_ss_cop_wd_reset; }
+                        if (decoded.resp_mux_id == 182) { out.resp_pw6 = decoded.resp_pw6; }
+                        if (decoded.resp_mux_id == 209) { out.resp_sleepahthreshold = decoded.resp_sleep_ah_threshold; }
+                        if (decoded.resp_mux_id == 224) { out.resp_devid_char5 = decoded.resp_dev_id_char5; }
+                        if (decoded.resp_mux_id == 227) { out.resp_hwver_char5 = decoded.resp_hw_ver_char5; }
+                        if (decoded.resp_mux_id == 229) { out.resp_rev_digit3 = data_t26_icd_response_resp_rev_digit3_decode(decoded.resp_rev_digit3); }
+                        if (decoded.resp_mux_id == 232) { out.resp_ss_codecrc = decoded.resp_ss_code_crc; }
+                        if (decoded.resp_mux_id == 232) { out.resp_ss_caldatacrc = decoded.resp_ss_cal_data_crc; }
+                        if (decoded.resp_mux_id == 232) { out.resp_ss_canrx = decoded.resp_ss_can_rx; }
+                        if (decoded.resp_mux_id == 232) { out.resp_ss_cantx = decoded.resp_ss_can_tx; }
+                        if (decoded.resp_mux_id == 232) { out.resp_ss_overtemp = decoded.resp_ss_overtemp; }
+                        if (decoded.resp_mux_id == 232) { out.resp_ss_undertemp = decoded.resp_ss_undertemp; }
+                        if (decoded.resp_mux_id == 232) { out.resp_ss_powerfailure = decoded.resp_ss_power_failure; }
+                        if (decoded.resp_mux_id == 232) { out.resp_ss_systemclock = decoded.resp_ss_system_clock; }
+                        if (decoded.resp_mux_id == 227) { out.resp_hwver_char6 = decoded.resp_hw_ver_char6; }
+                        if (decoded.resp_mux_id == 229) { out.resp_rev_digit4 = data_t26_icd_response_resp_rev_digit4_decode(decoded.resp_rev_digit4); }
+                        decoded_any = true;
+                    }
+                }
+                if (decoded_any) {
+                    pub_icd_response->publish(out);
+                }
+            }
+            {
                 lart_msgs::msg::DvDynamics2 out;
                 bool decoded_any = false;
-                {
+                if (database_ == "autonomous_t26") {
                     struct autonomous_t26_dv_dynamics_2_t decoded = {};
                     if (autonomous_t26_dv_dynamics_2_unpack(&decoded, data, dlc) == 0) {
                         out.acceleration_longitudinal = autonomous_t26_dv_dynamics_2_acceleration_longitudinal_decode(decoded.acceleration_longitudinal);
@@ -719,9 +866,28 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
         }
         case 1282u: {
             {
+                lart_msgs::msg::IcdResult out;
+                bool decoded_any = false;
+                if (database_ == "data_t26") {
+                    struct data_t26_icd_result_t decoded = {};
+                    if (data_t26_icd_result_unpack(&decoded, data, dlc) == 0) {
+                        out.icd_status_ocs = decoded.icd_status_ocs;
+                        out.icd_status_measerror = decoded.icd_status_meas_error;
+                        out.icd_status_syserror = decoded.icd_status_sys_error;
+                        out.icd_msgcounter = decoded.icd_msg_counter;
+                        out.icd_current = data_t26_icd_result_icd_current_decode(decoded.icd_current);
+                        out.icd_ubat = data_t26_icd_result_icd_ubat_decode(decoded.icd_ubat);
+                        decoded_any = true;
+                    }
+                }
+                if (decoded_any) {
+                    pub_icd_result->publish(out);
+                }
+            }
+            {
                 lart_msgs::msg::DvStatus out;
                 bool decoded_any = false;
-                {
+                if (database_ == "autonomous_t26") {
                     struct autonomous_t26_dv_status_t decoded = {};
                     if (autonomous_t26_dv_status_unpack(&decoded, data, dlc) == 0) {
                         out.as_status = autonomous_t26_dv_status_as_status_decode(decoded.as_status);
@@ -745,7 +911,7 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::SlamStatsCan out;
                 bool decoded_any = false;
-                {
+                if (database_ == "autonomous_t26") {
                     struct autonomous_t26_slam_stats_can_t decoded = {};
                     if (autonomous_t26_slam_stats_can_unpack(&decoded, data, dlc) == 0) {
                         out.lap_counter = autonomous_t26_slam_stats_can_lap_counter_decode(decoded.lap_counter);
@@ -764,7 +930,7 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::VcuRpm out;
                 bool decoded_any = false;
-                {
+                if (database_ == "autonomous_t26") {
                     struct autonomous_t26_vcu_rpm_t decoded = {};
                     if (autonomous_t26_vcu_rpm_unpack(&decoded, data, dlc) == 0) {
                         out.motor_rpm_left = autonomous_t26_vcu_rpm_motor_rpm_left_decode(decoded.motor_rpm_left);

@@ -254,6 +254,24 @@ extern "C" void check_dbc_errors(void (*on_error)(const char *id, const char *ms
     if (!on_error) return;
 
     {
+        float val = dbc_api.icd_result.icd_status_measerror;
+        if (val > 0.5f) {
+            on_error("icd_result.icd_status_measerror", "ICD_Result", "ICD_Status_MeasError", val, "ERROR");
+        }
+    }
+    {
+        float val = dbc_api.icd_result.icd_status_syserror;
+        if (val > 0.5f) {
+            on_error("icd_result.icd_status_syserror", "ICD_Result", "ICD_Status_SysError", val, "ERROR");
+        }
+    }
+    {
+        float val = dbc_api.icd_response.resp_ss_powerfailure;
+        if (val > 0.5f) {
+            on_error("icd_response.resp_ss_powerfailure", "ICD_Response", "Resp_SS_PowerFailure", val, "ERROR");
+        }
+    }
+    {
         float val = dbc_api.master_msc_id_1.adbms_pec_error;
         if (val > 0.5f) {
             on_error("master_msc_id_1.adbms_pec_error", "Master_MSC_ID_1", "adbms_pec_error", val, "ERROR");
