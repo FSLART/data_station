@@ -339,29 +339,29 @@ void create_screen_driver_view() {
                             // laptimeLabel
                             lv_obj_t *obj = lv_label_create(parent_obj);
                             objects.laptime_label = obj;
-                            lv_obj_set_pos(obj, 6, 9);
+                            lv_obj_set_pos(obj, 6, 8);
                             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
                             add_style_text(obj);
-                            lv_obj_set_style_text_font(obj, &ui_font_orbitron_bold_25, LV_PART_MAIN | LV_STATE_DEFAULT);
-                            lv_label_set_text_static(obj, "00:00.000");
+                            lv_obj_set_style_text_font(obj, &ui_font_orbitron_bold_30, LV_PART_MAIN | LV_STATE_DEFAULT);
+                            lv_label_set_text_static(obj, "--.--- s");
                         }
                         {
                             lv_obj_t *obj = lv_label_create(parent_obj);
                             lv_obj_set_pos(obj, 6, -14);
                             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
                             add_style_text(obj);
-                            lv_label_set_text_static(obj, "Lap Times");
+                            lv_label_set_text_static(obj, "0-60 km/h");
                         }
                         {
                             // lastlapLabel
                             lv_obj_t *obj = lv_label_create(parent_obj);
                             objects.lastlap_label = obj;
-                            lv_obj_set_pos(obj, 5, 42);
+                            lv_obj_set_pos(obj, 220, 8);
                             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
                             add_style_text(obj);
-                            lv_obj_set_style_text_font(obj, &ui_font_orbitron_bold_25, LV_PART_MAIN | LV_STATE_DEFAULT);
+                            lv_obj_set_style_text_font(obj, &ui_font_orbitron_bold_30, LV_PART_MAIN | LV_STATE_DEFAULT);
                             lv_obj_set_style_text_color(obj, lv_color_hex(0xfff500), LV_PART_MAIN | LV_STATE_DEFAULT);
-                            lv_label_set_text_static(obj, "00:00.000");
+                            lv_label_set_text_static(obj, "READY");
                         }
                         {
                             lv_obj_t *obj = lv_label_create(parent_obj);
@@ -370,15 +370,16 @@ void create_screen_driver_view() {
                             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
                             add_style_text(obj);
                             lv_obj_set_style_text_color(obj, lv_color_hex(0xfefefe), LV_PART_MAIN | LV_STATE_DEFAULT);
-                            lv_obj_set_style_text_font(obj, &ui_font_orbitron_bold_50, LV_PART_MAIN | LV_STATE_DEFAULT);
+                            lv_obj_set_style_text_font(obj, &ui_font_orbitron_bold_30, LV_PART_MAIN | LV_STATE_DEFAULT);
                             lv_label_set_text(obj, "");
+                            lv_obj_add_flag(obj, LV_OBJ_FLAG_HIDDEN);
                         }
                         {
                             lv_obj_t *obj = lv_label_create(parent_obj);
                             lv_obj_set_pos(obj, 235, -14);
                             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
                             add_style_text(obj);
-                            lv_label_set_text_static(obj, "Diff");
+                            lv_label_set_text_static(obj, "");
                         }
                         {
                             lv_obj_t *obj = lv_label_create(parent_obj);
@@ -389,13 +390,14 @@ void create_screen_driver_view() {
                             lv_obj_set_style_text_color(obj, lv_color_hex(0xff0000), LV_PART_MAIN | LV_STATE_DEFAULT);
                             lv_obj_set_style_text_font(obj, &ui_font_orbitron_bold_30, LV_PART_MAIN | LV_STATE_DEFAULT);
                             lv_label_set_text(obj, "");
+                            lv_obj_add_flag(obj, LV_OBJ_FLAG_HIDDEN);
                         }
                         {
                             lv_obj_t *obj = lv_label_create(parent_obj);
                             lv_obj_set_pos(obj, 317, -15);
                             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
                             add_style_text(obj);
-                            lv_label_set_text_static(obj, "Lap");
+                            lv_label_set_text_static(obj, "");
                         }
                     }
                 }
@@ -1095,7 +1097,7 @@ void create_screen_autonomous() {
             lv_obj_t *obj = lv_obj_create(parent_obj);
             objects.lap_times_container_1 = obj;
             lv_obj_set_pos(obj, 410, 208);
-            lv_obj_set_size(obj, 314, 103);
+            lv_obj_set_size(obj, 370, 103);
             add_style_info_containers(obj);
             lv_obj_set_style_border_color(obj, lv_color_hex(0xffffff), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_border_width(obj, 2, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -1112,29 +1114,29 @@ void create_screen_autonomous() {
                     // laptimeLabel_1
                     lv_obj_t *obj = lv_label_create(parent_obj);
                     objects.laptime_label_1 = obj;
-                    lv_obj_set_pos(obj, 7, 11);
+                    lv_obj_set_pos(obj, 6, 8);
                     lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
                     add_style_text(obj);
-                    lv_obj_set_style_text_font(obj, &ui_font_orbitron_bold_25, LV_PART_MAIN | LV_STATE_DEFAULT);
-                    lv_label_set_text_static(obj, "00:00.000");
+                    lv_obj_set_style_text_font(obj, &ui_font_orbitron_bold_30, LV_PART_MAIN | LV_STATE_DEFAULT);
+                    lv_label_set_text_static(obj, "--.--- s");
                 }
                 {
                     lv_obj_t *obj = lv_label_create(parent_obj);
                     lv_obj_set_pos(obj, 6, -14);
                     lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
                     add_style_text(obj);
-                    lv_label_set_text_static(obj, "Lap Times");
+                    lv_label_set_text_static(obj, "0-60 km/h");
                 }
                 {
                     // lastlapLabel_1
                     lv_obj_t *obj = lv_label_create(parent_obj);
                     objects.lastlap_label_1 = obj;
-                    lv_obj_set_pos(obj, 5, 42);
+                    lv_obj_set_pos(obj, 205, 8);
                     lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
                     add_style_text(obj);
                     lv_obj_set_style_text_color(obj, lv_color_hex(0xfff500), LV_PART_MAIN | LV_STATE_DEFAULT);
-                    lv_obj_set_style_text_font(obj, &ui_font_orbitron_bold_25, LV_PART_MAIN | LV_STATE_DEFAULT);
-                    lv_label_set_text_static(obj, "00:00.000");
+                    lv_obj_set_style_text_font(obj, &ui_font_orbitron_bold_30, LV_PART_MAIN | LV_STATE_DEFAULT);
+                    lv_label_set_text_static(obj, "READY");
                 }
                 {
                     lv_obj_t *obj = lv_label_create(parent_obj);
@@ -1143,15 +1145,17 @@ void create_screen_autonomous() {
                     lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
                     add_style_text(obj);
                     lv_obj_set_style_text_color(obj, lv_color_hex(0xfefefe), LV_PART_MAIN | LV_STATE_DEFAULT);
-                    lv_obj_set_style_text_font(obj, &ui_font_orbitron_bold_50, LV_PART_MAIN | LV_STATE_DEFAULT);
-                    lv_label_set_text_static(obj, "1");
+                    lv_obj_set_style_text_font(obj, &ui_font_orbitron_bold_30, LV_PART_MAIN | LV_STATE_DEFAULT);
+                    lv_label_set_text_static(obj, "");
+                    lv_obj_add_flag(obj, LV_OBJ_FLAG_HIDDEN);
                 }
                 {
                     lv_obj_t *obj = lv_label_create(parent_obj);
                     lv_obj_set_pos(obj, 197, -14);
                     lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
                     add_style_text(obj);
-                    lv_label_set_text_static(obj, "Diff");
+                    lv_label_set_text_static(obj, "");
+                    lv_obj_add_flag(obj, LV_OBJ_FLAG_HIDDEN);
                 }
                 {
                     lv_obj_t *obj = lv_label_create(parent_obj);
@@ -1160,14 +1164,15 @@ void create_screen_autonomous() {
                     lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
                     add_style_text(obj);
                     lv_obj_set_style_text_color(obj, lv_color_hex(0xff0000), LV_PART_MAIN | LV_STATE_DEFAULT);
-                    lv_label_set_text_static(obj, "+0.8");
+                    lv_label_set_text_static(obj, "");
+                    lv_obj_add_flag(obj, LV_OBJ_FLAG_HIDDEN);
                 }
                 {
                     lv_obj_t *obj = lv_label_create(parent_obj);
                     lv_obj_set_pos(obj, 253, -14);
                     lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
                     add_style_text(obj);
-                    lv_label_set_text_static(obj, "Lap");
+                    lv_label_set_text_static(obj, "");
                 }
             }
         }

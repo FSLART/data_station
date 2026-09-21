@@ -393,7 +393,7 @@ int main(int argc, char **argv) {
         };
 
         ui_init();
-        
+
         std::printf("[TEST] Running telemetry mapping unit tests...\n");
 
         // Test 1: Setting dbc_api directly and calling with NULL
