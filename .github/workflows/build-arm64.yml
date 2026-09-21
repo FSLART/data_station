@@ -1,6 +1,7 @@
-name: Build ARM64
+name: Build ARM64 (Cached)
 
 on:
+  workflow_dispatch:
   push:
     branches: [master]
 
@@ -63,7 +64,7 @@ jobs:
             log
             LART_Car_Dashboard_v1/build/ui-build
             .ccache
-          key: colcon-arm64-${{ hashFiles('LART_Car_Dashboard_v1/src/**', '.github/workflows/build-arm64.yml') }}
+          key: colcon-arm64-${{ hashFiles('src/**', 'LART_Car_Dashboard_v1/src/**', '.github/workflows/build-arm64.yml') }}
           restore-keys: |
             colcon-arm64-
 
@@ -104,7 +105,7 @@ jobs:
             log
             LART_Car_Dashboard_v1/build/ui-build
             .ccache
-          key: colcon-arm64-${{ hashFiles('LART_Car_Dashboard_v1/src/**', '.github/workflows/build-arm64.yml') }}
+          key: colcon-arm64-${{ hashFiles('src/**', 'LART_Car_Dashboard_v1/src/**', '.github/workflows/build-arm64.yml') }}
 
       - name: Package artifact
         run: |
