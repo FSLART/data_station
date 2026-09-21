@@ -250,7 +250,7 @@ void create_screen_driver_view() {
         {
             // ethLedLabel
             lv_obj_t *obj = lv_label_create(parent_obj);
-            lv_obj_set_pos(obj, 675, 10);
+            lv_obj_set_pos(obj, 575, 10);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
             add_style_text(obj);
             lv_label_set_text_static(obj, "Jetson");
@@ -259,7 +259,7 @@ void create_screen_driver_view() {
             // ethLed
             lv_obj_t *obj = lv_led_create(parent_obj);
             objects.eth_led = obj;
-            lv_obj_set_pos(obj, 764, 8);
+            lv_obj_set_pos(obj, 664, 8);
             lv_obj_set_size(obj, 20, 20);
             lv_led_set_brightness(obj, LV_LED_BRIGHT_MAX);
             lv_led_set_color(obj, lv_color_hex(0xff0000));
