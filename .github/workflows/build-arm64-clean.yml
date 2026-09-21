@@ -1,24 +1,28 @@
-name: Build ARM64
+name: Build ARM64 (Clean)
 
 on:
-  push:
-    branches: [master]
+  workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
-  group: build-arm64
+  group: build-arm64-clean
   cancel-in-progress: true
 
 jobs:
-  build-arm64:
+  build-arm64-clean:
     runs-on: ubuntu-24.04-arm
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           submodules: recursive
+
+      - name: Remove generated outputs
+        run: |
+          rm -rf build install log
+          rm -rf LART_Car_Dashboard_v1/build/ui-build
 
       - name: Add ROS2 apt repository
         run: |
@@ -46,21 +50,29 @@ jobs:
       - name: Build ROS2 workspace
         run: |
           source /opt/ros/jazzy/setup.bash
-          colcon build
+          colcon build --parallel-workers "$(nproc)" \
+            --cmake-args \
+              -DCMAKE_BUILD_TYPE=Release
 
       - name: Build dashboard UI
         run: |
           source /opt/ros/jazzy/setup.bash
           source install/setup.bash
-          cmake -S LART_Car_Dashboard_v1/src/ui -B LART_Car_Dashboard_v1/build/ui-build -DCMAKE_BUILD_TYPE=Release
-          cmake --build LART_Car_Dashboard_v1/build/ui-build --parallel 2
+          cmake -S LART_Car_Dashboard_v1/src/ui \
+            -B LART_Car_Dashboard_v1/build/ui-build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX="$GITHUB_WORKSPACE/install"
+          cmake --build LART_Car_Dashboard_v1/build/ui-build --parallel "$(nproc)"
+          cmake --install LART_Car_Dashboard_v1/build/ui-build
 
       - name: Package artifact
-        run: tar czf lart-dashboard-arm64.tar.gz install LART_Car_Dashboard_v1/build/ui-build
+        run: |
+          find install -type f -name '*.a' -delete
+          tar czf lart-dashboard-arm64.tar.gz install
 
-      - name: Publish release
-        uses: softprops/action-gh-release@v2
+      - name: Upload clean build artifact
+        uses: actions/upload-artifact@v4
         with:
-          tag_name: latest-arm64
-          name: "Latest ARM64 build"
-          files: lart-dashboard-arm64.tar.gz
+          name: lart-dashboard-arm64-clean
+          path: lart-dashboard-arm64.tar.gz
+          if-no-files-found: error
