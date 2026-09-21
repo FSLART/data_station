@@ -20,7 +20,7 @@ int main(int argc, char **argv) {
     auto node = std::make_shared<rclcpp::Node>("test_can_bridge_node");
     
     // Instantiate target DBC dispatcher class
-    CanBridgeImpl bridge(node.get());
+    CanBridgeImpl bridge(node.get(), "autonomous_t26");
     
     float received_speed = -1.0f;
     bool received = false;
@@ -57,6 +57,40 @@ int main(int argc, char **argv) {
     assert(received);
     assert(std::abs(received_speed - 42.5f) < 0.1f);
     
+    // ICD shares 0x500-0x502 with autonomous frames on a different bus.
+    CanBridgeImpl data_bridge(node.get(), "data_t26");
+    bool got_result = false, got_response = false, got_wrong_bus = false;
+    auto result_sub = node->create_subscription<lart_msgs::msg::IcdResult>(
+        "/can/dbc/icd_result", rclcpp::QoS(10).best_effort(),
+        [&](lart_msgs::msg::IcdResult::SharedPtr msg) {
+            if (std::abs(msg->icd_current + 123.456f) > 0.001f ||
+                std::abs(msg->icd_ubat - 12.345f) > 0.001f || msg->icd_msgcounter != 10)
+                throw std::runtime_error("ICD result scaling mismatch");
+            got_result = true;
+        });
+    constexpr uint64_t article = UINT64_C(72057594037927935);
+    auto response_sub = node->create_subscription<lart_msgs::msg::IcdResponse>(
+        "/can/dbc/icd_response", rclcpp::QoS(10).best_effort(),
+        [&](lart_msgs::msg::IcdResponse::SharedPtr msg) {
+            if (msg->resp_muxid != 228 || msg->resp_articlenumber != article || msg->resp_fwmajor != 0)
+                throw std::runtime_error("ICD precision/multiplexer mismatch");
+            got_response = true;
+        });
+    auto wrong_sub = node->create_subscription<lart_msgs::msg::DvStatus>(
+        "/can/dbc/dv_status", rclcpp::QoS(10).best_effort(),
+        [&](lart_msgs::msg::DvStatus::SharedPtr) { got_wrong_bus = true; });
+    // Fixed wire payloads independently exercise big-endian signed decoding.
+    const uint8_t result_payload[8] = {0xa0, 0xff, 0xfe, 0x1d, 0xc0, 0x30, 0x39, 0};
+    const uint8_t response_payload[8] = {228, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
+    for (int i = 0; i < 50; ++i) {
+        data_bridge.handle_frame(0x502, result_payload, 8);
+        data_bridge.handle_frame(0x501, response_payload, 8);
+        rclcpp::spin_some(node);
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+    if (!got_result || !got_response || got_wrong_bus)
+        throw std::runtime_error("ICD delivery or bus isolation failed");
+
     std::cout << "✓ All CAN bridge DBC/ROS 2 decoding tests passed successfully!" << std::endl;
     rclcpp::shutdown();
     return 0;

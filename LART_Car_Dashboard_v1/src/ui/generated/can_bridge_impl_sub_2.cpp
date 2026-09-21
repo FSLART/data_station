@@ -3,6 +3,9 @@
 
 void CanBridgeImpl::init_publishers_chunk_2(rclcpp::Node* node) {
     auto sensor_qos = rclcpp::QoS(10).best_effort();
+    pub_inv2_temperatures = node->create_publisher<lart_msgs::msg::Inv2Temperatures>("/can/dbc/inv2_temperatures", sensor_qos);
+    pub_ivt_msg_cmd = node->create_publisher<lart_msgs::msg::IvtMsgCmd>("/can/dbc/ivt_msg_cmd", sensor_qos);
+    pub_ivt_msg_response = node->create_publisher<lart_msgs::msg::IvtMsgResponse>("/can/dbc/ivt_msg_response", sensor_qos);
     pub_ivt_msg_result_as = node->create_publisher<lart_msgs::msg::IvtMsgResultAs>("/can/dbc/ivt_msg_result_as", sensor_qos);
     pub_ivt_msg_result_i = node->create_publisher<lart_msgs::msg::IvtMsgResultI>("/can/dbc/ivt_msg_result_i", sensor_qos);
     pub_ivt_msg_result_t = node->create_publisher<lart_msgs::msg::IvtMsgResultT>("/can/dbc/ivt_msg_result_t", sensor_qos);
@@ -30,9 +33,6 @@ void CanBridgeImpl::init_publishers_chunk_2(rclcpp::Node* node) {
     pub_slave_01_voltage_id_2 = node->create_publisher<lart_msgs::msg::Slave01VoltageId2>("/can/dbc/slave_01_voltage_id_2", sensor_qos);
     pub_slave_01_voltage_id_3 = node->create_publisher<lart_msgs::msg::Slave01VoltageId3>("/can/dbc/slave_01_voltage_id_3", sensor_qos);
     pub_slave_02_msc_id_1 = node->create_publisher<lart_msgs::msg::Slave02MscId1>("/can/dbc/slave_02_msc_id_1", sensor_qos);
-    pub_slave_02_msc_id_2 = node->create_publisher<lart_msgs::msg::Slave02MscId2>("/can/dbc/slave_02_msc_id_2", sensor_qos);
-    pub_slave_02_temperature_id_1 = node->create_publisher<lart_msgs::msg::Slave02TemperatureId1>("/can/dbc/slave_02_temperature_id_1", sensor_qos);
-    pub_slave_02_temperature_id_2 = node->create_publisher<lart_msgs::msg::Slave02TemperatureId2>("/can/dbc/slave_02_temperature_id_2", sensor_qos);
 }
 
 bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, size_t dlc) {
@@ -43,109 +43,109 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::IvtMsgResponse out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_ivt_msg_response_t decoded = {};
                     if (powertrain_t26_ivt_msg_response_unpack(&decoded, data, dlc) == 0) {
                         out.ivt_id_response = powertrain_t26_ivt_msg_response_ivt_id_response_decode(decoded.ivt_id_response);
-                        out.b1_trigger_spare = powertrain_t26_ivt_msg_response__b1_trigger_spare_decode(decoded._b1_trigger_spare);
-                        out.ff_wrong_command = powertrain_t26_ivt_msg_response__ff_wrong_command_decode(decoded._ff_wrong_command);
-                        out.bf_restart_alive_cmd_id = powertrain_t26_ivt_msg_response__bf_restart_alive_cmd_id_decode(decoded._bf_restart_alive_cmd_id);
-                        out.val_80_resp_measerror_item = powertrain_t26_ivt_msg_response__80_resp_meas_error_item_decode(decoded._80_resp_meas_error_item);
-                        out.val_81_resp_systemerror_item = powertrain_t26_ivt_msg_response__81_resp_system_error_item_decode(decoded._81_resp_system_error_item);
-                        out.val_82_resp_alllogdata_item = powertrain_t26_ivt_msg_response__82_resp_all_log_data_item_decode(decoded._82_resp_all_log_data_item);
-                        out.val_83_resp_logdata_item = powertrain_t26_ivt_msg_response__83_resp_log_data_item_decode(decoded._83_resp_log_data_item);
-                        out.val_90_resp_can_id_val_i = powertrain_t26_ivt_msg_response__90_resp_can_id_val_i_decode(decoded._90_resp_can_id_val_i);
-                        out.val_91_resp_can_id_val_u1 = powertrain_t26_ivt_msg_response__91_resp_can_id_val_u1_decode(decoded._91_resp_can_id_val_u1);
-                        out.val_92_resp_can_id_val_u2 = powertrain_t26_ivt_msg_response__92_resp_can_id_val_u2_decode(decoded._92_resp_can_id_val_u2);
-                        out.val_93_resp_can_id_val_u3 = powertrain_t26_ivt_msg_response__93_resp_can_id_val_u3_decode(decoded._93_resp_can_id_val_u3);
-                        out.val_94_resp_can_id_val_t = powertrain_t26_ivt_msg_response__94_resp_can_id_val_t_decode(decoded._94_resp_can_id_val_t);
-                        out.val_95_resp_can_id_val_w = powertrain_t26_ivt_msg_response__95_resp_can_id_val_w_decode(decoded._95_resp_can_id_val_w);
-                        out.val_96_resp_can_id_val_as = powertrain_t26_ivt_msg_response__96_resp_can_id_val_as_decode(decoded._96_resp_can_id_val_as);
-                        out.val_97_resp_can_id_val_wh = powertrain_t26_ivt_msg_response__97_resp_can_id_val_wh_decode(decoded._97_resp_can_id_val_wh);
-                        out.val_9d_resp_can_id_val_command = powertrain_t26_ivt_msg_response__9_d_resp_can_id_val_command_decode(decoded._9_d_resp_can_id_val_command);
-                        out.val_9f_resp_can_id_val_response = powertrain_t26_ivt_msg_response__9_f_resp_can_id_val_response_decode(decoded._9_f_resp_can_id_val_response);
-                        out.a0_resp_sign_i = powertrain_t26_ivt_msg_response__a0_resp_sign_i_decode(decoded._a0_resp_sign_i);
-                        out.a1_resp_sign_u1 = powertrain_t26_ivt_msg_response__a1_resp_sign_u1_decode(decoded._a1_resp_sign_u1);
-                        out.a2_resp_sign_u2 = powertrain_t26_ivt_msg_response__a2_resp_sign_u2_decode(decoded._a2_resp_sign_u2);
-                        out.a3_resp_sign_u3 = powertrain_t26_ivt_msg_response__a3_resp_sign_u3_decode(decoded._a3_resp_sign_u3);
-                        out.a4_resp_sign_t = powertrain_t26_ivt_msg_response__a4_resp_sign_t_decode(decoded._a4_resp_sign_t);
-                        out.a5_resp_sign_w = powertrain_t26_ivt_msg_response__a5_resp_sign_w_decode(decoded._a5_resp_sign_w);
-                        out.a6_resp_sign_as = powertrain_t26_ivt_msg_response__a6_resp_sign_as_decode(decoded._a6_resp_sign_as);
-                        out.a7_resp_sign_wh = powertrain_t26_ivt_msg_response__a7_resp_sign_wh_decode(decoded._a7_resp_sign_wh);
-                        out.b0_resp_reset_item = powertrain_t26_ivt_msg_response__b0_resp_reset_item_decode(decoded._b0_resp_reset_item);
-                        out.b2_resp_store_dummy = powertrain_t26_ivt_msg_response__b2_resp_store_dummy_decode(decoded._b2_resp_store_dummy);
-                        out.b3_resp_oc_test_time = powertrain_t26_ivt_msg_response__b3_resp_oc_test_time_decode(decoded._b3_resp_oc_test_time);
-                        out.b5_resp_oc_pos_set_threshold = powertrain_t26_ivt_msg_response__b5_resp_oc_pos_set_threshold_decode(decoded._b5_resp_oc_pos_set_threshold);
-                        out.b6_resp_oc_neg_set_threshold = powertrain_t26_ivt_msg_response__b6_resp_oc_neg_set_threshold_decode(decoded._b6_resp_oc_neg_set_threshold);
-                        out.b9_resp_device_type = powertrain_t26_ivt_msg_response__b9_resp_device_type_decode(decoded._b9_resp_device_type);
-                        out.ba_resp_sw_ver_major_hw = powertrain_t26_ivt_msg_response__ba_resp_sw_ver_major_hw_decode(decoded._ba_resp_sw_ver_major_hw);
-                        out.bb_resp_serien_nr = powertrain_t26_ivt_msg_response__bb_resp_serien_nr_decode(decoded._bb_resp_serien_nr);
-                        out.bc_resp_art_n = powertrain_t26_ivt_msg_response__bc_resp_art_n_decode(decoded._bc_resp_art_n);
-                        out.a0_resp_endianess_i = powertrain_t26_ivt_msg_response__a0_resp_endianess_i_decode(decoded._a0_resp_endianess_i);
-                        out.a1_resp_endianess_u1 = powertrain_t26_ivt_msg_response__a1_resp_endianess_u1_decode(decoded._a1_resp_endianess_u1);
-                        out.a2_resp_endianess_u2 = powertrain_t26_ivt_msg_response__a2_resp_endianess_u2_decode(decoded._a2_resp_endianess_u2);
-                        out.a3_resp_endianess_u3 = powertrain_t26_ivt_msg_response__a3_resp_endianess_u3_decode(decoded._a3_resp_endianess_u3);
-                        out.a4_resp_endianess_t = powertrain_t26_ivt_msg_response__a4_resp_endianess_t_decode(decoded._a4_resp_endianess_t);
-                        out.a5_resp_endianess_w = powertrain_t26_ivt_msg_response__a5_resp_endianess_w_decode(decoded._a5_resp_endianess_w);
-                        out.a6_resp_endianess_as = powertrain_t26_ivt_msg_response__a6_resp_endianess_as_decode(decoded._a6_resp_endianess_as);
-                        out.a7_resp_endianess_wh = powertrain_t26_ivt_msg_response__a7_resp_endianess_wh_decode(decoded._a7_resp_endianess_wh);
-                        out.a0_resp_triggermode_i = powertrain_t26_ivt_msg_response__a0_resp_trigger_mode_i_decode(decoded._a0_resp_trigger_mode_i);
-                        out.a1_resp_triggermode_u1 = powertrain_t26_ivt_msg_response__a1_resp_trigger_mode_u1_decode(decoded._a1_resp_trigger_mode_u1);
-                        out.a2_resp_triggermode_u2 = powertrain_t26_ivt_msg_response__a2_resp_trigger_mode_u2_decode(decoded._a2_resp_trigger_mode_u2);
-                        out.a3_resp_triggermode_u3 = powertrain_t26_ivt_msg_response__a3_resp_trigger_mode_u3_decode(decoded._a3_resp_trigger_mode_u3);
-                        out.a4_resp_triggermode_t = powertrain_t26_ivt_msg_response__a4_resp_trigger_mode_t_decode(decoded._a4_resp_trigger_mode_t);
-                        out.a5_resp_triggermode_w = powertrain_t26_ivt_msg_response__a5_resp_trigger_mode_w_decode(decoded._a5_resp_trigger_mode_w);
-                        out.a6_resp_triggermode_as = powertrain_t26_ivt_msg_response__a6_resp_trigger_mode_as_decode(decoded._a6_resp_trigger_mode_as);
-                        out.a7_resp_triggermode_wh = powertrain_t26_ivt_msg_response__a7_resp_trigger_mode_wh_decode(decoded._a7_resp_trigger_mode_wh);
-                        out.b4_resp_actual_mode = powertrain_t26_ivt_msg_response__b4_resp_actual_mode_decode(decoded._b4_resp_actual_mode);
-                        out.b1_07_trigger_wh = powertrain_t26_ivt_msg_response__b1_07_trigger_wh_decode(decoded._b1_07_trigger_wh);
-                        out.b2_resp_store_device_sn = powertrain_t26_ivt_msg_response__b2_resp_store_device_sn_decode(decoded._b2_resp_store_device_sn);
-                        out.ba_resp_sw_ver_minor = powertrain_t26_ivt_msg_response__ba_resp_sw_ver_minor_decode(decoded._ba_resp_sw_ver_minor);
-                        out.b9_resp_device_current = powertrain_t26_ivt_msg_response__b9_resp_device_current_decode(decoded._b9_resp_device_current);
-                        out.val_80_resp_measerror_count_mask = powertrain_t26_ivt_msg_response__80_resp_meas_error_count_mask_decode(decoded._80_resp_meas_error_count_mask);
-                        out.val_81_resp_systemerror_count_mask = powertrain_t26_ivt_msg_response__81_resp_system_error_count_mask_decode(decoded._81_resp_system_error_count_mask);
-                        out.val_82_resp_alllogdata_counter = powertrain_t26_ivt_msg_response__82_resp_all_log_data_counter_decode(decoded._82_resp_all_log_data_counter);
-                        out.val_83_resp_logdata_counter = powertrain_t26_ivt_msg_response__83_resp_log_data_counter_decode(decoded._83_resp_log_data_counter);
-                        out.a0_resp_cycletime_i = powertrain_t26_ivt_msg_response__a0_resp_cycle_time_i_decode(decoded._a0_resp_cycle_time_i);
-                        out.a1_resp_cycletime_u1 = powertrain_t26_ivt_msg_response__a1_resp_cycle_time_u1_decode(decoded._a1_resp_cycle_time_u1);
-                        out.a2_resp_cycletime_u2 = powertrain_t26_ivt_msg_response__a2_resp_cycle_time_u2_decode(decoded._a2_resp_cycle_time_u2);
-                        out.a3_resp_cycletime_u3 = powertrain_t26_ivt_msg_response__a3_resp_cycle_time_u3_decode(decoded._a3_resp_cycle_time_u3);
-                        out.a4_resp_cycletime_t = powertrain_t26_ivt_msg_response__a4_resp_cycle_time_t_decode(decoded._a4_resp_cycle_time_t);
-                        out.a5_resp_cycletime_w = powertrain_t26_ivt_msg_response__a5_resp_cycle_time_w_decode(decoded._a5_resp_cycle_time_w);
-                        out.a6_resp_cycletime_as = powertrain_t26_ivt_msg_response__a6_resp_cycle_time_as_decode(decoded._a6_resp_cycle_time_as);
-                        out.a7_resp_cycletime_wh = powertrain_t26_ivt_msg_response__a7_resp_cycle_time_wh_decode(decoded._a7_resp_cycle_time_wh);
-                        out.b1_06_trigger_as = powertrain_t26_ivt_msg_response__b1_06_trigger_as_decode(decoded._b1_06_trigger_as);
-                        out.b1_05_trigger_w = powertrain_t26_ivt_msg_response__b1_05_trigger_w_decode(decoded._b1_05_trigger_w);
-                        out.b1_04_trigger_t = powertrain_t26_ivt_msg_response__b1_04_trigger_t_decode(decoded._b1_04_trigger_t);
-                        out.b1_03_trigger_u3 = powertrain_t26_ivt_msg_response__b1_03_trigger_u3_decode(decoded._b1_03_trigger_u3);
-                        out.b1_02_trigger_u2 = powertrain_t26_ivt_msg_response__b1_02_trigger_u2_decode(decoded._b1_02_trigger_u2);
-                        out.b1_01_trigger_u1 = powertrain_t26_ivt_msg_response__b1_01_trigger_u1_decode(decoded._b1_01_trigger_u1);
-                        out.b1_00_trigger_i = powertrain_t26_ivt_msg_response__b1_00_trigger_i_decode(decoded._b1_00_trigger_i);
-                        out.b4_resp_startup_mode = powertrain_t26_ivt_msg_response__b4_resp_startup_mode_decode(decoded._b4_resp_startup_mode);
-                        out.bf_restart_alive_sn = powertrain_t26_ivt_msg_response__bf_restart_alive_sn_decode(decoded._bf_restart_alive_sn);
-                        out.ba_resp_sw_ver_revision = powertrain_t26_ivt_msg_response__ba_resp_sw_ver_revision_decode(decoded._ba_resp_sw_ver_revision);
-                        out.val_90_resp_can_id_sn_i = powertrain_t26_ivt_msg_response__90_resp_can_id_sn_i_decode(decoded._90_resp_can_id_sn_i);
-                        out.val_91_resp_can_id_sn_u1 = powertrain_t26_ivt_msg_response__91_resp_can_id_sn_u1_decode(decoded._91_resp_can_id_sn_u1);
-                        out.val_92_resp_can_id_sn_u2 = powertrain_t26_ivt_msg_response__92_resp_can_id_sn_u2_decode(decoded._92_resp_can_id_sn_u2);
-                        out.val_93_resp_can_id_sn_u3 = powertrain_t26_ivt_msg_response__93_resp_can_id_sn_u3_decode(decoded._93_resp_can_id_sn_u3);
-                        out.val_94_resp_can_id_sn_t = powertrain_t26_ivt_msg_response__94_resp_can_id_sn_t_decode(decoded._94_resp_can_id_sn_t);
-                        out.val_95_resp_can_id_sn_w = powertrain_t26_ivt_msg_response__95_resp_can_id_sn_w_decode(decoded._95_resp_can_id_sn_w);
-                        out.val_96_resp_can_id_sn_as = powertrain_t26_ivt_msg_response__96_resp_can_id_sn_as_decode(decoded._96_resp_can_id_sn_as);
-                        out.val_97_resp_can_id_sn_wh = powertrain_t26_ivt_msg_response__97_resp_can_id_sn_wh_decode(decoded._97_resp_can_id_sn_wh);
-                        out.val_9d_resp_can_id_sn_command = powertrain_t26_ivt_msg_response__9_d_resp_can_id_sn_command_decode(decoded._9_d_resp_can_id_sn_command);
-                        out.val_9f_resp_can_id_sn_response = powertrain_t26_ivt_msg_response__9_f_resp_can_id_sn_response_decode(decoded._9_f_resp_can_id_sn_response);
-                        out.b0_resp_reset_device_sn = powertrain_t26_ivt_msg_response__b0_resp_reset_device_sn_decode(decoded._b0_resp_reset_device_sn);
-                        out.b4_resp_code_level = powertrain_t26_ivt_msg_response__b4_resp_code_level_decode(decoded._b4_resp_code_level);
-                        out.b5_resp_oc_pos_reset_threshold = powertrain_t26_ivt_msg_response__b5_resp_oc_pos_reset_threshold_decode(decoded._b5_resp_oc_pos_reset_threshold);
-                        out.b6_resp_oc_neg_reset_threshold = powertrain_t26_ivt_msg_response__b6_resp_oc_neg_reset_threshold_decode(decoded._b6_resp_oc_neg_reset_threshold);
-                        out.b9_resp_device_voltage_chan = powertrain_t26_ivt_msg_response__b9_resp_device_voltage_chan_decode(decoded._b9_resp_device_voltage_chan);
-                        out.ba_resp_sw_ver_vear = powertrain_t26_ivt_msg_response__ba_resp_sw_ver_vear_decode(decoded._ba_resp_sw_ver_vear);
-                        out.b9_resp_device_toi = powertrain_t26_ivt_msg_response__b9_resp_device_toi_decode(decoded._b9_resp_device_toi);
-                        out.ba_resp_sw_ver_month = powertrain_t26_ivt_msg_response__ba_resp_sw_ver_month_decode(decoded._ba_resp_sw_ver_month);
-                        out.b9_resp_device_com = powertrain_t26_ivt_msg_response__b9_resp_device_com_decode(decoded._b9_resp_device_com);
-                        out.ba_resp_sw_ver_day = powertrain_t26_ivt_msg_response__ba_resp_sw_ver_day_decode(decoded._ba_resp_sw_ver_day);
-                        out.b9_resp_device_v_supply = powertrain_t26_ivt_msg_response__b9_resp_device_v_supply_decode(decoded._b9_resp_device_v_supply);
-                        out.ba_resp_sw_ver_internal = powertrain_t26_ivt_msg_response__ba_resp_sw_ver_internal_decode(decoded._ba_resp_sw_ver_internal);
+                        if (decoded.ivt_id_response == 177) { out.b1_trigger_spare = powertrain_t26_ivt_msg_response__b1_trigger_spare_decode(decoded._b1_trigger_spare); }
+                        if (decoded.ivt_id_response == 255) { out.ff_wrong_command = powertrain_t26_ivt_msg_response__ff_wrong_command_decode(decoded._ff_wrong_command); }
+                        if (decoded.ivt_id_response == 191) { out.bf_restart_alive_cmd_id = powertrain_t26_ivt_msg_response__bf_restart_alive_cmd_id_decode(decoded._bf_restart_alive_cmd_id); }
+                        if (decoded.ivt_id_response == 128) { out.val_80_resp_measerror_item = powertrain_t26_ivt_msg_response__80_resp_meas_error_item_decode(decoded._80_resp_meas_error_item); }
+                        if (decoded.ivt_id_response == 129) { out.val_81_resp_systemerror_item = powertrain_t26_ivt_msg_response__81_resp_system_error_item_decode(decoded._81_resp_system_error_item); }
+                        if (decoded.ivt_id_response == 130) { out.val_82_resp_alllogdata_item = powertrain_t26_ivt_msg_response__82_resp_all_log_data_item_decode(decoded._82_resp_all_log_data_item); }
+                        if (decoded.ivt_id_response == 131) { out.val_83_resp_logdata_item = powertrain_t26_ivt_msg_response__83_resp_log_data_item_decode(decoded._83_resp_log_data_item); }
+                        if (decoded.ivt_id_response == 144) { out.val_90_resp_can_id_val_i = powertrain_t26_ivt_msg_response__90_resp_can_id_val_i_decode(decoded._90_resp_can_id_val_i); }
+                        if (decoded.ivt_id_response == 145) { out.val_91_resp_can_id_val_u1 = powertrain_t26_ivt_msg_response__91_resp_can_id_val_u1_decode(decoded._91_resp_can_id_val_u1); }
+                        if (decoded.ivt_id_response == 146) { out.val_92_resp_can_id_val_u2 = powertrain_t26_ivt_msg_response__92_resp_can_id_val_u2_decode(decoded._92_resp_can_id_val_u2); }
+                        if (decoded.ivt_id_response == 147) { out.val_93_resp_can_id_val_u3 = powertrain_t26_ivt_msg_response__93_resp_can_id_val_u3_decode(decoded._93_resp_can_id_val_u3); }
+                        if (decoded.ivt_id_response == 148) { out.val_94_resp_can_id_val_t = powertrain_t26_ivt_msg_response__94_resp_can_id_val_t_decode(decoded._94_resp_can_id_val_t); }
+                        if (decoded.ivt_id_response == 149) { out.val_95_resp_can_id_val_w = powertrain_t26_ivt_msg_response__95_resp_can_id_val_w_decode(decoded._95_resp_can_id_val_w); }
+                        if (decoded.ivt_id_response == 150) { out.val_96_resp_can_id_val_as = powertrain_t26_ivt_msg_response__96_resp_can_id_val_as_decode(decoded._96_resp_can_id_val_as); }
+                        if (decoded.ivt_id_response == 151) { out.val_97_resp_can_id_val_wh = powertrain_t26_ivt_msg_response__97_resp_can_id_val_wh_decode(decoded._97_resp_can_id_val_wh); }
+                        if (decoded.ivt_id_response == 157) { out.val_9d_resp_can_id_val_command = powertrain_t26_ivt_msg_response__9_d_resp_can_id_val_command_decode(decoded._9_d_resp_can_id_val_command); }
+                        if (decoded.ivt_id_response == 159) { out.val_9f_resp_can_id_val_response = powertrain_t26_ivt_msg_response__9_f_resp_can_id_val_response_decode(decoded._9_f_resp_can_id_val_response); }
+                        if (decoded.ivt_id_response == 160) { out.a0_resp_sign_i = powertrain_t26_ivt_msg_response__a0_resp_sign_i_decode(decoded._a0_resp_sign_i); }
+                        if (decoded.ivt_id_response == 161) { out.a1_resp_sign_u1 = powertrain_t26_ivt_msg_response__a1_resp_sign_u1_decode(decoded._a1_resp_sign_u1); }
+                        if (decoded.ivt_id_response == 162) { out.a2_resp_sign_u2 = powertrain_t26_ivt_msg_response__a2_resp_sign_u2_decode(decoded._a2_resp_sign_u2); }
+                        if (decoded.ivt_id_response == 163) { out.a3_resp_sign_u3 = powertrain_t26_ivt_msg_response__a3_resp_sign_u3_decode(decoded._a3_resp_sign_u3); }
+                        if (decoded.ivt_id_response == 164) { out.a4_resp_sign_t = powertrain_t26_ivt_msg_response__a4_resp_sign_t_decode(decoded._a4_resp_sign_t); }
+                        if (decoded.ivt_id_response == 165) { out.a5_resp_sign_w = powertrain_t26_ivt_msg_response__a5_resp_sign_w_decode(decoded._a5_resp_sign_w); }
+                        if (decoded.ivt_id_response == 166) { out.a6_resp_sign_as = powertrain_t26_ivt_msg_response__a6_resp_sign_as_decode(decoded._a6_resp_sign_as); }
+                        if (decoded.ivt_id_response == 167) { out.a7_resp_sign_wh = powertrain_t26_ivt_msg_response__a7_resp_sign_wh_decode(decoded._a7_resp_sign_wh); }
+                        if (decoded.ivt_id_response == 176) { out.b0_resp_reset_item = powertrain_t26_ivt_msg_response__b0_resp_reset_item_decode(decoded._b0_resp_reset_item); }
+                        if (decoded.ivt_id_response == 178) { out.b2_resp_store_dummy = powertrain_t26_ivt_msg_response__b2_resp_store_dummy_decode(decoded._b2_resp_store_dummy); }
+                        if (decoded.ivt_id_response == 179) { out.b3_resp_oc_test_time = powertrain_t26_ivt_msg_response__b3_resp_oc_test_time_decode(decoded._b3_resp_oc_test_time); }
+                        if (decoded.ivt_id_response == 181) { out.b5_resp_oc_pos_set_threshold = powertrain_t26_ivt_msg_response__b5_resp_oc_pos_set_threshold_decode(decoded._b5_resp_oc_pos_set_threshold); }
+                        if (decoded.ivt_id_response == 182) { out.b6_resp_oc_neg_set_threshold = powertrain_t26_ivt_msg_response__b6_resp_oc_neg_set_threshold_decode(decoded._b6_resp_oc_neg_set_threshold); }
+                        if (decoded.ivt_id_response == 185) { out.b9_resp_device_type = powertrain_t26_ivt_msg_response__b9_resp_device_type_decode(decoded._b9_resp_device_type); }
+                        if (decoded.ivt_id_response == 186) { out.ba_resp_sw_ver_major_hw = powertrain_t26_ivt_msg_response__ba_resp_sw_ver_major_hw_decode(decoded._ba_resp_sw_ver_major_hw); }
+                        if (decoded.ivt_id_response == 187) { out.bb_resp_serien_nr = powertrain_t26_ivt_msg_response__bb_resp_serien_nr_decode(decoded._bb_resp_serien_nr); }
+                        if (decoded.ivt_id_response == 188) { out.bc_resp_art_n = powertrain_t26_ivt_msg_response__bc_resp_art_n_decode(decoded._bc_resp_art_n); }
+                        if (decoded.ivt_id_response == 160) { out.a0_resp_endianess_i = powertrain_t26_ivt_msg_response__a0_resp_endianess_i_decode(decoded._a0_resp_endianess_i); }
+                        if (decoded.ivt_id_response == 161) { out.a1_resp_endianess_u1 = powertrain_t26_ivt_msg_response__a1_resp_endianess_u1_decode(decoded._a1_resp_endianess_u1); }
+                        if (decoded.ivt_id_response == 162) { out.a2_resp_endianess_u2 = powertrain_t26_ivt_msg_response__a2_resp_endianess_u2_decode(decoded._a2_resp_endianess_u2); }
+                        if (decoded.ivt_id_response == 163) { out.a3_resp_endianess_u3 = powertrain_t26_ivt_msg_response__a3_resp_endianess_u3_decode(decoded._a3_resp_endianess_u3); }
+                        if (decoded.ivt_id_response == 164) { out.a4_resp_endianess_t = powertrain_t26_ivt_msg_response__a4_resp_endianess_t_decode(decoded._a4_resp_endianess_t); }
+                        if (decoded.ivt_id_response == 165) { out.a5_resp_endianess_w = powertrain_t26_ivt_msg_response__a5_resp_endianess_w_decode(decoded._a5_resp_endianess_w); }
+                        if (decoded.ivt_id_response == 166) { out.a6_resp_endianess_as = powertrain_t26_ivt_msg_response__a6_resp_endianess_as_decode(decoded._a6_resp_endianess_as); }
+                        if (decoded.ivt_id_response == 167) { out.a7_resp_endianess_wh = powertrain_t26_ivt_msg_response__a7_resp_endianess_wh_decode(decoded._a7_resp_endianess_wh); }
+                        if (decoded.ivt_id_response == 160) { out.a0_resp_triggermode_i = powertrain_t26_ivt_msg_response__a0_resp_trigger_mode_i_decode(decoded._a0_resp_trigger_mode_i); }
+                        if (decoded.ivt_id_response == 161) { out.a1_resp_triggermode_u1 = powertrain_t26_ivt_msg_response__a1_resp_trigger_mode_u1_decode(decoded._a1_resp_trigger_mode_u1); }
+                        if (decoded.ivt_id_response == 162) { out.a2_resp_triggermode_u2 = powertrain_t26_ivt_msg_response__a2_resp_trigger_mode_u2_decode(decoded._a2_resp_trigger_mode_u2); }
+                        if (decoded.ivt_id_response == 163) { out.a3_resp_triggermode_u3 = powertrain_t26_ivt_msg_response__a3_resp_trigger_mode_u3_decode(decoded._a3_resp_trigger_mode_u3); }
+                        if (decoded.ivt_id_response == 164) { out.a4_resp_triggermode_t = powertrain_t26_ivt_msg_response__a4_resp_trigger_mode_t_decode(decoded._a4_resp_trigger_mode_t); }
+                        if (decoded.ivt_id_response == 165) { out.a5_resp_triggermode_w = powertrain_t26_ivt_msg_response__a5_resp_trigger_mode_w_decode(decoded._a5_resp_trigger_mode_w); }
+                        if (decoded.ivt_id_response == 166) { out.a6_resp_triggermode_as = powertrain_t26_ivt_msg_response__a6_resp_trigger_mode_as_decode(decoded._a6_resp_trigger_mode_as); }
+                        if (decoded.ivt_id_response == 167) { out.a7_resp_triggermode_wh = powertrain_t26_ivt_msg_response__a7_resp_trigger_mode_wh_decode(decoded._a7_resp_trigger_mode_wh); }
+                        if (decoded.ivt_id_response == 180) { out.b4_resp_actual_mode = powertrain_t26_ivt_msg_response__b4_resp_actual_mode_decode(decoded._b4_resp_actual_mode); }
+                        if (decoded.ivt_id_response == 177) { out.b1_07_trigger_wh = powertrain_t26_ivt_msg_response__b1_07_trigger_wh_decode(decoded._b1_07_trigger_wh); }
+                        if (decoded.ivt_id_response == 178) { out.b2_resp_store_device_sn = powertrain_t26_ivt_msg_response__b2_resp_store_device_sn_decode(decoded._b2_resp_store_device_sn); }
+                        if (decoded.ivt_id_response == 186) { out.ba_resp_sw_ver_minor = powertrain_t26_ivt_msg_response__ba_resp_sw_ver_minor_decode(decoded._ba_resp_sw_ver_minor); }
+                        if (decoded.ivt_id_response == 185) { out.b9_resp_device_current = powertrain_t26_ivt_msg_response__b9_resp_device_current_decode(decoded._b9_resp_device_current); }
+                        if (decoded.ivt_id_response == 128) { out.val_80_resp_measerror_count_mask = powertrain_t26_ivt_msg_response__80_resp_meas_error_count_mask_decode(decoded._80_resp_meas_error_count_mask); }
+                        if (decoded.ivt_id_response == 129) { out.val_81_resp_systemerror_count_mask = powertrain_t26_ivt_msg_response__81_resp_system_error_count_mask_decode(decoded._81_resp_system_error_count_mask); }
+                        if (decoded.ivt_id_response == 130) { out.val_82_resp_alllogdata_counter = powertrain_t26_ivt_msg_response__82_resp_all_log_data_counter_decode(decoded._82_resp_all_log_data_counter); }
+                        if (decoded.ivt_id_response == 131) { out.val_83_resp_logdata_counter = powertrain_t26_ivt_msg_response__83_resp_log_data_counter_decode(decoded._83_resp_log_data_counter); }
+                        if (decoded.ivt_id_response == 160) { out.a0_resp_cycletime_i = powertrain_t26_ivt_msg_response__a0_resp_cycle_time_i_decode(decoded._a0_resp_cycle_time_i); }
+                        if (decoded.ivt_id_response == 161) { out.a1_resp_cycletime_u1 = powertrain_t26_ivt_msg_response__a1_resp_cycle_time_u1_decode(decoded._a1_resp_cycle_time_u1); }
+                        if (decoded.ivt_id_response == 162) { out.a2_resp_cycletime_u2 = powertrain_t26_ivt_msg_response__a2_resp_cycle_time_u2_decode(decoded._a2_resp_cycle_time_u2); }
+                        if (decoded.ivt_id_response == 163) { out.a3_resp_cycletime_u3 = powertrain_t26_ivt_msg_response__a3_resp_cycle_time_u3_decode(decoded._a3_resp_cycle_time_u3); }
+                        if (decoded.ivt_id_response == 164) { out.a4_resp_cycletime_t = powertrain_t26_ivt_msg_response__a4_resp_cycle_time_t_decode(decoded._a4_resp_cycle_time_t); }
+                        if (decoded.ivt_id_response == 165) { out.a5_resp_cycletime_w = powertrain_t26_ivt_msg_response__a5_resp_cycle_time_w_decode(decoded._a5_resp_cycle_time_w); }
+                        if (decoded.ivt_id_response == 166) { out.a6_resp_cycletime_as = powertrain_t26_ivt_msg_response__a6_resp_cycle_time_as_decode(decoded._a6_resp_cycle_time_as); }
+                        if (decoded.ivt_id_response == 167) { out.a7_resp_cycletime_wh = powertrain_t26_ivt_msg_response__a7_resp_cycle_time_wh_decode(decoded._a7_resp_cycle_time_wh); }
+                        if (decoded.ivt_id_response == 177) { out.b1_06_trigger_as = powertrain_t26_ivt_msg_response__b1_06_trigger_as_decode(decoded._b1_06_trigger_as); }
+                        if (decoded.ivt_id_response == 177) { out.b1_05_trigger_w = powertrain_t26_ivt_msg_response__b1_05_trigger_w_decode(decoded._b1_05_trigger_w); }
+                        if (decoded.ivt_id_response == 177) { out.b1_04_trigger_t = powertrain_t26_ivt_msg_response__b1_04_trigger_t_decode(decoded._b1_04_trigger_t); }
+                        if (decoded.ivt_id_response == 177) { out.b1_03_trigger_u3 = powertrain_t26_ivt_msg_response__b1_03_trigger_u3_decode(decoded._b1_03_trigger_u3); }
+                        if (decoded.ivt_id_response == 177) { out.b1_02_trigger_u2 = powertrain_t26_ivt_msg_response__b1_02_trigger_u2_decode(decoded._b1_02_trigger_u2); }
+                        if (decoded.ivt_id_response == 177) { out.b1_01_trigger_u1 = powertrain_t26_ivt_msg_response__b1_01_trigger_u1_decode(decoded._b1_01_trigger_u1); }
+                        if (decoded.ivt_id_response == 177) { out.b1_00_trigger_i = powertrain_t26_ivt_msg_response__b1_00_trigger_i_decode(decoded._b1_00_trigger_i); }
+                        if (decoded.ivt_id_response == 180) { out.b4_resp_startup_mode = powertrain_t26_ivt_msg_response__b4_resp_startup_mode_decode(decoded._b4_resp_startup_mode); }
+                        if (decoded.ivt_id_response == 191) { out.bf_restart_alive_sn = powertrain_t26_ivt_msg_response__bf_restart_alive_sn_decode(decoded._bf_restart_alive_sn); }
+                        if (decoded.ivt_id_response == 186) { out.ba_resp_sw_ver_revision = powertrain_t26_ivt_msg_response__ba_resp_sw_ver_revision_decode(decoded._ba_resp_sw_ver_revision); }
+                        if (decoded.ivt_id_response == 144) { out.val_90_resp_can_id_sn_i = powertrain_t26_ivt_msg_response__90_resp_can_id_sn_i_decode(decoded._90_resp_can_id_sn_i); }
+                        if (decoded.ivt_id_response == 145) { out.val_91_resp_can_id_sn_u1 = powertrain_t26_ivt_msg_response__91_resp_can_id_sn_u1_decode(decoded._91_resp_can_id_sn_u1); }
+                        if (decoded.ivt_id_response == 146) { out.val_92_resp_can_id_sn_u2 = powertrain_t26_ivt_msg_response__92_resp_can_id_sn_u2_decode(decoded._92_resp_can_id_sn_u2); }
+                        if (decoded.ivt_id_response == 147) { out.val_93_resp_can_id_sn_u3 = powertrain_t26_ivt_msg_response__93_resp_can_id_sn_u3_decode(decoded._93_resp_can_id_sn_u3); }
+                        if (decoded.ivt_id_response == 148) { out.val_94_resp_can_id_sn_t = powertrain_t26_ivt_msg_response__94_resp_can_id_sn_t_decode(decoded._94_resp_can_id_sn_t); }
+                        if (decoded.ivt_id_response == 149) { out.val_95_resp_can_id_sn_w = powertrain_t26_ivt_msg_response__95_resp_can_id_sn_w_decode(decoded._95_resp_can_id_sn_w); }
+                        if (decoded.ivt_id_response == 150) { out.val_96_resp_can_id_sn_as = powertrain_t26_ivt_msg_response__96_resp_can_id_sn_as_decode(decoded._96_resp_can_id_sn_as); }
+                        if (decoded.ivt_id_response == 151) { out.val_97_resp_can_id_sn_wh = powertrain_t26_ivt_msg_response__97_resp_can_id_sn_wh_decode(decoded._97_resp_can_id_sn_wh); }
+                        if (decoded.ivt_id_response == 157) { out.val_9d_resp_can_id_sn_command = powertrain_t26_ivt_msg_response__9_d_resp_can_id_sn_command_decode(decoded._9_d_resp_can_id_sn_command); }
+                        if (decoded.ivt_id_response == 159) { out.val_9f_resp_can_id_sn_response = powertrain_t26_ivt_msg_response__9_f_resp_can_id_sn_response_decode(decoded._9_f_resp_can_id_sn_response); }
+                        if (decoded.ivt_id_response == 176) { out.b0_resp_reset_device_sn = powertrain_t26_ivt_msg_response__b0_resp_reset_device_sn_decode(decoded._b0_resp_reset_device_sn); }
+                        if (decoded.ivt_id_response == 180) { out.b4_resp_code_level = powertrain_t26_ivt_msg_response__b4_resp_code_level_decode(decoded._b4_resp_code_level); }
+                        if (decoded.ivt_id_response == 181) { out.b5_resp_oc_pos_reset_threshold = powertrain_t26_ivt_msg_response__b5_resp_oc_pos_reset_threshold_decode(decoded._b5_resp_oc_pos_reset_threshold); }
+                        if (decoded.ivt_id_response == 182) { out.b6_resp_oc_neg_reset_threshold = powertrain_t26_ivt_msg_response__b6_resp_oc_neg_reset_threshold_decode(decoded._b6_resp_oc_neg_reset_threshold); }
+                        if (decoded.ivt_id_response == 185) { out.b9_resp_device_voltage_chan = powertrain_t26_ivt_msg_response__b9_resp_device_voltage_chan_decode(decoded._b9_resp_device_voltage_chan); }
+                        if (decoded.ivt_id_response == 186) { out.ba_resp_sw_ver_vear = powertrain_t26_ivt_msg_response__ba_resp_sw_ver_vear_decode(decoded._ba_resp_sw_ver_vear); }
+                        if (decoded.ivt_id_response == 185) { out.b9_resp_device_toi = powertrain_t26_ivt_msg_response__b9_resp_device_toi_decode(decoded._b9_resp_device_toi); }
+                        if (decoded.ivt_id_response == 186) { out.ba_resp_sw_ver_month = powertrain_t26_ivt_msg_response__ba_resp_sw_ver_month_decode(decoded._ba_resp_sw_ver_month); }
+                        if (decoded.ivt_id_response == 185) { out.b9_resp_device_com = powertrain_t26_ivt_msg_response__b9_resp_device_com_decode(decoded._b9_resp_device_com); }
+                        if (decoded.ivt_id_response == 186) { out.ba_resp_sw_ver_day = powertrain_t26_ivt_msg_response__ba_resp_sw_ver_day_decode(decoded._ba_resp_sw_ver_day); }
+                        if (decoded.ivt_id_response == 185) { out.b9_resp_device_v_supply = powertrain_t26_ivt_msg_response__b9_resp_device_v_supply_decode(decoded._b9_resp_device_v_supply); }
+                        if (decoded.ivt_id_response == 186) { out.ba_resp_sw_ver_internal = powertrain_t26_ivt_msg_response__ba_resp_sw_ver_internal_decode(decoded._ba_resp_sw_ver_internal); }
                         decoded_any = true;
                     }
                 }
@@ -156,7 +156,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::AsfSignals out;
                 bool decoded_any = false;
-                {
+                if (database_ == "autonomous_t26") {
                     struct autonomous_t26_asf_signals_t decoded = {};
                     if (autonomous_t26_asf_signals_unpack(&decoded, data, dlc) == 0) {
                         out.ebs_pressure_tank_front = autonomous_t26_asf_signals_ebs_pressure_tank_front_decode(decoded.ebs_pressure_tank_front);
@@ -176,7 +176,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::IvtMsgResultI out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_ivt_msg_result_i_t decoded = {};
                     if (powertrain_t26_ivt_msg_result_i_unpack(&decoded, data, dlc) == 0) {
                         out.ivt_id_result_i = powertrain_t26_ivt_msg_result_i_ivt_id_result_i_decode(decoded.ivt_id_result_i);
@@ -199,7 +199,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::IvtMsgResultU1 out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_ivt_msg_result_u1_t decoded = {};
                     if (powertrain_t26_ivt_msg_result_u1_unpack(&decoded, data, dlc) == 0) {
                         out.ivt_id_result_u1 = powertrain_t26_ivt_msg_result_u1_ivt_id_result_u1_decode(decoded.ivt_id_result_u1);
@@ -222,7 +222,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::IvtMsgResultU2 out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_ivt_msg_result_u2_t decoded = {};
                     if (powertrain_t26_ivt_msg_result_u2_unpack(&decoded, data, dlc) == 0) {
                         out.ivt_id_result_u2 = powertrain_t26_ivt_msg_result_u2_ivt_id_result_u2_decode(decoded.ivt_id_result_u2);
@@ -245,7 +245,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::IvtMsgResultU3 out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_ivt_msg_result_u3_t decoded = {};
                     if (powertrain_t26_ivt_msg_result_u3_unpack(&decoded, data, dlc) == 0) {
                         out.ivt_id_result_u3 = powertrain_t26_ivt_msg_result_u3_ivt_id_result_u3_decode(decoded.ivt_id_result_u3);
@@ -268,7 +268,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::IvtMsgResultT out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_ivt_msg_result_t_t decoded = {};
                     if (powertrain_t26_ivt_msg_result_t_unpack(&decoded, data, dlc) == 0) {
                         out.ivt_id_result_t = powertrain_t26_ivt_msg_result_t_ivt_id_result_t_decode(decoded.ivt_id_result_t);
@@ -291,7 +291,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::IvtMsgResultW out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_ivt_msg_result_w_t decoded = {};
                     if (powertrain_t26_ivt_msg_result_w_unpack(&decoded, data, dlc) == 0) {
                         out.ivt_id_result_w = powertrain_t26_ivt_msg_result_w_ivt_id_result_w_decode(decoded.ivt_id_result_w);
@@ -314,7 +314,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::IvtMsgResultAs out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_ivt_msg_result_as_t decoded = {};
                     if (powertrain_t26_ivt_msg_result_as_unpack(&decoded, data, dlc) == 0) {
                         out.ivt_id_result_as = powertrain_t26_ivt_msg_result_as_ivt_id_result_as_decode(decoded.ivt_id_result_as);
@@ -337,7 +337,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::IvtMsgResultWh out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_ivt_msg_result_wh_t decoded = {};
                     if (powertrain_t26_ivt_msg_result_wh_unpack(&decoded, data, dlc) == 0) {
                         out.ivt_id_result_wh = powertrain_t26_ivt_msg_result_wh_ivt_id_result_wh_decode(decoded.ivt_id_result_wh);
@@ -360,7 +360,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Slave01VoltageId1 out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_slave_01_voltage_id_1_t decoded = {};
                     if (powertrain_t26_slave_01_voltage_id_1_unpack(&decoded, data, dlc) == 0) {
                         out.cell_voltage_1 = powertrain_t26_slave_01_voltage_id_1_cell_voltage_1_decode(decoded.cell_voltage_1);
@@ -377,7 +377,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::VcuIgnR2d out;
                 bool decoded_any = false;
-                {
+                if (database_ == "autonomous_t26") {
                     struct autonomous_t26_vcu_ign_r2_d_t decoded = {};
                     if (autonomous_t26_vcu_ign_r2_d_unpack(&decoded, data, dlc) == 0) {
                         out.ignition_manual = autonomous_t26_vcu_ign_r2_d_ignition_manual_decode(decoded.ignition_manual);
@@ -401,7 +401,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Slave01VoltageId2 out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_slave_01_voltage_id_2_t decoded = {};
                     if (powertrain_t26_slave_01_voltage_id_2_unpack(&decoded, data, dlc) == 0) {
                         out.cell_voltage_5 = powertrain_t26_slave_01_voltage_id_2_cell_voltage_5_decode(decoded.cell_voltage_5);
@@ -421,7 +421,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Slave01VoltageId3 out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_slave_01_voltage_id_3_t decoded = {};
                     if (powertrain_t26_slave_01_voltage_id_3_unpack(&decoded, data, dlc) == 0) {
                         out.cell_voltage_9 = powertrain_t26_slave_01_voltage_id_3_cell_voltage_9_decode(decoded.cell_voltage_9);
@@ -441,7 +441,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Slave01TemperatureId1 out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_slave_01_temperature_id_1_t decoded = {};
                     if (powertrain_t26_slave_01_temperature_id_1_unpack(&decoded, data, dlc) == 0) {
                         out.temperature_value_1 = powertrain_t26_slave_01_temperature_id_1_temperature_value_1_decode(decoded.temperature_value_1);
@@ -461,7 +461,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Slave01TemperatureId2 out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_slave_01_temperature_id_2_t decoded = {};
                     if (powertrain_t26_slave_01_temperature_id_2_unpack(&decoded, data, dlc) == 0) {
                         out.temperature_value_5 = powertrain_t26_slave_01_temperature_id_2_temperature_value_5_decode(decoded.temperature_value_5);
@@ -481,7 +481,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Slave01MscId1 out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_slave_01_msc_id_1_t decoded = {};
                     if (powertrain_t26_slave_01_msc_id_1_unpack(&decoded, data, dlc) == 0) {
                         out.module_voltage_sum = powertrain_t26_slave_01_msc_id_1_module_voltage_sum_decode(decoded.module_voltage_sum);
@@ -501,7 +501,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Slave01MscId2 out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_slave_01_msc_id_2_t decoded = {};
                     if (powertrain_t26_slave_01_msc_id_2_unpack(&decoded, data, dlc) == 0) {
                         out.module_voltage_delta = powertrain_t26_slave_01_msc_id_2_module_voltage_delta_decode(decoded.module_voltage_delta);
@@ -524,7 +524,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Slave02VoltageId1 out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_slave_02_voltage_id_1_t decoded = {};
                     if (powertrain_t26_slave_02_voltage_id_1_unpack(&decoded, data, dlc) == 0) {
                         out.cell_voltage_1 = powertrain_t26_slave_02_voltage_id_1_cell_voltage_1_decode(decoded.cell_voltage_1);
@@ -544,7 +544,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Slave02VoltageId2 out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_slave_02_voltage_id_2_t decoded = {};
                     if (powertrain_t26_slave_02_voltage_id_2_unpack(&decoded, data, dlc) == 0) {
                         out.cell_voltage_5 = powertrain_t26_slave_02_voltage_id_2_cell_voltage_5_decode(decoded.cell_voltage_5);
@@ -564,7 +564,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Slave02VoltageId3 out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_slave_02_voltage_id_3_t decoded = {};
                     if (powertrain_t26_slave_02_voltage_id_3_unpack(&decoded, data, dlc) == 0) {
                         out.cell_voltage_9 = powertrain_t26_slave_02_voltage_id_3_cell_voltage_9_decode(decoded.cell_voltage_9);
@@ -584,7 +584,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Slave02TemperatureId1 out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_slave_02_temperature_id_1_t decoded = {};
                     if (powertrain_t26_slave_02_temperature_id_1_unpack(&decoded, data, dlc) == 0) {
                         out.temperature_value_1 = powertrain_t26_slave_02_temperature_id_1_temperature_value_1_decode(decoded.temperature_value_1);
@@ -604,7 +604,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Slave02TemperatureId2 out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_slave_02_temperature_id_2_t decoded = {};
                     if (powertrain_t26_slave_02_temperature_id_2_unpack(&decoded, data, dlc) == 0) {
                         out.temperature_value_5 = powertrain_t26_slave_02_temperature_id_2_temperature_value_5_decode(decoded.temperature_value_5);
@@ -624,7 +624,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Slave02MscId1 out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_slave_02_msc_id_1_t decoded = {};
                     if (powertrain_t26_slave_02_msc_id_1_unpack(&decoded, data, dlc) == 0) {
                         out.module_voltage_sum = powertrain_t26_slave_02_msc_id_1_module_voltage_sum_decode(decoded.module_voltage_sum);
@@ -644,7 +644,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Slave02MscId2 out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_slave_02_msc_id_2_t decoded = {};
                     if (powertrain_t26_slave_02_msc_id_2_unpack(&decoded, data, dlc) == 0) {
                         out.module_voltage_delta = powertrain_t26_slave_02_msc_id_2_module_voltage_delta_decode(decoded.module_voltage_delta);
@@ -667,7 +667,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Slave03VoltageId1 out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_slave_03_voltage_id_1_t decoded = {};
                     if (powertrain_t26_slave_03_voltage_id_1_unpack(&decoded, data, dlc) == 0) {
                         out.cell_voltage_1 = powertrain_t26_slave_03_voltage_id_1_cell_voltage_1_decode(decoded.cell_voltage_1);
@@ -687,7 +687,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Slave03VoltageId2 out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_slave_03_voltage_id_2_t decoded = {};
                     if (powertrain_t26_slave_03_voltage_id_2_unpack(&decoded, data, dlc) == 0) {
                         out.cell_voltage_5 = powertrain_t26_slave_03_voltage_id_2_cell_voltage_5_decode(decoded.cell_voltage_5);
@@ -707,7 +707,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Slave03VoltageId3 out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_slave_03_voltage_id_3_t decoded = {};
                     if (powertrain_t26_slave_03_voltage_id_3_unpack(&decoded, data, dlc) == 0) {
                         out.cell_voltage_9 = powertrain_t26_slave_03_voltage_id_3_cell_voltage_9_decode(decoded.cell_voltage_9);
@@ -727,7 +727,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Slave03TemperatureId1 out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_slave_03_temperature_id_1_t decoded = {};
                     if (powertrain_t26_slave_03_temperature_id_1_unpack(&decoded, data, dlc) == 0) {
                         out.temperature_value_1 = powertrain_t26_slave_03_temperature_id_1_temperature_value_1_decode(decoded.temperature_value_1);
@@ -747,7 +747,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Slave03TemperatureId2 out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_slave_03_temperature_id_2_t decoded = {};
                     if (powertrain_t26_slave_03_temperature_id_2_unpack(&decoded, data, dlc) == 0) {
                         out.temperature_value_5 = powertrain_t26_slave_03_temperature_id_2_temperature_value_5_decode(decoded.temperature_value_5);
@@ -767,7 +767,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Slave03MscId1 out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_slave_03_msc_id_1_t decoded = {};
                     if (powertrain_t26_slave_03_msc_id_1_unpack(&decoded, data, dlc) == 0) {
                         out.module_voltage_sum = powertrain_t26_slave_03_msc_id_1_module_voltage_sum_decode(decoded.module_voltage_sum);
@@ -787,7 +787,7 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Slave03MscId2 out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_slave_03_msc_id_2_t decoded = {};
                     if (powertrain_t26_slave_03_msc_id_2_unpack(&decoded, data, dlc) == 0) {
                         out.module_voltage_delta = powertrain_t26_slave_03_msc_id_2_module_voltage_delta_decode(decoded.module_voltage_delta);

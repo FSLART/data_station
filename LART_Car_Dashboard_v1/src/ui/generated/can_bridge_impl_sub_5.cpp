@@ -3,6 +3,9 @@
 
 void CanBridgeImpl::init_publishers_chunk_5(rclcpp::Node* node) {
     auto sensor_qos = rclcpp::QoS(10).best_effort();
+    pub_slave_10_voltage_id_2 = node->create_publisher<lart_msgs::msg::Slave10VoltageId2>("/can/dbc/slave_10_voltage_id_2", sensor_qos);
+    pub_slave_10_voltage_id_3 = node->create_publisher<lart_msgs::msg::Slave10VoltageId3>("/can/dbc/slave_10_voltage_id_3", sensor_qos);
+    pub_slave_11_msc_id_1 = node->create_publisher<lart_msgs::msg::Slave11MscId1>("/can/dbc/slave_11_msc_id_1", sensor_qos);
     pub_slave_11_msc_id_2 = node->create_publisher<lart_msgs::msg::Slave11MscId2>("/can/dbc/slave_11_msc_id_2", sensor_qos);
     pub_slave_11_temperature_id_1 = node->create_publisher<lart_msgs::msg::Slave11TemperatureId1>("/can/dbc/slave_11_temperature_id_1", sensor_qos);
     pub_slave_11_temperature_id_2 = node->create_publisher<lart_msgs::msg::Slave11TemperatureId2>("/can/dbc/slave_11_temperature_id_2", sensor_qos);
@@ -38,7 +41,7 @@ bool CanBridgeImpl::handle_frame_chunk_5(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Slave12TemperatureId2 out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_slave_12_temperature_id_2_t decoded = {};
                     if (powertrain_t26_slave_12_temperature_id_2_unpack(&decoded, data, dlc) == 0) {
                         out.temperature_value_5 = powertrain_t26_slave_12_temperature_id_2_temperature_value_5_decode(decoded.temperature_value_5);
@@ -58,7 +61,7 @@ bool CanBridgeImpl::handle_frame_chunk_5(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Slave12MscId1 out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_slave_12_msc_id_1_t decoded = {};
                     if (powertrain_t26_slave_12_msc_id_1_unpack(&decoded, data, dlc) == 0) {
                         out.module_voltage_sum = powertrain_t26_slave_12_msc_id_1_module_voltage_sum_decode(decoded.module_voltage_sum);
@@ -78,7 +81,7 @@ bool CanBridgeImpl::handle_frame_chunk_5(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Slave12MscId2 out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_slave_12_msc_id_2_t decoded = {};
                     if (powertrain_t26_slave_12_msc_id_2_unpack(&decoded, data, dlc) == 0) {
                         out.module_voltage_delta = powertrain_t26_slave_12_msc_id_2_module_voltage_delta_decode(decoded.module_voltage_delta);
@@ -98,7 +101,7 @@ bool CanBridgeImpl::handle_frame_chunk_5(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::MasterMscId1 out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_master_msc_id_1_t decoded = {};
                     if (powertrain_t26_master_msc_id_1_unpack(&decoded, data, dlc) == 0) {
                         out.mcu_vref = powertrain_t26_master_msc_id_1_mcu_vref_decode(decoded.mcu_vref);
@@ -122,7 +125,7 @@ bool CanBridgeImpl::handle_frame_chunk_5(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::MasterPrechargeId1 out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_master_pre_charge_id_1_t decoded = {};
                     if (powertrain_t26_master_pre_charge_id_1_unpack(&decoded, data, dlc) == 0) {
                         out.precharge_ctc_air_pos_state = powertrain_t26_master_pre_charge_id_1_precharge_ctc_air_pos_state_decode(decoded.precharge_ctc_air_pos_state);
@@ -143,7 +146,7 @@ bool CanBridgeImpl::handle_frame_chunk_5(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::MasterMscId2 out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_master_msc_id_2_t decoded = {};
                     if (powertrain_t26_master_msc_id_2_unpack(&decoded, data, dlc) == 0) {
                         out.master_runtime = powertrain_t26_master_msc_id_2_master_runtime_decode(decoded.master_runtime);
@@ -166,7 +169,7 @@ bool CanBridgeImpl::handle_frame_chunk_5(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::MasterMscId3 out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_master_msc_id_3_t decoded = {};
                     if (powertrain_t26_master_msc_id_3_unpack(&decoded, data, dlc) == 0) {
                         out.overall_maximum_voltage = powertrain_t26_master_msc_id_3_overall_maximum_voltage_decode(decoded.overall_maximum_voltage);
@@ -186,7 +189,7 @@ bool CanBridgeImpl::handle_frame_chunk_5(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::MasterSocAccumulator out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_master_soc_accumulator_t decoded = {};
                     if (powertrain_t26_master_soc_accumulator_unpack(&decoded, data, dlc) == 0) {
                         out.soc_integer = powertrain_t26_master_soc_accumulator_soc_integer_decode(decoded.soc_integer);
@@ -204,7 +207,7 @@ bool CanBridgeImpl::handle_frame_chunk_5(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::MasterMscId4 out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_master_msc_id_4_t decoded = {};
                     if (powertrain_t26_master_msc_id_4_unpack(&decoded, data, dlc) == 0) {
                         out.slaves_detected = powertrain_t26_master_msc_id_4_slaves_detected_decode(decoded.slaves_detected);
@@ -221,7 +224,7 @@ bool CanBridgeImpl::handle_frame_chunk_5(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::AmsSdcFeedback out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_ams_sdc_feedback_t decoded = {};
                     if (powertrain_t26_ams_sdc_feedback_unpack(&decoded, data, dlc) == 0) {
                         out.sdc_state = powertrain_t26_ams_sdc_feedback_sdc_state_decode(decoded.sdc_state);
@@ -238,7 +241,7 @@ bool CanBridgeImpl::handle_frame_chunk_5(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Aqt1 out;
                 bool decoded_any = false;
-                {
+                if (database_ == "autonomous_t26") {
                     struct autonomous_t26_aqt1_t decoded = {};
                     if (autonomous_t26_aqt1_unpack(&decoded, data, dlc) == 0) {
                         out.frt_brk_press = autonomous_t26_aqt1_frt_brk_press_decode(decoded.frt_brk_press);
@@ -257,7 +260,7 @@ bool CanBridgeImpl::handle_frame_chunk_5(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Aqt2 out;
                 bool decoded_any = false;
-                {
+                if (database_ == "data_t26") {
                     struct data_t26_aqt2_t decoded = {};
                     if (data_t26_aqt2_unpack(&decoded, data, dlc) == 0) {
                         out.tire_temp = data_t26_aqt2_tire_temp_decode(decoded.tire_temp);
@@ -265,7 +268,7 @@ bool CanBridgeImpl::handle_frame_chunk_5(uint32_t can_id, const uint8_t* data, s
                         decoded_any = true;
                     }
                 }
-                {
+                if (database_ == "autonomous_t26") {
                     struct autonomous_t26_aqt2_t decoded = {};
                     if (autonomous_t26_aqt2_unpack(&decoded, data, dlc) == 0) {
                         out.wheel_spd = autonomous_t26_aqt2_wheel_spd_decode(decoded.wheel_spd);
@@ -282,7 +285,7 @@ bool CanBridgeImpl::handle_frame_chunk_5(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Aqt3 out;
                 bool decoded_any = false;
-                {
+                if (database_ == "data_t26") {
                     struct data_t26_aqt3_t decoded = {};
                     if (data_t26_aqt3_unpack(&decoded, data, dlc) == 0) {
                         out.tire_temp = data_t26_aqt3_tire_temp_decode(decoded.tire_temp);
@@ -290,7 +293,7 @@ bool CanBridgeImpl::handle_frame_chunk_5(uint32_t can_id, const uint8_t* data, s
                         decoded_any = true;
                     }
                 }
-                {
+                if (database_ == "autonomous_t26") {
                     struct autonomous_t26_aqt3_t decoded = {};
                     if (autonomous_t26_aqt3_unpack(&decoded, data, dlc) == 0) {
                         out.wheel_spd = autonomous_t26_aqt3_wheel_spd_decode(decoded.wheel_spd);
@@ -307,7 +310,7 @@ bool CanBridgeImpl::handle_frame_chunk_5(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Aqt4 out;
                 bool decoded_any = false;
-                {
+                if (database_ == "autonomous_t26") {
                     struct autonomous_t26_aqt4_t decoded = {};
                     if (autonomous_t26_aqt4_unpack(&decoded, data, dlc) == 0) {
                         out.st_angle = autonomous_t26_aqt4_st_angle_decode(decoded.st_angle);
@@ -328,7 +331,7 @@ bool CanBridgeImpl::handle_frame_chunk_5(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Aqt5 out;
                 bool decoded_any = false;
-                {
+                if (database_ == "data_t26") {
                     struct data_t26_aqt5_t decoded = {};
                     if (data_t26_aqt5_unpack(&decoded, data, dlc) == 0) {
                         out.tire_temp = data_t26_aqt5_tire_temp_decode(decoded.tire_temp);
@@ -343,7 +346,7 @@ bool CanBridgeImpl::handle_frame_chunk_5(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::VcuStates out;
                 bool decoded_any = false;
-                {
+                if (database_ == "powertrain_t26") {
                     struct powertrain_t26_vcu_states_t decoded = {};
                     if (powertrain_t26_vcu_states_unpack(&decoded, data, dlc) == 0) {
                         out.vcu_state = powertrain_t26_vcu_states_vcu_state_decode(decoded.vcu_state);
@@ -360,7 +363,7 @@ bool CanBridgeImpl::handle_frame_chunk_5(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Aqt6 out;
                 bool decoded_any = false;
-                {
+                if (database_ == "data_t26") {
                     struct data_t26_aqt6_t decoded = {};
                     if (data_t26_aqt6_unpack(&decoded, data, dlc) == 0) {
                         out.tire_temp = data_t26_aqt6_tire_temp_decode(decoded.tire_temp);
@@ -378,7 +381,7 @@ bool CanBridgeImpl::handle_frame_chunk_5(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Aqt7 out;
                 bool decoded_any = false;
-                {
+                if (database_ == "data_t26") {
                     struct data_t26_aqt7_t decoded = {};
                     if (data_t26_aqt7_unpack(&decoded, data, dlc) == 0) {
                         out.susp_l = data_t26_aqt7_susp_l_decode(decoded.susp_l);
@@ -386,7 +389,7 @@ bool CanBridgeImpl::handle_frame_chunk_5(uint32_t can_id, const uint8_t* data, s
                         decoded_any = true;
                     }
                 }
-                {
+                if (database_ == "autonomous_t26") {
                     struct autonomous_t26_aqt7_t decoded = {};
                     if (autonomous_t26_aqt7_unpack(&decoded, data, dlc) == 0) {
                         out.rear_brk_press = autonomous_t26_aqt7_rear_brk_press_decode(decoded.rear_brk_press);
@@ -403,7 +406,7 @@ bool CanBridgeImpl::handle_frame_chunk_5(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::Aqt8 out;
                 bool decoded_any = false;
-                {
+                if (database_ == "data_t26") {
                     struct data_t26_aqt8_t decoded = {};
                     if (data_t26_aqt8_unpack(&decoded, data, dlc) == 0) {
                         out.ntc1 = data_t26_aqt8_ntc1_decode(decoded.ntc1);
@@ -422,7 +425,7 @@ bool CanBridgeImpl::handle_frame_chunk_5(uint32_t can_id, const uint8_t* data, s
             {
                 lart_msgs::msg::CubemarsFeedback out;
                 bool decoded_any = false;
-                {
+                if (database_ == "autonomous_t26") {
                     struct autonomous_t26_cube_mars_feedback_t decoded = {};
                     if (autonomous_t26_cube_mars_feedback_unpack(&decoded, data, dlc) == 0) {
                         out.position = autonomous_t26_cube_mars_feedback_position_decode(decoded.position);

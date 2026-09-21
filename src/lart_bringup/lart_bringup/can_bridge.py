@@ -239,11 +239,13 @@ class CanBridgeNode(Node):
             return
 
         pub_info = self._dbc_pubs[msg.arbitration_id]
-        out = pub_info['instance']
+        out = pub_info['class']()
         for sig_name, value in decoded.items():
             sig_slug = pub_info['signals'].get(sig_name)
             if sig_slug is not None:
-                setattr(out, sig_slug, float(value))
+                field_type = out.get_fields_and_field_types()[sig_slug]
+                converted = float(value) if field_type in ('float', 'double', 'float32', 'float64') else int(value)
+                setattr(out, sig_slug, converted)
         pub_info['pub'].publish(out)
 
     # ──────────────────────────────────────────────────────────────────────
