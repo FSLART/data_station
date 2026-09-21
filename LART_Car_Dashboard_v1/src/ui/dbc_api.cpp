@@ -68,6 +68,10 @@ extern "C" void ui_set_speed(float speed_kph) {
     );
 }
 
+extern "C" float ui_get_speed() {
+    return eez::flow::getGlobalVariable(FLOW_GLOBAL_VARIABLE_SPEED).getFloat();
+}
+
 // Ethernet link state for the driver_view corner LED. Polled from sysfs
 // rather than a ROS2 heartbeat, so it reflects the physical cable/link
 // state even if no other node is publishing.
