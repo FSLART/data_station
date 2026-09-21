@@ -33,7 +33,7 @@ NS_ :
 
 BS_:
 
-BU_: Acquisition_Board2 Acquisition_Board3 Acquisition_Board5 Acquisition_Board6 Acquisition_Board7 Acquisition_Board8 VCU PDM
+BU_: Acquisition_Board2 Acquisition_Board3 Acquisition_Board5 Acquisition_Board6 Acquisition_Board7 Acquisition_Board8 VCU PDM BMS ICD Data_Station
 
 
 BO_ 3221225472 VECTOR__INDEPENDENT_SIG_MSG: 0 Vector__XXX
@@ -48,51 +48,196 @@ BO_ 3221225472 VECTOR__INDEPENDENT_SIG_MSG: 0 Vector__XXX
  SG_ SPD_WHEEL : 0|16@1+ (0.1,0) [0|0] "km/h" Vector__XXX
 
 BO_ 1824 AQT2: 4 Acquisition_Board2
- SG_ TIRE_TEMP : 0|16@1- (0.1,0) [0|0] "ºC" Vector__XXX
- SG_ BRAKE_TEMP : 16|16@1- (0.1,0) [0|0] "ºC" Vector__XXX
+ SG_ TIRE_TEMP : 0|16@1- (0.1,0) [0|0] "ºC"  Data_Station
+ SG_ BRAKE_TEMP : 16|16@1- (0.1,0) [0|0] "ºC"  Data_Station
 
 BO_ 1840 AQT3: 4 Acquisition_Board3
- SG_ TIRE_TEMP : 0|16@1- (0.1,0) [0|0] "ºC" Vector__XXX
- SG_ BRAKE_TEMP : 16|16@1- (0.1,0) [0|0] "ºC" Vector__XXX
+ SG_ TIRE_TEMP : 0|16@1- (0.1,0) [0|0] "ºC"  Data_Station
+ SG_ BRAKE_TEMP : 16|16@1- (0.1,0) [0|0] "ºC"  Data_Station
 
 BO_ 1872 AQT5: 4 Acquisition_Board5
- SG_ TIRE_TEMP : 0|16@1- (0.1,0) [0|0] "ºC" Vector__XXX
- SG_ BRAKE_TEMP : 16|16@1- (0.1,0) [0|0] "ºC" Vector__XXX
+ SG_ TIRE_TEMP : 0|16@1- (0.1,0) [0|0] "ºC"  Data_Station
+ SG_ BRAKE_TEMP : 16|16@1- (0.1,0) [0|0] "ºC"  Data_Station
 
 BO_ 1888 AQT6: 4 Acquisition_Board6
- SG_ TIRE_TEMP : 0|16@1- (0.1,0) [0|0] "ºC" Vector__XXX
- SG_ BRAKE_TEMP : 16|16@1- (0.1,0) [0|0] "ºC" Vector__XXX
+ SG_ TIRE_TEMP : 0|16@1- (0.1,0) [0|0] "ºC"  Data_Station
+ SG_ BRAKE_TEMP : 16|16@1- (0.1,0) [0|0] "ºC"  Data_Station
 
 BO_ 1904 AQT7: 4 Acquisition_Board7
- SG_ SUSP_L : 0|16@1- (0.1,0) [0|0] "ºC" Vector__XXX
- SG_ SUSP_R : 16|16@1- (0.1,0) [0|0] "ºC" Vector__XXX
+ SG_ SUSP_L : 0|16@1- (0.1,0) [0|0] "ºC"  Data_Station
+ SG_ SUSP_R : 16|16@1- (0.1,0) [0|0] "ºC"  Data_Station
 
 BO_ 1920 AQT8: 6 Acquisition_Board8
- SG_ NTC1 : 0|16@1+ (0.1,0) [0|0] "ºC" Vector__XXX
- SG_ NTC2 : 16|16@1+ (0.1,0) [0|0] "ºC" Vector__XXX
- SG_ NTC3 : 32|16@1+ (0.1,0) [0|0] "ºC" Vector__XXX
+ SG_ NTC1 : 0|16@1+ (0.1,0) [0|0] "ºC"  Data_Station
+ SG_ NTC2 : 16|16@1+ (0.1,0) [0|0] "ºC"  Data_Station
+ SG_ NTC3 : 32|16@1+ (0.1,0) [0|0] "ºC"  Data_Station
 
 BO_ 1092 VCU_INV1_Temperatures: 8 VCU
- SG_ INV1_TempInverter : 7|16@0- (0.1,0) [-55|200] "ºC" Vector__XXX
- SG_ INV1_TempMotor : 23|16@0- (0.1,0) [-55|200] "ºC" Vector__XXX
+ SG_ INV1_TempInverter : 7|16@0- (0.1,0) [-55|200] "ºC"  Data_Station
+ SG_ INV1_TempMotor : 23|16@0- (0.1,0) [-55|200] "ºC"  Data_Station
 
 BO_ 1093 VCU_INV2_Temperatures: 8 VCU
- SG_ INV2_TempInverter : 7|16@0- (0.1,0) [-55|200] "ºC" Vector__XXX
- SG_ INV2_TempMotor : 23|16@0- (0.1,0) [-55|200] "ºC" Vector__XXX
+ SG_ INV2_TempInverter : 7|16@0- (0.1,0) [-55|200] "ºC"  Data_Station
+ SG_ INV2_TempMotor : 23|16@0- (0.1,0) [-55|200] "ºC"  Data_Station
 
 BO_ 528 PDM_LV: 2 PDM
- SG_ LV_Voltage_mV : 0|16@1+ (0.001,0) [0|0] "" Vector__XXX
+ SG_ LV_Voltage_mV : 0|16@1+ (0.001,0) [0|0] ""  Data_Station
 
 BO_ 544 PDM_Cooling: 8 PDM
- SG_ WaterPump_PWM : 0|8@1+ (1,0) [0|0] "" Vector__XXX
- SG_ CoolingFan_PWM : 8|8@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ WaterPump_PWM : 0|8@1+ (1,0) [0|0] ""  Data_Station
+ SG_ CoolingFan_PWM : 8|8@1+ (1,0) [0|0] ""  Data_Station
+
+BO_ 1282 ICD_Result: 8 ICD
+ SG_ ICD_Status_OCS : 0|1@1+ (1,0) [0|1] ""  Data_Station
+ SG_ ICD_Status_MeasError : 1|1@1+ (1,0) [0|1] ""  Data_Station
+ SG_ ICD_Status_SysError : 2|1@1+ (1,0) [0|1] ""  Data_Station
+ SG_ ICD_MsgCounter : 4|4@1+ (1,0) [0|15] ""  Data_Station
+ SG_ ICD_Current : 15|32@0- (0.001,0) [-2500|2500] "A"  Data_Station
+ SG_ ICD_Ubat : 47|16@0+ (0.001,0) [0|65.535] "V"  Data_Station
+
+BO_ 1280 ICD_Request: 8 BMS
+ SG_ Req_MuxID M : 0|8@1+ (1,0) [0|255] ""  ICD,Data_Station
+ SG_ Req_OpMode m16 : 8|8@1+ (1,0) [0|2] ""  ICD,Data_Station
+ SG_ Req_OpOutputRate m16 : 23|16@0+ (1,0) [0|65535] "ms"  ICD,Data_Station
+ SG_ Req_OpInvertCurrent m16 : 32|1@1+ (1,0) [0|1] ""  ICD,Data_Station
+ SG_ Req_AccessMode m17 : 8|8@1+ (1,0) [0|1] ""  ICD,Data_Station
+ SG_ Req_AccessPw1 m17 : 16|8@1+ (1,0) [0|255] ""  ICD,Data_Station
+ SG_ Req_AccessPw2 m17 : 24|8@1+ (1,0) [0|255] ""  ICD,Data_Station
+ SG_ Req_AccessPw3 m17 : 32|8@1+ (1,0) [0|255] ""  ICD,Data_Station
+ SG_ Req_AccessPw4 m17 : 40|8@1+ (1,0) [0|255] ""  ICD,Data_Station
+ SG_ Req_AccessPw5 m17 : 48|8@1+ (1,0) [0|255] ""  ICD,Data_Station
+ SG_ Req_AccessPw6 m17 : 56|8@1+ (1,0) [0|255] ""  ICD,Data_Station
+ SG_ Req_Averaging m32 : 8|8@1+ (1,0) [0|255] ""  ICD,Data_Station
+ SG_ Req_OCLimitPos m33 : 15|24@0+ (1,0) [0|16777215] "A"  ICD,Data_Station
+ SG_ Req_OCLimitNeg m33 : 39|24@0+ (1,0) [0|16777215] "A"  ICD,Data_Station
+ SG_ Req_CanBaudrate m34 : 8|8@1+ (1,0) [0|2] ""  ICD,Data_Station
+ SG_ Req_CanMode m34 : 16|8@1+ (1,0) [0|1] ""  ICD,Data_Station
+ SG_ Req_CanIdReq_SN m35 : 15|24@0+ (1,0) [0|16777215] ""  ICD,Data_Station
+ SG_ Req_CanIdReq_ID m35 : 39|32@0+ (1,0) [0|536870911] ""  ICD,Data_Station
+ SG_ Req_CanIdResp_SN m36 : 15|24@0+ (1,0) [0|16777215] ""  ICD,Data_Station
+ SG_ Req_CanIdResp_ID m36 : 39|32@0+ (1,0) [0|536870911] ""  ICD,Data_Station
+ SG_ Req_CanIdRes_SN m37 : 15|24@0+ (1,0) [0|16777215] ""  ICD,Data_Station
+ SG_ Req_CanIdRes_ID m37 : 39|32@0+ (1,0) [0|536870911] ""  ICD,Data_Station
+ SG_ Req_NewPw1 m38 : 8|8@1+ (1,0) [32|126] ""  ICD,Data_Station
+ SG_ Req_NewPw2 m38 : 16|8@1+ (1,0) [32|126] ""  ICD,Data_Station
+ SG_ Req_NewPw3 m38 : 24|8@1+ (1,0) [32|126] ""  ICD,Data_Station
+ SG_ Req_NewPw4 m38 : 32|8@1+ (1,0) [32|126] ""  ICD,Data_Station
+ SG_ Req_NewPw5 m38 : 40|8@1+ (1,0) [32|126] ""  ICD,Data_Station
+ SG_ Req_NewPw6 m38 : 48|8@1+ (1,0) [32|126] ""  ICD,Data_Station
+ SG_ Req_ResetOption m64 : 8|8@1+ (1,0) [1|2] ""  ICD,Data_Station
+ SG_ Req_WakeTimer m65 : 8|1@1+ (1,0) [0|1] ""  ICD,Data_Station
+ SG_ Req_WakeIThreshold m65 : 9|1@1+ (1,0) [0|1] ""  ICD,Data_Station
+ SG_ Req_WakeAhThreshold m65 : 10|1@1+ (1,0) [0|1] ""  ICD,Data_Station
+ SG_ Req_SleepTimer m65 : 23|16@0+ (1,0) [0|65000] "s"  ICD,Data_Station
+ SG_ Req_SleepIThreshold m65 : 39|16@0+ (1,0) [0|250] "mA"  ICD,Data_Station
+ SG_ Req_SleepAhThreshold m65 : 55|16@0+ (1,0) [0|65000] "mAs"  ICD,Data_Station
+
+BO_ 1281 ICD_Response: 8 ICD
+ SG_ Resp_MuxID M : 0|8@1+ (1,0) [0|255] ""  Data_Station
+ SG_ Resp_Tchip m145 : 15|16@0- (0.1,0) [-40|125] "degC"  Data_Station
+ SG_ Resp_Text m145 : 31|16@0- (0.1,0) [-40|125] "degC"  Data_Station
+ SG_ Resp_AhCounter m146 : 15|32@0- (1,0) [-2147483648|2147483647] "mAs"  Data_Station
+ SG_ Resp_OpMode m160 : 8|8@1+ (1,0) [0|2] ""  Data_Station
+ SG_ Resp_OpOutputRate m160 : 23|16@0+ (1,0) [0|65535] "ms"  Data_Station
+ SG_ Resp_OpInvertCurrent m160 : 32|1@1+ (1,0) [0|1] ""  Data_Station
+ SG_ Resp_AccessMode m161 : 8|8@1+ (1,0) [0|1] ""  Data_Station
+ SG_ Resp_Averaging m176 : 8|8@1+ (1,0) [0|255] ""  Data_Station
+ SG_ Resp_OCLimitPos m177 : 15|24@0+ (1,0) [0|16777215] "A"  Data_Station
+ SG_ Resp_OCLimitNeg m177 : 39|24@0+ (1,0) [0|16777215] "A"  Data_Station
+ SG_ Resp_CanBaudrate m178 : 8|8@1+ (1,0) [0|2] ""  Data_Station
+ SG_ Resp_CanMode m178 : 16|8@1+ (1,0) [0|1] ""  Data_Station
+ SG_ Resp_CanIdReq_SN m179 : 15|24@0+ (1,0) [0|16777215] ""  Data_Station
+ SG_ Resp_CanIdReq_ID m179 : 39|32@0+ (1,0) [0|536870911] ""  Data_Station
+ SG_ Resp_CanIdResp_SN m180 : 15|24@0+ (1,0) [0|16777215] ""  Data_Station
+ SG_ Resp_CanIdResp_ID m180 : 39|32@0+ (1,0) [0|536870911] ""  Data_Station
+ SG_ Resp_CanIdRes_SN m181 : 15|24@0+ (1,0) [0|16777215] ""  Data_Station
+ SG_ Resp_CanIdRes_ID m181 : 39|32@0+ (1,0) [0|536870911] ""  Data_Station
+ SG_ Resp_Pw1 m182 : 8|8@1+ (1,0) [32|126] ""  Data_Station
+ SG_ Resp_Pw2 m182 : 16|8@1+ (1,0) [32|126] ""  Data_Station
+ SG_ Resp_Pw3 m182 : 24|8@1+ (1,0) [32|126] ""  Data_Station
+ SG_ Resp_Pw4 m182 : 32|8@1+ (1,0) [32|126] ""  Data_Station
+ SG_ Resp_Pw5 m182 : 40|8@1+ (1,0) [32|126] ""  Data_Station
+ SG_ Resp_Pw6 m182 : 48|8@1+ (1,0) [32|126] ""  Data_Station
+ SG_ Resp_ResetOption m208 : 8|8@1+ (1,0) [1|2] ""  Data_Station
+ SG_ Resp_WakeTimer m209 : 8|1@1+ (1,0) [0|1] ""  Data_Station
+ SG_ Resp_WakeIThreshold m209 : 9|1@1+ (1,0) [0|1] ""  Data_Station
+ SG_ Resp_WakeAhThreshold m209 : 10|1@1+ (1,0) [0|1] ""  Data_Station
+ SG_ Resp_SleepTimer m209 : 23|16@0+ (1,0) [0|65000] "s"  Data_Station
+ SG_ Resp_SleepIThreshold m209 : 39|16@0+ (1,0) [0|250] "mA"  Data_Station
+ SG_ Resp_SleepAhThreshold m209 : 55|16@0+ (1,0) [0|65000] "mAs"  Data_Station
+ SG_ Resp_DevId_Frame m224 : 8|8@1+ (1,0) [0|3] ""  Data_Station
+ SG_ Resp_DevId_Char1 m224 : 16|8@1+ (1,0) [0|255] ""  Data_Station
+ SG_ Resp_DevId_Char2 m224 : 24|8@1+ (1,0) [0|255] ""  Data_Station
+ SG_ Resp_DevId_Char3 m224 : 32|8@1+ (1,0) [0|255] ""  Data_Station
+ SG_ Resp_DevId_Char4 m224 : 40|8@1+ (1,0) [0|255] ""  Data_Station
+ SG_ Resp_DevId_Char5 m224 : 48|8@1+ (1,0) [0|255] ""  Data_Station
+ SG_ Resp_FwMajor m225 : 8|8@1+ (1,-48) [0|9] ""  Data_Station
+ SG_ Resp_FwMinor m225 : 16|8@1+ (1,-48) [0|9] ""  Data_Station
+ SG_ Resp_FwRelease m225 : 24|8@1+ (1,-48) [0|9] ""  Data_Station
+ SG_ Resp_SerialNumber m226 : 15|32@0+ (1,0) [0|4294967295] ""  Data_Station
+ SG_ Resp_HwVer_Frame m227 : 8|8@1+ (1,0) [0|1] ""  Data_Station
+ SG_ Resp_HwVer_Char1 m227 : 16|8@1+ (1,0) [0|255] ""  Data_Station
+ SG_ Resp_HwVer_Char2 m227 : 24|8@1+ (1,0) [0|255] ""  Data_Station
+ SG_ Resp_HwVer_Char3 m227 : 32|8@1+ (1,0) [0|255] ""  Data_Station
+ SG_ Resp_HwVer_Char4 m227 : 40|8@1+ (1,0) [0|255] ""  Data_Station
+ SG_ Resp_HwVer_Char5 m227 : 48|8@1+ (1,0) [0|255] ""  Data_Station
+ SG_ Resp_HwVer_Char6 m227 : 56|8@1+ (1,0) [0|255] ""  Data_Station
+ SG_ Resp_ArticleNumber m228 : 15|56@0+ (1,0) [0|7.2057594038E+16] ""  Data_Station
+ SG_ Resp_Rev_Digit1 m229 : 32|8@1+ (1,-48) [0|9] ""  Data_Station
+ SG_ Resp_Rev_Digit2 m229 : 40|8@1+ (1,-48) [0|9] ""  Data_Station
+ SG_ Resp_Rev_Digit3 m229 : 48|8@1+ (1,-48) [0|9] ""  Data_Station
+ SG_ Resp_Rev_Digit4 m229 : 56|8@1+ (1,-48) [0|9] ""  Data_Station
+ SG_ Resp_UpTime m230 : 15|32@0+ (1,0) [0|4294967295] "min"  Data_Station
+ SG_ Resp_Lifetime m231 : 15|32@0+ (1,0) [0|4294967295] "min"  Data_Station
+ SG_ Resp_MS_AdcInterrupt m232 : 32|1@1+ (1,0) [0|1] ""  Data_Station
+ SG_ Resp_MS_OverflowAdcCh1 m232 : 33|1@1+ (1,0) [0|1] ""  Data_Station
+ SG_ Resp_MS_OverflowAdcCh2 m232 : 34|1@1+ (1,0) [0|1] ""  Data_Station
+ SG_ Resp_MS_OverflowAdcCh3 m232 : 35|1@1+ (1,0) [0|1] ""  Data_Station
+ SG_ Resp_MS_OpenCircuitI m232 : 36|1@1+ (1,0) [0|1] ""  Data_Station
+ SG_ Resp_MS_OpenCircuitU m232 : 37|1@1+ (1,0) [0|1] ""  Data_Station
+ SG_ Resp_MS_OpenCircuitTchip m232 : 38|1@1+ (1,0) [0|1] ""  Data_Station
+ SG_ Resp_MS_OpenCircuitText m232 : 39|1@1+ (1,0) [0|1] ""  Data_Station
+ SG_ Resp_MS_CalibrationData m232 : 24|1@1+ (1,0) [0|1] ""  Data_Station
+ SG_ Resp_MS_OCSActive m232 : 25|1@1+ (1,0) [0|1] ""  Data_Station
+ SG_ Resp_SS_CodeCrc m232 : 48|1@1+ (1,0) [0|1] ""  Data_Station
+ SG_ Resp_SS_CalDataCrc m232 : 49|1@1+ (1,0) [0|1] ""  Data_Station
+ SG_ Resp_SS_CanRx m232 : 50|1@1+ (1,0) [0|1] ""  Data_Station
+ SG_ Resp_SS_CanTx m232 : 51|1@1+ (1,0) [0|1] ""  Data_Station
+ SG_ Resp_SS_Overtemp m232 : 52|1@1+ (1,0) [0|1] ""  Data_Station
+ SG_ Resp_SS_Undertemp m232 : 53|1@1+ (1,0) [0|1] ""  Data_Station
+ SG_ Resp_SS_PowerFailure m232 : 54|1@1+ (1,0) [0|1] ""  Data_Station
+ SG_ Resp_SS_SystemClock m232 : 55|1@1+ (1,0) [0|1] ""  Data_Station
+ SG_ Resp_SS_SystemInit m232 : 40|1@1+ (1,0) [0|1] ""  Data_Station
+ SG_ Resp_SS_Configuration m232 : 41|1@1+ (1,0) [0|1] ""  Data_Station
+ SG_ Resp_SS_EepromRW m232 : 42|1@1+ (1,0) [0|1] ""  Data_Station
+ SG_ Resp_SS_PowerOnReset m232 : 43|1@1+ (1,0) [0|1] ""  Data_Station
+ SG_ Resp_SS_LowVoltageReset m232 : 44|1@1+ (1,0) [0|1] ""  Data_Station
+ SG_ Resp_SS_ExtPinReset m232 : 45|1@1+ (1,0) [0|1] ""  Data_Station
+ SG_ Resp_SS_ClockMonReset m232 : 46|1@1+ (1,0) [0|1] ""  Data_Station
+ SG_ Resp_SS_CopWdReset m232 : 47|1@1+ (1,0) [0|1] ""  Data_Station
+ SG_ Resp_EvtMeasType m235 : 8|8@1+ (1,0) [0|255] ""  Data_Station
+ SG_ Resp_EvtSysType m235 : 16|8@1+ (1,0) [0|255] ""  Data_Station
+ SG_ Resp_EvtMeasCount m235 : 31|16@0+ (1,0) [0|65535] ""  Data_Station
+ SG_ Resp_EvtSysCount m235 : 47|16@0+ (1,0) [0|65535] ""  Data_Station
 
 
 
+CM_ BU_ ICD "Isabellenhuette ISAscale ICD shunt current sensor (datasheet v1.3)";
+CM_ BU_ Data_Station "RPi 5 CAN Shield";
 CM_ BO_ 1092 "0x444 - INV1 (left) temperatures from HV500 inverter";
 CM_ SG_ 1092 INV1_TempInverter "Inverter semiconductor temperature";
 CM_ SG_ 1092 INV1_TempMotor "Motor temperature measured by the inverter";
 CM_ BO_ 1093 "0x445 - INV2 (right) temperatures from HV500 inverter";
 CM_ SG_ 1093 INV2_TempInverter "Inverter semiconductor temperature";
 CM_ SG_ 1093 INV2_TempMotor "Motor temperature measured by the inverter";
+CM_ BO_ 1282 "Cyclic result frame (default 1 ms in continuous mode). No multiplexer.";
+CM_ SG_ 1282 ICD_MsgCounter "Rolling counter 0x0..0xF (high nibble of D0).";
+CM_ SG_ 1282 ICD_Current "Signed 32 bit, 1 mA/LSB. Byte order assumed big-endian (Motorola).";
+CM_ SG_ 1282 ICD_Ubat "Supply voltage, unsigned 16 bit. 1 mV/LSB (verified on bench; datasheet 0.5 mV figure is resolution, not LSB).";
+CM_ BO_ 1280 "Command frame (SET/GET/control), D0 = MUX ID. Get commands carry no payload.";
+CM_ SG_ 1280 Req_AccessPw1 "Customer password byte 1 (default 0x30 = '0').";
+CM_ BO_ 1281 "Response frame to requests, D0 = response MUX ID. Also carries startup messages (0xE0 x4, 0xE2, 0xE1).";
+CM_ SG_ 1281 Resp_AhCounter "Ampere-hour counter in mAs (divide by 3.6e6 for Ah).";
+CM_ SG_ 1281 Resp_DevId_Frame "Device ID is a 4-frame multiframe response (counter 0..3), ASCII chars e.g. ICD-A-0100-CAN2-12.";
+CM_ SG_ 1281 Resp_HwVer_Frame "HW version is a 2-frame multiframe response (counter 0..1), ASCII chars.";
 
