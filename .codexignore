@@ -1,0 +1,21 @@
+.git/
+node_modules/
+vendor/
+build/
+dist/
+*.log
+# Binários e Objetos de C/C++
+*.o
+*.obj
+*.a
+*.la
+*.lo
+*.so
+*.dll
+*.dylib
+
+# Pastas de Compilação comuns
+build/
+cmake-build-debug/
+cmake-build-release/
+.cmake/
