@@ -597,6 +597,7 @@ void ui_tick() {
 
     eez_flow_tick();
     tick_screen(g_currentScreen);
+    ui_update_speed_pull_display(ui_get_speed());
 
     // Queue any screen change request received this tick.
     // It will be applied at the top of the NEXT tick, before eez_flow_tick().

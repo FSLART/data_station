@@ -34,6 +34,7 @@ def main():
         
     # Group signals by sanitized message name slug to deduplicate messages
     message_signals = {}
+    signal_types = {}
     for msg in db.messages:
         if not msg.signals:
             continue
@@ -41,7 +42,15 @@ def main():
         if msg_slug not in message_signals:
             message_signals[msg_slug] = set()
         for sig in msg.signals:
-            message_signals[msg_slug].add(_ros_name(sig.name))
+            sig_slug = _ros_name(sig.name)
+            message_signals[msg_slug].add(sig_slug)
+            # Preserve established interfaces; new ICD integer fields must be exact.
+            ros_type, c_type = "float32", "float"
+            if msg.name.startswith("ICD_") and sig.scale == 1 and sig.offset == 0 and not sig.is_float:
+                bits = next(n for n in (8, 16, 32, 64) if n >= sig.length)
+                prefix = "int" if sig.is_signed else "uint"
+                ros_type, c_type = f"{prefix}{bits}", f"{prefix}{bits}_t"
+            signal_types[(msg_slug, sig_slug)] = (ros_type, c_type)
             
     # 1. Generate ROS 2 message files and update lart_msgs/CMakeLists.txt
     lart_msgs_dir = os.path.abspath(os.path.join(script_dir, "../../../src/lart_msgs"))
@@ -56,7 +65,7 @@ def main():
         
         lines = []
         for sig_slug in sorted(list(sig_slugs)):
-            lines.append(f"float32 {sig_slug}")
+            lines.append(f"{signal_types[(msg_slug, sig_slug)][0]} {sig_slug}")
             
         with open(msg_path, "w", encoding="utf-8") as mf:
             mf.write("\n".join(lines) + "\n")
@@ -115,6 +124,7 @@ def main():
         "// Auto-generated from DBC files by generate_dbc_api.py. Do not edit.",
         "#ifndef LART_DBC_API_H",
         "#define LART_DBC_API_H",
+        "#include <stdint.h>",
         "",
         "#ifdef __cplusplus",
         "extern \"C\" {",
@@ -126,7 +136,7 @@ def main():
     for msg_slug in sorted(message_signals.keys()):
         header_lines.append(f"    struct {{")
         for sig_slug in sorted(message_signals[msg_slug]):
-            header_lines.append(f"        float {sig_slug};")
+            header_lines.append(f"        {signal_types[(msg_slug, sig_slug)][1]} {sig_slug};")
         header_lines.append(f"    }} {msg_slug};")
         
     header_lines.extend([
@@ -289,6 +299,10 @@ def main():
         "        FLOW_GLOBAL_VARIABLE_SPEED,",
         "        eez::FloatValue(speed_kph)",
         "    );",
+        "}",
+        "",
+        "extern \"C\" float ui_get_speed() {",
+        "    return eez::flow::getGlobalVariable(FLOW_GLOBAL_VARIABLE_SPEED).getFloat();",
         "}",
         "",
         "// Ethernet link state for the driver_view corner LED. Polled from sysfs",

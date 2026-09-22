@@ -14,6 +14,8 @@ extern const uint8_t assets[7920];
 void ui_init();
 void ui_tick();
 void ui_set_speed(float speed_kph);
+float ui_get_speed();
+void ui_update_speed_pull_display(float speed_kph);
 void ui_set_screen_var(int screen_id);
 void ui_update_telemetry_vars(const void *t);
 void ui_update_network_status();

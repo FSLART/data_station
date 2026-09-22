@@ -240,6 +240,7 @@ struct LvNotif {
 
 static std::vector<LvNotif> g_lv_notifications;
 static std::map<std::string, bool> g_last_error_state;
+constexpr bool kErrorNotificationsEnabled = false;
 
 constexpr int kNotifWidth = 650;
 constexpr int kNotifHeight = 80;
@@ -275,6 +276,8 @@ static void notif_click_cb(lv_event_t *e) {
 }
 
 extern "C" void ui_add_notification(const char *id, const char *title, const char *message) {
+    if (!kErrorNotificationsEnabled) return;
+
     for (auto &n : g_lv_notifications) {
         if (n.id == id) {
             n.title = title;
@@ -393,7 +396,7 @@ int main(int argc, char **argv) {
         };
 
         ui_init();
-        
+
         std::printf("[TEST] Running telemetry mapping unit tests...\n");
 
         // Test 1: Setting dbc_api directly and calling with NULL
@@ -554,33 +557,35 @@ int main(int argc, char **argv) {
         lv_tick_inc(elapsed_ms);
         ui_tick();
 
-        check_expired_notifications();
+        if (kErrorNotificationsEnabled) {
+            check_expired_notifications();
 
-        // Check for DBC errors
-        static std::map<std::string, bool> current_errors;
-        current_errors.clear();
-        
-        check_dbc_errors([](const char *id, const char *msg_name, const char *sig_name, float value, const char *choice_label) {
-            (void)value;
-            std::string id_str = id;
-            current_errors[id_str] = true;
-            if (!g_last_error_state[id_str]) {
-                g_last_error_state[id_str] = true;
-                char title_buf[128];
-                std::snprintf(title_buf, sizeof(title_buf), "%s Fault", msg_name);
-                char msg_buf[256];
-                if (std::strcmp(choice_label, "ERROR") == 0) {
-                    std::snprintf(msg_buf, sizeof(msg_buf), "%s: ACTIVE", sig_name);
-                } else {
-                    std::snprintf(msg_buf, sizeof(msg_buf), "%s", choice_label);
+            // Check for DBC errors
+            static std::map<std::string, bool> current_errors;
+            current_errors.clear();
+
+            check_dbc_errors([](const char *id, const char *msg_name, const char *sig_name, float value, const char *choice_label) {
+                (void)value;
+                std::string id_str = id;
+                current_errors[id_str] = true;
+                if (!g_last_error_state[id_str]) {
+                    g_last_error_state[id_str] = true;
+                    char title_buf[128];
+                    std::snprintf(title_buf, sizeof(title_buf), "%s Fault", msg_name);
+                    char msg_buf[256];
+                    if (std::strcmp(choice_label, "ERROR") == 0) {
+                        std::snprintf(msg_buf, sizeof(msg_buf), "%s: ACTIVE", sig_name);
+                    } else {
+                        std::snprintf(msg_buf, sizeof(msg_buf), "%s", choice_label);
+                    }
+                    ui_add_notification(id, title_buf, msg_buf);
                 }
-                ui_add_notification(id, title_buf, msg_buf);
-            }
-        });
-        
-        for (auto &pair : g_last_error_state) {
-            if (pair.second && !current_errors[pair.first]) {
-                pair.second = false;
+            });
+
+            for (auto &pair : g_last_error_state) {
+                if (pair.second && !current_errors[pair.first]) {
+                    pair.second = false;
+                }
             }
         }
 

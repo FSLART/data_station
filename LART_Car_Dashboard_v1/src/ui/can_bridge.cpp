@@ -22,6 +22,7 @@
 #include <string>
 #include <chrono>
 #include <algorithm>
+#include <filesystem>
 
 #include "generated/can_bridge_impl.hpp"
 
@@ -54,7 +55,10 @@ public:
         rpm_pub_ = this->create_publisher<std_msgs::msg::Float32>("/vehicle/rpm", sensor_qos);
 
         // Initialize DBC parser dispatcher
-        dbc_impl_ = std::make_unique<CanBridgeImpl>(this);
+        const auto dbc_path = this->declare_parameter<std::string>(
+            "dbc_path", iface_name_ == "can1" ? "powertrain_t26.dbc" : "data_t26.dbc");
+        dbc_impl_ = std::make_unique<CanBridgeImpl>(
+            this, std::filesystem::path(dbc_path).stem().string());
 
         // Start SocketCAN listener thread
         running_ = true;

@@ -5,12 +5,12 @@
 #include <rclcpp/rclcpp.hpp>
 #include <std_msgs/msg/float32.hpp>
 #include <memory>
+#include <string>
+#include <stdexcept>
 
 // Include the cantools-generated C headers
 #include "data_t26.h"
 #include "powertrain_t26.h"
-#include "autonomous_t26.h"
-
 #include <lart_msgs/msg/acu.hpp>
 #include <lart_msgs/msg/ams_sdc_feedback.hpp>
 #include <lart_msgs/msg/apps_adc_raw.hpp>
@@ -29,6 +29,9 @@
 #include <lart_msgs/msg/dv_dynamics1.hpp>
 #include <lart_msgs/msg/dv_dynamics2.hpp>
 #include <lart_msgs/msg/dv_status.hpp>
+#include <lart_msgs/msg/icd_request.hpp>
+#include <lart_msgs/msg/icd_response.hpp>
+#include <lart_msgs/msg/icd_result.hpp>
 #include <lart_msgs/msg/inv1_ac_dc_current.hpp>
 #include <lart_msgs/msg/inv1_erpm_duty_voltage.hpp>
 #include <lart_msgs/msg/inv1_foc.hpp>
@@ -187,9 +190,11 @@
 #include <lart_msgs/msg/vcu_states.hpp>
 #include <lart_msgs/msg/vcu_torque_target.hpp>
 
+#include "autonomous_t26.h"
+
 class CanBridgeImpl {
 public:
-    explicit CanBridgeImpl(rclcpp::Node* node);
+    explicit CanBridgeImpl(rclcpp::Node* node, const std::string& database = "data_t26");
     ~CanBridgeImpl() = default;
 
     /**
@@ -200,6 +205,7 @@ public:
 
 private:
     rclcpp::Node* node_;
+    std::string database_;
 
     // Aggregated publishers by message slug
     rclcpp::Publisher<lart_msgs::msg::Acu>::SharedPtr pub_acu;
@@ -220,6 +226,9 @@ private:
     rclcpp::Publisher<lart_msgs::msg::DvDynamics1>::SharedPtr pub_dv_dynamics_1;
     rclcpp::Publisher<lart_msgs::msg::DvDynamics2>::SharedPtr pub_dv_dynamics_2;
     rclcpp::Publisher<lart_msgs::msg::DvStatus>::SharedPtr pub_dv_status;
+    rclcpp::Publisher<lart_msgs::msg::IcdRequest>::SharedPtr pub_icd_request;
+    rclcpp::Publisher<lart_msgs::msg::IcdResponse>::SharedPtr pub_icd_response;
+    rclcpp::Publisher<lart_msgs::msg::IcdResult>::SharedPtr pub_icd_result;
     rclcpp::Publisher<lart_msgs::msg::Inv1AcDcCurrent>::SharedPtr pub_inv1_ac_dc_current;
     rclcpp::Publisher<lart_msgs::msg::Inv1ErpmDutyVoltage>::SharedPtr pub_inv1_erpm_duty_voltage;
     rclcpp::Publisher<lart_msgs::msg::Inv1Foc>::SharedPtr pub_inv1_foc;

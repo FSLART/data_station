@@ -68,6 +68,10 @@ extern "C" void ui_set_speed(float speed_kph) {
     );
 }
 
+extern "C" float ui_get_speed() {
+    return eez::flow::getGlobalVariable(FLOW_GLOBAL_VARIABLE_SPEED).getFloat();
+}
+
 // Ethernet link state for the driver_view corner LED. Polled from sysfs
 // rather than a ROS2 heartbeat, so it reflects the physical cable/link
 // state even if no other node is publishing.
@@ -177,7 +181,7 @@ extern "C" void ui_update_telemetry_vars(const void *t_ptr) {
     constexpr float tire_radius_m = 0.2032f;
     constexpr float gear_ratio = 14.73f;
     constexpr float pi = 3.14159265358979323846f;
-    const float motor_rpm = dbc_api.inv1_erpm_duty_voltage.inv1_actual_erpm * 4.0f;
+    const float motor_rpm = dbc_api.inv1_erpm_duty_voltage.inv1_actual_erpm / 4.0f;
     const float wheel_rpm = motor_rpm / gear_ratio;
     const float speed_kph = wheel_rpm * (2.0f * pi * tire_radius_m) * 60.0f / 1000.0f;
     float speed_val = speed_kph >= 0.0f ? speed_kph : 0.0f;
@@ -249,6 +253,24 @@ extern "C" const char *ui_get_as_state_name(int as_state_id) {
 extern "C" void check_dbc_errors(void (*on_error)(const char *id, const char *msg_name, const char *sig_name, float value, const char *choice_label)) {
     if (!on_error) return;
 
+    {
+        float val = dbc_api.icd_result.icd_status_measerror;
+        if (val > 0.5f) {
+            on_error("icd_result.icd_status_measerror", "ICD_Result", "ICD_Status_MeasError", val, "ERROR");
+        }
+    }
+    {
+        float val = dbc_api.icd_result.icd_status_syserror;
+        if (val > 0.5f) {
+            on_error("icd_result.icd_status_syserror", "ICD_Result", "ICD_Status_SysError", val, "ERROR");
+        }
+    }
+    {
+        float val = dbc_api.icd_response.resp_ss_powerfailure;
+        if (val > 0.5f) {
+            on_error("icd_response.resp_ss_powerfailure", "ICD_Response", "Resp_SS_PowerFailure", val, "ERROR");
+        }
+    }
     {
         float val = dbc_api.master_msc_id_1.adbms_pec_error;
         if (val > 0.5f) {

@@ -1,4 +1,4 @@
-name: Build ARM64
+name: faster build
 
 on:
   push:
@@ -12,7 +12,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build-arm64:
+  faster:
+    name: faster build
     runs-on: ubuntu-24.04-arm
     steps:
       - name: Checkout
@@ -32,7 +33,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: /var/cache/apt/archives
-          key: apt-arm64-jazzy-${{ hashFiles('.github/workflows/build-arm64.yml') }}
+          key: apt-arm64-jazzy-${{ hashFiles('.github/workflows/faster.yml') }}
 
       - name: Install ROS2 and build tooling
         run: |
@@ -77,8 +78,8 @@ jobs:
         run: tar czf lart-dashboard-arm64.tar.gz install LART_Car_Dashboard_v1/build/ui-build
 
       - name: Publish release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: latest-arm64
           name: "Latest ARM64 build"
-          files: lart-dashboard-arm64.tar.gz
+          files: fast-lart-dashboard-arm64.tar.gz
