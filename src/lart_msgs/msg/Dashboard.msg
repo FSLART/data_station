@@ -1,2 +1,0 @@
-float32 ignition_switch_raw
-float32 r2d_button_raw

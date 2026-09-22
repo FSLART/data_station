@@ -1,3 +1,0 @@
-float32 inv2_actual_duty
-float32 inv2_actual_erpm
-float32 inv2_actual_inputvoltage

@@ -1,3 +1,0 @@
-float32 brake_pressure_front
-float32 brake_pressure_rear
-float32 hv

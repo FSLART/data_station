@@ -1,2 +1,0 @@
-float32 inv1_actual_foc_id
-float32 inv1_actual_foc_iq

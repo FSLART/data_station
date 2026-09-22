@@ -1,4 +1,0 @@
-float32 inv1_controlmode
-float32 inv1_ismotorstill
-float32 inv1_motorposition
-float32 inv1_targetiq

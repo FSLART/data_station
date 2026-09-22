@@ -2,3 +2,6 @@
 	path = LART_Car_Dashboard_v1/src/ui/third_party/lvgl
 	url = https://github.com/lvgl/lvgl.git
 	branch = master
+[submodule "src/lart_msgs"]
+	path = src/lart_msgs
+	url = https://github.com/FSLART/lart_msgs.git

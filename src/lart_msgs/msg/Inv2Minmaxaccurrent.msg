@@ -1,4 +1,0 @@
-float32 inv2_availablemaxaccurrent
-float32 inv2_availableminaccurrent
-float32 inv2_maxaccurrent
-float32 inv2_minaccurrent
