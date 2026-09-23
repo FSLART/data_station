@@ -20,9 +20,9 @@ int main(int argc, char **argv) {
     auto node = std::make_shared<rclcpp::Node>("test_can_bridge_node");
     
     // Instantiate target DBC dispatcher class
-    CanBridgeImpl bridge(node.get(), "autonomous_t26");
+    CanBridgeImpl bridge(node.get(), "data_t26");
     
-    float received_speed = -1.0f;
+    float received_temperature = -1.0f;
     bool received = false;
     
     // Subscribe to test target topic
@@ -30,21 +30,21 @@ int main(int argc, char **argv) {
         "/can/dbc/aqt2",
         rclcpp::QoS(10).best_effort(),
         [&](const lart_msgs::msg::Aqt2::SharedPtr msg) {
-            received_speed = msg->wheel_spd;
+            received_temperature = msg->tire_temp;
             received = true;
         }
     );
     
     // Pack sample DBC data using the cantools unpack/pack C bindings
-    struct autonomous_t26_aqt2_t sample = {};
-    sample.wheel_spd = autonomous_t26_aqt2_wheel_spd_encode(42.5f);
+    struct data_t26_aqt2_t sample = {};
+    sample.tire_temp = data_t26_aqt2_tire_temp_encode(42.5f);
     
     uint8_t buffer[8] = {0};
-    int pack_res = autonomous_t26_aqt2_pack(buffer, &sample, sizeof(buffer));
-    assert(pack_res == AUTONOMOUS_T26_AQT2_LENGTH);
+    int pack_res = data_t26_aqt2_pack(buffer, &sample, sizeof(buffer));
+    assert(pack_res == DATA_T26_AQT2_LENGTH);
     
     // Execute frame decoding pipeline
-    bool handled = bridge.handle_frame(AUTONOMOUS_T26_AQT2_FRAME_ID, buffer, sizeof(buffer));
+    bool handled = bridge.handle_frame(DATA_T26_AQT2_FRAME_ID, buffer, sizeof(buffer));
     assert(handled == true);
     
     // Process message callbacks
@@ -53,9 +53,9 @@ int main(int argc, char **argv) {
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
     
-    std::cout << "Received speed: " << received_speed << " (Expected: ~42.5)" << std::endl;
+    std::cout << "Received temperature: " << received_temperature << " (Expected: ~42.5)" << std::endl;
     assert(received);
-    assert(std::abs(received_speed - 42.5f) < 0.1f);
+    assert(std::abs(received_temperature - 42.5f) < 0.1f);
     
     // ICD shares 0x500-0x502 with autonomous frames on a different bus.
     CanBridgeImpl data_bridge(node.get(), "data_t26");

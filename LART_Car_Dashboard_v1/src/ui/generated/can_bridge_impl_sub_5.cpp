@@ -268,13 +268,6 @@ bool CanBridgeImpl::handle_frame_chunk_5(uint32_t can_id, const uint8_t* data, s
                         decoded_any = true;
                     }
                 }
-                if (database_ == "autonomous_t26") {
-                    struct autonomous_t26_aqt2_t decoded = {};
-                    if (autonomous_t26_aqt2_unpack(&decoded, data, dlc) == 0) {
-                        out.wheel_spd = autonomous_t26_aqt2_wheel_spd_decode(decoded.wheel_spd);
-                        decoded_any = true;
-                    }
-                }
                 if (decoded_any) {
                     pub_aqt2->publish(out);
                 }
@@ -290,13 +283,6 @@ bool CanBridgeImpl::handle_frame_chunk_5(uint32_t can_id, const uint8_t* data, s
                     if (data_t26_aqt3_unpack(&decoded, data, dlc) == 0) {
                         out.tire_temp = data_t26_aqt3_tire_temp_decode(decoded.tire_temp);
                         out.brake_temp = data_t26_aqt3_brake_temp_decode(decoded.brake_temp);
-                        decoded_any = true;
-                    }
-                }
-                if (database_ == "autonomous_t26") {
-                    struct autonomous_t26_aqt3_t decoded = {};
-                    if (autonomous_t26_aqt3_unpack(&decoded, data, dlc) == 0) {
-                        out.wheel_spd = autonomous_t26_aqt3_wheel_spd_decode(decoded.wheel_spd);
                         decoded_any = true;
                     }
                 }
@@ -386,13 +372,6 @@ bool CanBridgeImpl::handle_frame_chunk_5(uint32_t can_id, const uint8_t* data, s
                     if (data_t26_aqt7_unpack(&decoded, data, dlc) == 0) {
                         out.susp_l = data_t26_aqt7_susp_l_decode(decoded.susp_l);
                         out.susp_r = data_t26_aqt7_susp_r_decode(decoded.susp_r);
-                        decoded_any = true;
-                    }
-                }
-                if (database_ == "autonomous_t26") {
-                    struct autonomous_t26_aqt7_t decoded = {};
-                    if (autonomous_t26_aqt7_unpack(&decoded, data, dlc) == 0) {
-                        out.rear_brk_press = autonomous_t26_aqt7_rear_brk_press_decode(decoded.rear_brk_press);
                         decoded_any = true;
                     }
                 }

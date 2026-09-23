@@ -34,12 +34,10 @@ typedef struct {
     struct {
         float brake_temp;
         float tire_temp;
-        float wheel_spd;
     } aqt2;
     struct {
         float brake_temp;
         float tire_temp;
-        float wheel_spd;
     } aqt3;
     struct {
         float emergency;
@@ -57,7 +55,6 @@ typedef struct {
         float tire_temp;
     } aqt6;
     struct {
-        float rear_brk_press;
         float susp_l;
         float susp_r;
     } aqt7;

@@ -85,7 +85,6 @@ void init_dbc_api_subscribers_chunk_0(std::shared_ptr<rclcpp::Node> node, std::v
                 std::lock_guard<std::mutex> lock(dbc_api_mutex);
                 dbc_api.aqt2.brake_temp = msg->brake_temp;
                 dbc_api.aqt2.tire_temp = msg->tire_temp;
-                dbc_api.aqt2.wheel_spd = msg->wheel_spd;
             }
         }));
     subs.push_back(node->create_subscription<lart_msgs::msg::Aqt3>(
@@ -94,7 +93,6 @@ void init_dbc_api_subscribers_chunk_0(std::shared_ptr<rclcpp::Node> node, std::v
                 std::lock_guard<std::mutex> lock(dbc_api_mutex);
                 dbc_api.aqt3.brake_temp = msg->brake_temp;
                 dbc_api.aqt3.tire_temp = msg->tire_temp;
-                dbc_api.aqt3.wheel_spd = msg->wheel_spd;
             }
         }));
     subs.push_back(node->create_subscription<lart_msgs::msg::Aqt4>(
@@ -128,7 +126,6 @@ void init_dbc_api_subscribers_chunk_0(std::shared_ptr<rclcpp::Node> node, std::v
         "/can/dbc/aqt7", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::Aqt7> msg) {
             if (msg) {
                 std::lock_guard<std::mutex> lock(dbc_api_mutex);
-                dbc_api.aqt7.rear_brk_press = msg->rear_brk_press;
                 dbc_api.aqt7.susp_l = msg->susp_l;
                 dbc_api.aqt7.susp_r = msg->susp_r;
             }

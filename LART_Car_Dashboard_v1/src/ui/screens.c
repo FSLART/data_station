@@ -1738,7 +1738,7 @@ void create_screen_debug_wheels_4() {
     lv_obj_set_size(obj, 800, 480);
     lv_obj_set_style_bg_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
     {
-        objects.general_debug_text_4 = create_debug_table(obj, 9);
+        objects.general_debug_text_4 = create_debug_table(obj, 5);
     }
     tick_screen_debug_wheels_4();
 }
@@ -1754,53 +1754,30 @@ void tick_screen_debug_wheels_4() {
     lv_table_add_cell_ctrl(table, 0, 1, LV_TABLE_CELL_CTRL_MERGE_RIGHT);
     lv_table_add_cell_ctrl(table, 0, 2, LV_TABLE_CELL_CTRL_MERGE_RIGHT);
 
-    // Row 1: FL Wheel
-    set_cell(table, 1, 0, "FL Speed:", 0xFFFFFF);
-    set_cell_fmt(table, 1, 1, 0xFFFFFF, "%3.0f km/h", dbc_api.aqt2.wheel_spd);
-    set_cell(table, 1, 2, "FL Temp:", 0xFFFFFF);
-    set_cell_fmt(table, 1, 3, 0xFFFFFF, "%4.1f C", dbc_api.aqt2.tire_temp);
+    // Row 1: FL temperatures
+    set_cell(table, 1, 0, "FL Temp:", 0xFFFFFF);
+    set_cell_fmt(table, 1, 1, 0xFFFFFF, "%4.1f C", dbc_api.aqt2.tire_temp);
+    set_cell(table, 1, 2, "FL BrkT:", 0xFFFFFF);
+    set_cell_fmt(table, 1, 3, 0xFFFFFF, "%4.1f C", dbc_api.aqt2.brake_temp);
 
-    // Row 2: FL Brake T
-    set_cell(table, 2, 0, "FL BrkT:", 0xFFFFFF);
-    set_cell_fmt(table, 2, 1, 0xFFFFFF, "%4.1f C", dbc_api.aqt2.brake_temp);
-    set_cell(table, 2, 2, "", 0xFFFFFF);
-    set_cell(table, 2, 3, "", 0xFFFFFF);
+    // Row 2: FR temperatures
+    set_cell(table, 2, 0, "FR Temp:", 0xFFFFFF);
+    set_cell_fmt(table, 2, 1, 0xFFFFFF, "%4.1f C", dbc_api.aqt3.tire_temp);
+    set_cell(table, 2, 2, "FR BrkT:", 0xFFFFFF);
+    set_cell_fmt(table, 2, 3, 0xFFFFFF, "%4.1f C", dbc_api.aqt3.brake_temp);
 
-    // Row 3: FR Wheel
-    set_cell(table, 3, 0, "FR Speed:", 0xFFFFFF);
-    set_cell_fmt(table, 3, 1, 0xFFFFFF, "%3.0f km/h", dbc_api.aqt3.wheel_spd);
-    set_cell(table, 3, 2, "FR Temp:", 0xFFFFFF);
-    set_cell_fmt(table, 3, 3, 0xFFFFFF, "%4.1f C", dbc_api.aqt3.tire_temp);
+    // Row 3: RL temperatures
+    set_cell(table, 3, 0, "RL Temp:", 0xFFFFFF);
+    set_cell_fmt(table, 3, 1, 0xFFFFFF, "%4.1f C", dbc_api.aqt5.tire_temp);
+    set_cell(table, 3, 2, "RL BrkT:", 0xFFFFFF);
+    set_cell_fmt(table, 3, 3, 0xFFFFFF, "%4.1f C", dbc_api.aqt5.brake_temp);
 
-    // Row 4: FR Brake T
-    set_cell(table, 4, 0, "FR BrkT:", 0xFFFFFF);
-    set_cell_fmt(table, 4, 1, 0xFFFFFF, "%4.1f C", dbc_api.aqt3.brake_temp);
-    set_cell(table, 4, 2, "", 0xFFFFFF);
-    set_cell(table, 4, 3, "", 0xFFFFFF);
+    // Row 4: RR temperatures
+    set_cell(table, 4, 0, "RR Temp:", 0xFFFFFF);
+    set_cell_fmt(table, 4, 1, 0xFFFFFF, "%4.1f C", dbc_api.aqt6.tire_temp);
+    set_cell(table, 4, 2, "RR BrkT:", 0xFFFFFF);
+    set_cell_fmt(table, 4, 3, 0xFFFFFF, "%4.1f C", dbc_api.aqt6.brake_temp);
 
-    // Row 5: RL Wheel
-    set_cell(table, 5, 0, "RL Speed:", 0xFFFFFF);
-    set_cell_fmt(table, 5, 1, 0xFFFFFF, "%3.0f km/h", 0.0f);
-    set_cell(table, 5, 2, "RL Temp:", 0xFFFFFF);
-    set_cell_fmt(table, 5, 3, 0xFFFFFF, "%4.1f C", dbc_api.aqt5.tire_temp);
-
-    // Row 6: RL Brake T
-    set_cell(table, 6, 0, "RL BrkT:", 0xFFFFFF);
-    set_cell_fmt(table, 6, 1, 0xFFFFFF, "%4.1f C", dbc_api.aqt5.brake_temp);
-    set_cell(table, 6, 2, "", 0xFFFFFF);
-    set_cell(table, 6, 3, "", 0xFFFFFF);
-
-    // Row 7: RR Wheel
-    set_cell(table, 7, 0, "RR Speed:", 0xFFFFFF);
-    set_cell_fmt(table, 7, 1, 0xFFFFFF, "%3.0f km/h", 0.0f);
-    set_cell(table, 7, 2, "RR Temp:", 0xFFFFFF);
-    set_cell_fmt(table, 7, 3, 0xFFFFFF, "%4.1f C", dbc_api.aqt6.tire_temp);
-
-    // Row 8: RR Brake T
-    set_cell(table, 8, 0, "RR BrkT:", 0xFFFFFF);
-    set_cell_fmt(table, 8, 1, 0xFFFFFF, "%4.1f C", dbc_api.aqt6.brake_temp);
-    set_cell(table, 8, 2, "", 0xFFFFFF);
-    set_cell(table, 8, 3, "", 0xFFFFFF);
 }
 
 void create_screen_debug_5() {
@@ -2234,8 +2211,8 @@ void tick_screen_debug_autonomous_5() {
     // Row 7
     set_cell(table, 7, 0, "AQT4 Emer:", 0xFFFFFF);
     set_cell(table, 7, 1, (dbc_api.aqt4.emergency == 1) ? "ACTIVE" : "OK", (dbc_api.aqt4.emergency == 1) ? 0xFF0000 : 0x00FF00);
-    set_cell(table, 7, 2, "AQT7 BrkP:", 0xFFFFFF);
-    set_cell_fmt(table, 7, 3, 0xFFFFFF, "%5.1f bar", dbc_api.aqt7.rear_brk_press);
+    set_cell(table, 7, 2, "", 0xFFFFFF);
+    set_cell(table, 7, 3, "", 0xFFFFFF);
 
     // Row 8
     set_cell(table, 8, 0, "AQT2 WhlAng:", 0xFFFFFF);

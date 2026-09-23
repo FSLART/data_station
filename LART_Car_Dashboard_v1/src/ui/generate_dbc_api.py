@@ -5,6 +5,10 @@ import cantools
 
 _UNSAFE = re.compile(r'[^a-zA-Z0-9_]')
 
+# Autonomous-only signals are not exposed by the data-station messages or UI.
+_EXCLUDED_SIGNALS = {("AQT2", "WHEEL_SPD"), ("AQT3", "WHEEL_SPD"), ("AQT7", "REAR_BRK_PRESS")}
+
+
 def _ros_name(raw: str) -> str:
     """Convert a DBC identifier to a valid, lowercase C/C++ struct member/variable segment."""
     slug = _UNSAFE.sub('_', raw).strip('_').lower()
@@ -42,6 +46,8 @@ def main():
         if msg_slug not in message_signals:
             message_signals[msg_slug] = set()
         for sig in msg.signals:
+            if (msg.name, sig.name) in _EXCLUDED_SIGNALS:
+                continue
             sig_slug = _ros_name(sig.name)
             message_signals[msg_slug].add(sig_slug)
             # Preserve established interfaces; new ICD integer fields must be exact.
@@ -109,6 +115,8 @@ def main():
             continue
         msg_slug = _ros_name(msg.name)
         for sig in msg.signals:
+            if (msg.name, sig.name) in _EXCLUDED_SIGNALS:
+                continue
             sig_slug = _ros_name(sig.name)
             if any(k in sig_slug.lower() for k in ('error', 'fault', 'emergency', 'fail')):
                 error_signals.append({

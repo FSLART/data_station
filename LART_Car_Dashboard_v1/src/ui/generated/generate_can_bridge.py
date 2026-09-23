@@ -6,6 +6,10 @@ import cantools.subparsers.generate_c_source as gen
 
 _UNSAFE = re.compile(r'[^a-zA-Z0-9_]')
 
+# Autonomous-only signals are not exposed by the data-station messages or UI.
+_EXCLUDED_SIGNALS = {("AQT2", "WHEEL_SPD"), ("AQT3", "WHEEL_SPD"), ("AQT7", "REAR_BRK_PRESS")}
+
+
 def _ros_name(raw: str) -> str:
     """Sanitize a name to a valid ROS topic segment (using val_ if starting with digit)."""
     slug = _UNSAFE.sub('_', raw).strip('_').lower()
@@ -43,7 +47,7 @@ def main():
     for db_info in databases:
         db_name = db_info["db_name"]
         for msg in db_info["db"].messages:
-            if not msg.signals:
+            if not any((msg.name, sig.name) not in _EXCLUDED_SIGNALS for sig in msg.signals):
                 continue
             messages_to_decode.append({
                 "db_name": db_name,
@@ -233,6 +237,8 @@ def main():
                     ])
 
                     for sig in m_info["msg"].signals:
+                        if (m_info["msg"].name, sig.name) in _EXCLUDED_SIGNALS:
+                            continue
                         sig_slug = _ros_name(sig.name)
                         sig_c_name = _to_c_name(sig.name)
                         decode_fn = f"{db_name}_{msg_c_name}_{sig_c_name}_decode"
