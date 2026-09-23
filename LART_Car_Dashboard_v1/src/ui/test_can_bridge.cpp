@@ -72,7 +72,7 @@ int main(int argc, char **argv) {
     auto response_sub = node->create_subscription<lart_msgs::msg::IcdResponse>(
         "/can/dbc/icd_response", rclcpp::QoS(10).best_effort(),
         [&](lart_msgs::msg::IcdResponse::SharedPtr msg) {
-            if (msg->resp_muxid != 228 || msg->resp_articlenumber != article || msg->resp_fwmajor != 0)
+            if (static_cast<uint8_t>(msg->resp_muxid) != 228 || msg->resp_articlenumber != article || msg->resp_fwmajor != 0)
                 throw std::runtime_error("ICD precision/multiplexer mismatch");
             got_response = true;
         });
