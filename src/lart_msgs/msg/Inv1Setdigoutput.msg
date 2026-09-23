@@ -1,4 +1,0 @@
-float32 inv1_cmd_setdigoutput1
-float32 inv1_cmd_setdigoutput2
-float32 inv1_cmd_setdigoutput3
-float32 inv1_cmd_setdigoutput4

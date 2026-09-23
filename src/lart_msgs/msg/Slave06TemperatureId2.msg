@@ -1,4 +1,0 @@
-float32 temperature_delta
-float32 temperature_maximum
-float32 temperature_value_5
-float32 temperature_value_6

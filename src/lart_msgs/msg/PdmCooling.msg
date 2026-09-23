@@ -1,2 +1,0 @@
-float32 coolingfan_pwm
-float32 waterpump_pwm

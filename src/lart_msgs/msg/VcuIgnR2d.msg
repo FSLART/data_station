@@ -1,8 +1,0 @@
-float32 ignition_auto
-float32 ignition_manual
-float32 ignition_switch_raw
-float32 r2d_auto
-float32 r2d_button_raw
-float32 r2d_manual
-float32 shutdown_signal
-float32 vcu_state

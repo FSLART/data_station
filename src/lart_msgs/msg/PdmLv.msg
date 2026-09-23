@@ -1,1 +1,0 @@
-float32 lv_voltage_mv

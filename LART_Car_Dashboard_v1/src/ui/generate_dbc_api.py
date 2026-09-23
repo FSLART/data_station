@@ -54,7 +54,7 @@ def main():
             
     # 1. Generate ROS 2 message files and update lart_msgs/CMakeLists.txt
     lart_msgs_dir = os.path.abspath(os.path.join(script_dir, "../../../src/lart_msgs"))
-    msg_dir = os.path.join(lart_msgs_dir, "msg")
+    msg_dir = os.path.join(lart_msgs_dir, "dbc_msgs")
     os.makedirs(msg_dir, exist_ok=True)
     
     generated_msg_files = []

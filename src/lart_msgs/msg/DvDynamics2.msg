@@ -1,3 +1,0 @@
-float32 acceleration_lateral
-float32 acceleration_longitudinal
-float32 yaw_rate

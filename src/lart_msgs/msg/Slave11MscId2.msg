@@ -1,4 +1,0 @@
-float32 module_ic_temperature
-float32 module_ic_voltage
-float32 module_open_wire
-float32 module_voltage_delta
