@@ -7,8 +7,7 @@ When sim_mode=true (or gpiod is not installed), the node starts successfully
 but publishes no events — useful for home testing without hardware.
 
 Published topics:
-  /input/buttons   (lart_msgs/ButtonEvent)
-  /input/encoders  (lart_msgs/EncoderDelta)
+  none
 
 Encoder direction convention (rising CLK edge):
   DT is LOW  → clockwise   → delta = +1
@@ -20,7 +19,6 @@ import threading
 
 import rclpy
 from rclpy.node import Node
-from lart_msgs.msg import ButtonEvent, EncoderDelta
 
 try:
     import gpiod
@@ -42,9 +40,6 @@ class InputHandlerNode(Node):
         self.declare_parameter('encoder_b_dt', 25)
         self.declare_parameter('debounce_ms', 50)
         self.declare_parameter('sim_mode', False)
-
-        self._btn_pub = self.create_publisher(ButtonEvent, '/input/buttons', 10)
-        self._enc_pub = self.create_publisher(EncoderDelta, '/input/encoders', 10)
 
         sim_mode = self.get_parameter('sim_mode').value
         if sim_mode or not _HAS_GPIOD:
@@ -138,11 +133,7 @@ class InputHandlerNode(Node):
     def _handle_button(self, ev) -> None:
         btn_id = self._btn_pin_to_id[ev.line_offset]
         pressed = ev.event_type == gpiod.EdgeEvent.Type.RISING_EDGE
-        msg = ButtonEvent()
-        msg.stamp = self.get_clock().now().to_msg()
-        msg.button_id = btn_id
-        msg.pressed = pressed
-        self._btn_pub.publish(msg)
+        self.get_logger().debug(f'button {btn_id} pressed={pressed}')
 
     def _handle_encoder_clk(self, ev) -> None:
         # Only act on rising edge of CLK
@@ -153,11 +144,7 @@ class InputHandlerNode(Node):
         dt_val = self._enc_dt_req.get_value(dt_pin)
         # DT LOW → CW (+1), DT HIGH → CCW (−1)
         delta = -1 if dt_val == LineValue.ACTIVE else 1
-        msg = EncoderDelta()
-        msg.stamp = self.get_clock().now().to_msg()
-        msg.encoder_id = enc_id
-        msg.delta = delta
-        self._enc_pub.publish(msg)
+        self.get_logger().debug(f'encoder {enc_id} delta={delta}')
 
     # ------------------------------------------------------------------
 

@@ -1,7 +1,6 @@
 """CAN-to-ROS 2 bridge — with optional DBC-based dynamic decoding.
 
 Reads from one CAN bus via python-can (SocketCAN) and publishes:
-  /can/frames       (lart_msgs/CanFrame)     — every raw frame
   /can/dbc/<msg_name>  (per-message custom msg from lart_msgs, one field
                         per DBC signal) — one publisher per DBC message
                         (only when dbc_path is set)
@@ -24,7 +23,6 @@ import rclpy
 from rclpy.node import Node
 from rclpy.qos import QoSProfile, QoSReliabilityPolicy, QoSHistoryPolicy
 from std_msgs.msg import Float32
-from lart_msgs.msg import CanFrame
 
 _BEST_EFFORT = QoSProfile(
     reliability=QoSReliabilityPolicy.BEST_EFFORT,
@@ -69,7 +67,6 @@ class CanBridgeNode(Node):
         dbc_path        = self.get_parameter('dbc_path').value
 
         # ── Core publishers ────────────────────────────────────────────────
-        self._frame_pub = self.create_publisher(CanFrame, '/can/frames', _BEST_EFFORT)
         self._rpm_pub   = self.create_publisher(Float32, '/vehicle/rpm', _BEST_EFFORT)
 
         # ── DBC setup ─────────────────────────────────────────────────────
@@ -198,18 +195,6 @@ class CanBridgeNode(Node):
     # ──────────────────────────────────────────────────────────────────────
 
     def _on_message(self, msg: can.Message) -> None:
-        stamp = self.get_clock().now().to_msg()
-
-        # ── Publish raw frame ──────────────────────────────────────────────
-        frame = CanFrame()
-        frame.stamp = stamp
-        frame.can_id = msg.arbitration_id
-        frame.dlc = msg.dlc
-        data = list(msg.data[:8])
-        data += [0] * (8 - len(data))
-        frame.data = data
-        self._frame_pub.publish(frame)
-
         # ── Legacy RPM decode ──────────────────────────────────────────────
         if msg.arbitration_id == self._rpm_id:
             end = self._rpm_start + self._rpm_len

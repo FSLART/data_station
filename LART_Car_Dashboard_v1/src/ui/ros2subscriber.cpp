@@ -29,44 +29,11 @@
 #include <std_msgs/msg/int32.hpp>
 #include <std_msgs/msg/string.hpp>
 
-#if !defined(LART_HAVE_DASHBOARD_STATE_MSG)
-#if defined(__has_include)
-#if __has_include(<lart_msgs/msg/dashboard_state.hpp>)
-#define LART_HAVE_DASHBOARD_STATE_MSG 1
-#else
-#define LART_HAVE_DASHBOARD_STATE_MSG 0
-#endif
-#else
-#define LART_HAVE_DASHBOARD_STATE_MSG 0
-#endif
-#endif
-
-#if LART_HAVE_DASHBOARD_STATE_MSG
-#include <lart_msgs/msg/dashboard_state.hpp>
-#endif
-
-#if !defined(LART_HAVE_CAN_FRAME_MSG)
-#if defined(__has_include)
-#if __has_include(<lart_msgs/msg/can_frame.hpp>)
-#define LART_HAVE_CAN_FRAME_MSG 1
-#else
-#define LART_HAVE_CAN_FRAME_MSG 0
-#endif
-#else
-#define LART_HAVE_CAN_FRAME_MSG 0
-#endif
-#endif
-
-#if LART_HAVE_CAN_FRAME_MSG
-#include <lart_msgs/msg/can_frame.hpp>
-#endif
-
 extern std::mutex dbc_api_mutex;
 
 namespace {
 constexpr const char *DEFAULT_SPEED_TOPIC = "/can/dbc/dv_dynamics_1/speed_actual";
 constexpr const char *DEFAULT_HV_TOPIC = "/can/dbc/vcu_hv/hv";
-constexpr const char *DEFAULT_DASHBOARD_STATE_TOPIC = "/vehicle/dashboard_state";
 constexpr const char *DEFAULT_SET_SCREEN_TOPIC = "/dashboard/set_screen";
 // The ACU still publishes mission_select on its own legacy per-signal topic
 // (not folded into the aggregated "/can/dbc/acu" message), so it's picked
@@ -94,7 +61,6 @@ std::shared_ptr<rclcpp::executors::SingleThreadedExecutor> g_exec;
 rclcpp::SubscriptionBase::SharedPtr g_sub;
 rclcpp::SubscriptionBase::SharedPtr g_sub_hv;
 rclcpp::SubscriptionBase::SharedPtr g_sub_screen;
-rclcpp::SubscriptionBase::SharedPtr g_sub_can_frames;
 rclcpp::SubscriptionBase::SharedPtr g_sub_notifications;
 rclcpp::SubscriptionBase::SharedPtr g_sub_notification_ack;
 rclcpp::SubscriptionBase::SharedPtr g_sub_mission_select;
@@ -189,24 +155,6 @@ LART_WEAK int ros2subscriber_init(void) {
 
     g_pub_notification_ack = g_node->create_publisher<std_msgs::msg::String>(
         "/vehicle/notification_ack", rclcpp::QoS(10));
-
-#if LART_HAVE_CAN_FRAME_MSG
-    auto can_frame_callback = [](const lart_msgs::msg::CanFrame::SharedPtr msg) {
-        if (msg) {
-            std::lock_guard<std::mutex> lock(g_can_log_mutex);
-            char buf[128];
-            int offset = snprintf(buf, sizeof(buf), "0x%03X [%u]", msg->can_id, (unsigned int)msg->dlc);
-            for (size_t i = 0; i < msg->dlc && i < msg->data.size() && offset < (int)sizeof(buf) - 3; ++i) {
-                offset += snprintf(buf + offset, sizeof(buf) - offset, " %02X", msg->data[i]);
-            }
-            g_can_log_frames.push_back(std::string(buf));
-            if (g_can_log_frames.size() > 8) {
-                g_can_log_frames.erase(g_can_log_frames.begin());
-            }
-        }
-    };
-    g_sub_can_frames = g_node->create_subscription<lart_msgs::msg::CanFrame>("/can/frames", sensor_qos, can_frame_callback);
-#endif
 
     // Per-signal DBC telemetry now arrives via the aggregated per-message
     // topics (e.g. "/can/dbc/aqt2") set up below, not the old split
@@ -313,7 +261,6 @@ LART_WEAK void ros2subscriber_fini(void) {
     g_sub.reset();
     g_sub_hv.reset();
     g_sub_screen.reset();
-    g_sub_can_frames.reset();
     g_sub_notifications.reset();
     g_sub_notification_ack.reset();
     g_sub_mission_select.reset();

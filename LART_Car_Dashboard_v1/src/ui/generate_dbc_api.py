@@ -78,12 +78,7 @@ def main():
         generated_msg_files.append(msg_filename)
         
     cmake_path = os.path.join(lart_msgs_dir, "CMakeLists.txt")
-    standard_msgs = [
-        "msg/ButtonEvent.msg",
-        "msg/EncoderDelta.msg",
-        "msg/CanFrame.msg",
-        "msg/DashboardState.msg"
-    ]
+    standard_msgs = []
     all_msgs = standard_msgs + [f"msg/{mf}" for mf in sorted(generated_msg_files)]
     
     cmake_lines = [

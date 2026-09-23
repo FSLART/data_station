@@ -1,7 +1,7 @@
-"""Bridge decoded CAN signals into DashboardState for the UI.
+"""Bridge decoded CAN signals into scalar UI topics.
 
 Subscribes to configured Float32 topics (typically /can/dbc/* or /vehicle/rpm)
-and publishes /vehicle/dashboard_state for dashboard_ui.
+and publishes /vehicle/speed_kph for dashboard_ui.
 """
 
 from __future__ import annotations
@@ -12,7 +12,6 @@ import time
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Float32
-from lart_msgs.msg import DashboardState
 
 
 def _nan() -> float:
@@ -23,7 +22,7 @@ def _is_finite(value: float) -> bool:
     return math.isfinite(value)
 
 
-class DashboardStateBridge(Node):
+class SpeedBridge(Node):
     def __init__(self) -> None:
         super().__init__('dashboard_state_bridge')
 
@@ -68,9 +67,6 @@ class DashboardStateBridge(Node):
         self._r2d_ready = False
         self._last_rx: float | None = None
 
-        self._state_pub = self.create_publisher(
-            DashboardState, '/vehicle/dashboard_state', 10
-        )
         self._speed_pub = self.create_publisher(
             Float32, '/vehicle/speed_kph', 10
         )
@@ -169,28 +165,6 @@ class DashboardStateBridge(Node):
             if _is_finite(rpm):
                 speed = rpm * self._speed_from_rpm_scale
 
-        msg = DashboardState()
-        msg.stamp = self.get_clock().now().to_msg()
-        msg.rpm = float(self._values['rpm'])
-        msg.speed_kph = float(speed) if _is_finite(speed) else _nan()
-        msg.inv_temp_c = float(self._values['inv_temp_c'])
-        msg.motor_temp_c = float(self._values['motor_temp_c'])
-        msg.bps = float(self._values['bps'])
-        msg.kw_inst = float(self._values['kw_inst'])
-        msg.kw_limit = float(self._values['kw_limit'])
-        msg.soc_lv = float(self._values['soc_lv'])
-        msg.soc_hv = float(self._values['soc_hv'])
-        msg.lv_voltage = float(self._values['lv_voltage'])
-        msg.r2d_ready = bool(self._r2d_ready)
-
-        now = time.time()
-        msg.can_active = (
-            self._last_rx is not None
-            and (now - self._last_rx) < self._can_active_timeout_s
-        )
-
-        self._state_pub.publish(msg)
-
         if _is_finite(speed):
             speed_msg = Float32()
             speed_msg.data = float(speed)
@@ -199,7 +173,7 @@ class DashboardStateBridge(Node):
 
 def main(args=None) -> None:
     rclpy.init(args=args)
-    node = DashboardStateBridge()
+    node = SpeedBridge()
     try:
         rclpy.spin(node)
     except KeyboardInterrupt:

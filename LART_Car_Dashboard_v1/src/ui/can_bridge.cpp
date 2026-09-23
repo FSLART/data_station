@@ -3,12 +3,11 @@
  * @brief C++ SocketCAN to ROS 2 Telemetry Bridge.
  * 
  * Subscribes to a Linux raw CAN socket, translates frames using DBC unpacking logic,
- * and publishes physical signals, raw frames, and legacy RPM values to ROS 2.
+ * and publishes physical signals and legacy RPM values to ROS 2.
  */
 
 #include <rclcpp/rclcpp.hpp>
 #include <std_msgs/msg/float32.hpp>
-#include <lart_msgs/msg/can_frame.hpp>
 
 #include <sys/socket.h>
 #include <sys/ioctl.h>
@@ -51,7 +50,6 @@ public:
         auto sensor_qos = rclcpp::QoS(10).best_effort();
 
         // Core ROS 2 publishers
-        frame_pub_ = this->create_publisher<lart_msgs::msg::CanFrame>("/can/frames", sensor_qos);
         rpm_pub_ = this->create_publisher<std_msgs::msg::Float32>("/vehicle/rpm", sensor_qos);
 
         // Initialize DBC parser dispatcher
@@ -169,15 +167,7 @@ private:
             // Extract standard or extended ID without flag bits
             uint32_t clean_id = frame.can_id & CAN_EFF_MASK;
 
-            // 1. Publish raw frame
-            lart_msgs::msg::CanFrame raw_msg;
-            raw_msg.stamp = this->get_clock()->now();
-            raw_msg.can_id = clean_id;
-            raw_msg.dlc = frame.can_dlc;
-            std::copy(frame.data, frame.data + 8, raw_msg.data.begin());
-            frame_pub_->publish(raw_msg);
-
-            // 2. Decode legacy RPM
+            // 1. Decode legacy RPM
             if (clean_id == static_cast<uint32_t>(rpm_can_id_)) {
                 size_t end = rpm_start_byte_ + rpm_length_bytes_;
                 if (end <= frame.can_dlc) {
@@ -191,7 +181,7 @@ private:
                 }
             }
 
-            // 3. Decode signals using compiled DBC definitions
+            // 2. Decode signals using compiled DBC definitions
             dbc_impl_->handle_frame(clean_id, frame.data, frame.can_dlc);
         }
     }
@@ -210,7 +200,6 @@ private:
     std::thread reader_thread_;
 
     // ROS 2 publishers
-    rclcpp::Publisher<lart_msgs::msg::CanFrame>::SharedPtr frame_pub_;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr rpm_pub_;
 
     // DBC parser implementation

@@ -9,8 +9,6 @@
   <license>MIT</license>
 
   <exec_depend>rclpy</exec_depend>
-  <exec_depend>lart_msgs</exec_depend>
-
   <!-- python3-gpiod >= 2.0 installed via apt -->
 
   <export>
