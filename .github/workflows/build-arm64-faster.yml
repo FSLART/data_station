@@ -80,6 +80,6 @@ jobs:
       - name: Publish release
         uses: softprops/action-gh-release@v3
         with:
-          tag_name: latest-arm64
-          name: "Latest ARM64 build"
+          tag_name: faster-arm64
+          name: "Latest ARM64 build - faster"
           files: fast-lart-dashboard-arm64.tar.gz
