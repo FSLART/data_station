@@ -8,7 +8,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: build-arm64
+  group: build-arm64-faster
   cancel-in-progress: true
 
 jobs:
@@ -33,7 +33,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: /var/cache/apt/archives
-          key: apt-arm64-jazzy-${{ hashFiles('.github/workflows/faster.yml') }}
+          key: apt-arm64-jazzy-${{ hashFiles('.github/workflows/build-arm64-faster.yml') }}
 
       - name: Install ROS2 and build tooling
         run: |
@@ -75,7 +75,7 @@ jobs:
           cmake --build LART_Car_Dashboard_v1/build/ui-build --parallel $(nproc)
 
       - name: Package artifact
-        run: tar czf lart-dashboard-arm64.tar.gz install LART_Car_Dashboard_v1/build/ui-build
+        run: tar czf fast-lart-dashboard-arm64.tar.gz install LART_Car_Dashboard_v1/build/ui-build
 
       - name: Publish release
         uses: softprops/action-gh-release@v3
