@@ -8,7 +8,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: build-arm64
+  group: build-arm64-normal
   cancel-in-progress: true
 
 jobs:
