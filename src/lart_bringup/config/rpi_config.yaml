@@ -67,7 +67,7 @@ input_handler:
 led_controller:
   ros__parameters:
     led_count: 8
-    led_pin: 18                  # GPIO 18 (PWM0) — required for WS2812B
+    # NeoPixel data uses SPI0 MOSI: GPIO 10, physical pin 19.
     brightness: 0.5              # 0.0-1.0; reduce if the strip draws too much power
     animation_hz: 20.0           # rainbow refresh rate
 

@@ -1,7 +1,7 @@
 """Addressable LED strip controller — moving rainbow effect.
 
-Requires adafruit-circuitpython-neopixel + adafruit-blinka:
-  pip install adafruit-circuitpython-neopixel
+Requires adafruit-circuitpython-neopixel-spi + adafruit-blinka:
+  pip install adafruit-circuitpython-neopixel-spi
 
 LED behaviour:
   - All LEDs display a moving rainbow while the node is running
@@ -13,10 +13,10 @@ from rclpy.node import Node
 
 try:
     import board
-    import neopixel
-    _HAS_NEOPIXEL = True
+    import neopixel_spi
+    _HAS_NEOPIXEL_SPI = True
 except (ImportError, NotImplementedError):
-    _HAS_NEOPIXEL = False
+    _HAS_NEOPIXEL_SPI = False
 
 _COLOR_OFF = (0, 0, 0)
 
@@ -38,7 +38,6 @@ class LedControllerNode(Node):
         super().__init__('led_controller')
 
         self.declare_parameter('led_count', 8)
-        self.declare_parameter('led_pin', 18)
         self.declare_parameter('brightness', 0.5)
         self.declare_parameter('animation_hz', 20.0)
 
@@ -47,20 +46,19 @@ class LedControllerNode(Node):
         animation_hz = float(self.get_parameter('animation_hz').value)
         self._rainbow_offset = 0
 
-        if _HAS_NEOPIXEL:
-            pin_num = self.get_parameter('led_pin').value
-            gpio_pin = getattr(board, f'D{pin_num}', board.D18)
-            self._pixels = neopixel.NeoPixel(
-                gpio_pin,
+        if _HAS_NEOPIXEL_SPI:
+            self._pixels = neopixel_spi.NeoPixel_SPI(
+                board.SPI(),
                 self._count,
                 brightness=max(0.0, min(brightness, 1.0)),
                 auto_write=False,
+                pixel_order=neopixel_spi.GRB,
             )
         else:
             self._pixels = None
             self.get_logger().warn(
-                'NeoPixel library not found — LED output disabled. '
-                'Install: pip install adafruit-circuitpython-neopixel'
+                'NeoPixel SPI library not found — LED output disabled. '
+                'Install: pip install adafruit-circuitpython-neopixel-spi'
             )
 
         self._timer = self.create_timer(
