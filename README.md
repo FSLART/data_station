@@ -14,7 +14,7 @@ exposes everything to the driver through the LVGL dashboard:
 - **CAN in** — `can0`/`can1` carry `data_t26.dbc` and `powertrain_t26.dbc`
   frames (speed, temps, pressures, HV/LV, inverter/motor telemetry). The
   `can_bridge` decodes these directly off the wire and republishes them as
-  ROS 2 topics (`/can/frames`, `/can/dbc/*`).
+  ROS 2 topics (`/can/frames`, `/can/*`).
 - **Autonomous in** — the Jetson/ACU stack does **not** go through the CAN
   bridge. It publishes its own ROS 2 topics over DDS (mission state, ACU
   state, AS state, emergency cause, SLAM/lap info), and the DataStation
@@ -37,7 +37,7 @@ flowchart LR
     CH1 --> Bridge["can_bridge\n(data_t26.dbc, powertrain_t26.dbc)"]
     CH2 --> Bridge
 
-    Bridge -- "/can/frames\n/can/dbc/*" --> DDS(("ROS 2 / DDS"))
+    Bridge -- "/can/frames\n/can/*" --> DDS(("ROS 2 / DDS"))
     ACU -- "ROS 2 topics\n(direct, no CAN)" --> DDS
 
     DDS --> UI["ui_runner\n(LVGL dashboard)"]
@@ -80,7 +80,7 @@ flowchart LR
 ## Data flow
 
 - CAN CH1/CH2 -> `can_bridge` (car) or `mock_can` (home).
-- Topics published: `/can/frames`, `/vehicle/rpm`, `/vehicle/dashboard_state` and dynamic `/can/dbc/*` topics.
+- Topics published: `/can/frames`, `/vehicle/rpm`, `/vehicle/dashboard_state` and dynamic `/can/*` topics.
 - Jetson/ACU autonomous stack publishes its own ROS 2 topics directly (no CAN involved); `ui_runner` subscribes to them.
 - `ui_runner` (LVGL dashboard) consumes the CAN topics, autonomous topics, and state topics to render the cockpit UI.
 - `led_controller` consumes RPM and drives LED strip.
@@ -90,8 +90,9 @@ flowchart LR
 
 Compiled output (the ROS2 workspace and the `ui_runner` dashboard binary) is
 built by GitHub Actions (`.github/workflows/build-arm64.yml`) on every push to
-`master` and published to the `latest-arm64` release — the Pi pulls it
-instead of compiling locally:
+`master`. Every successful build is retained as a GitHub Release tagged
+`arm64-<full-commit-sha>`, while `latest-arm64` continues to point to the most
+recent build. The Pi pulls the latest release instead of compiling locally:
 
 **One-time prerequisite** (run once on a fresh/reimaged Pi):
 ```bash
@@ -107,6 +108,11 @@ pip install -r requirements.txt --break-system-packages
 ./scripts/pull_arm64_build.sh
 source install/setup.bash
 ```
+
+To use an older build, open the repository's GitHub Releases page, select the
+`arm64-<full-commit-sha>` release for the desired commit, and download its
+`lart-dashboard-arm64.tar.gz` asset. Fast builds are retained in the same way
+under `faster-arm64-<full-commit-sha>` tags.
 
 To build locally instead (e.g. while developing on a non-arm64 machine, or if
 CI is unavailable), use the original workflow:
@@ -143,4 +149,3 @@ source ~/ros2_jazzy/install/local_setup.bash
 source ~/GIT/lart_dashboard_ws/install/setup.bash
 ros2 launch lart_bringup car.launch.py
 ```
-

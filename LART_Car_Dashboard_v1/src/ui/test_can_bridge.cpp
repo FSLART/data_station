@@ -12,6 +12,7 @@
 #include <cmath>
 
 #include "generated/can_bridge_impl.hpp"
+#include <lart_msgs/msg/aqt1.hpp>
 #include <lart_msgs/msg/aqt2.hpp>
 
 int main(int argc, char **argv) {
@@ -27,7 +28,7 @@ int main(int argc, char **argv) {
     
     // Subscribe to test target topic
     auto sub = node->create_subscription<lart_msgs::msg::Aqt2>(
-        "/can/dbc/aqt2",
+        "/data/aqt2",
         rclcpp::QoS(10).best_effort(),
         [&](const lart_msgs::msg::Aqt2::SharedPtr msg) {
             received_temperature = msg->tire_temp;
@@ -56,12 +57,32 @@ int main(int argc, char **argv) {
     std::cout << "Received temperature: " << received_temperature << " (Expected: ~42.5)" << std::endl;
     assert(received);
     assert(std::abs(received_temperature - 42.5f) < 0.1f);
+
+    float received_throttle = -1.0f;
+    bool received_aqt1 = false;
+    auto aqt1_sub = node->create_subscription<lart_msgs::msg::Aqt1>(
+        "/data/aqt1",
+        rclcpp::QoS(10).best_effort(),
+        [&](const lart_msgs::msg::Aqt1::SharedPtr msg) {
+            received_throttle = msg->throtle_percentage;
+            received_aqt1 = true;
+        }
+    );
+
+    const uint8_t aqt1_payload[8] = {73, 0, 0, 0, 0, 0, 0, 0};
+    assert(bridge.handle_frame(0x700, aqt1_payload, sizeof(aqt1_payload)));
+    for (int i = 0; i < 15; ++i) {
+        rclcpp::spin_some(node);
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+    assert(received_aqt1);
+    assert(std::abs(received_throttle - 73.0f) < 0.1f);
     
     // ICD shares 0x500-0x502 with autonomous frames on a different bus.
     CanBridgeImpl data_bridge(node.get(), "data_t26");
     bool got_result = false, got_response = false, got_wrong_bus = false;
     auto result_sub = node->create_subscription<lart_msgs::msg::IcdResult>(
-        "/can/dbc/icd_result", rclcpp::QoS(10).best_effort(),
+        "/data/icd_result", rclcpp::QoS(10).best_effort(),
         [&](lart_msgs::msg::IcdResult::SharedPtr msg) {
             if (std::abs(msg->icd_current + 123.456f) > 0.001f ||
                 std::abs(msg->icd_ubat - 12.345f) > 0.001f || msg->icd_msgcounter != 10)
@@ -70,14 +91,14 @@ int main(int argc, char **argv) {
         });
     constexpr uint64_t article = UINT64_C(72057594037927935);
     auto response_sub = node->create_subscription<lart_msgs::msg::IcdResponse>(
-        "/can/dbc/icd_response", rclcpp::QoS(10).best_effort(),
+        "/data/icd_response", rclcpp::QoS(10).best_effort(),
         [&](lart_msgs::msg::IcdResponse::SharedPtr msg) {
             if (static_cast<uint8_t>(msg->resp_muxid) != 228 || msg->resp_articlenumber != article || msg->resp_fwmajor != 0)
                 throw std::runtime_error("ICD precision/multiplexer mismatch");
             got_response = true;
         });
     auto wrong_sub = node->create_subscription<lart_msgs::msg::DvStatus>(
-        "/can/dbc/dv_status", rclcpp::QoS(10).best_effort(),
+        "/data/dv_status", rclcpp::QoS(10).best_effort(),
         [&](lart_msgs::msg::DvStatus::SharedPtr) { got_wrong_bus = true; });
     // Fixed wire payloads independently exercise big-endian signed decoding.
     const uint8_t result_payload[8] = {0xa0, 0xff, 0xfe, 0x1d, 0xc0, 0x30, 0x39, 0};

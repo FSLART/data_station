@@ -23,7 +23,7 @@ enum ScreensEnum {
     SCREEN_ID_DEBUG_AUTONOMOUS_3 = 10,
     SCREEN_ID_DEBUG_AUTONOMOUS_4 = 11,
     SCREEN_ID_DEBUG_AUTONOMOUS_5 = 12,
-    _SCREEN_ID_LAST = 12
+    _SCREEN_ID_LAST = SCREEN_ID_AUTONOMOUS
 };
 
 typedef struct _objects_t {
@@ -61,6 +61,8 @@ typedef struct _objects_t {
     lv_obj_t *lv_bar;
     lv_obj_t *hv_label;
     lv_obj_t *lv_label;
+    lv_obj_t *hv_current_label;
+    lv_obj_t *lv_current_label;
     lv_obj_t *obj2;
     lv_obj_t *obj3;
     lv_obj_t *hv_bar_1;
@@ -111,6 +113,7 @@ void tick_screen_driver_view();
 void create_screen_autonomous();
 void tick_screen_autonomous();
 
+#if 0 // Debug screens are excluded from production builds.
 void create_screen_debug_1();
 void tick_screen_debug_1();
 
@@ -140,6 +143,7 @@ void tick_screen_debug_autonomous_4();
 
 void create_screen_debug_autonomous_5();
 void tick_screen_debug_autonomous_5();
+#endif
 
 void tick_screen_by_id(enum ScreensEnum screenId);
 void tick_screen(int screen_index);

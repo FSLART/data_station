@@ -32,8 +32,13 @@ def main():
     dbc_filenames = ["data_t26.dbc", "powertrain_t26.dbc", "autonomous_t26.dbc"]
 
     db = cantools.database.Database()
+    message_databases = {}
     dbc_files = [os.path.join(dbc_dir, fn) for fn in dbc_filenames]
     for df in dbc_files:
+        source_db = cantools.database.load_file(df)
+        db_name = os.path.splitext(os.path.basename(df))[0]
+        for msg in source_db.messages:
+            message_databases.setdefault(_ros_name(msg.name), set()).add(db_name)
         db.add_dbc_file(df)
         
     # Group signals by sanitized message name slug to deduplicate messages
@@ -204,22 +209,28 @@ def main():
             ""
         ])
         
+        topic_prefixes = {
+            "data_t26": "/data",
+            "powertrain_t26": "/pwt",
+            "autonomous_t26": "/can",
+        }
         for msg_slug in sorted(chunk_slugs):
             class_name = ''.join(word.capitalize() for word in msg_slug.split('_') if word)
             msg_class = f"lart_msgs::msg::{class_name}"
-            topic = f"/can/dbc/{msg_slug}"
-            sub_lines.extend([
-                f"    subs.push_back(node->create_subscription<{msg_class}>(",
-                f"        \"{topic}\", sensor_qos, [](const std::shared_ptr<{msg_class}> msg) {{",
-                f"            if (msg) {{",
-                f"                std::lock_guard<std::mutex> lock(dbc_api_mutex);"
-            ])
-            for sig_slug in sorted(message_signals[msg_slug]):
-                sub_lines.append(f"                dbc_api.{msg_slug}.{sig_slug} = msg->{sig_slug};")
-            sub_lines.extend([
-                f"            }}",
-                f"        }}));"
-            ])
+            for db_name in sorted(message_databases[msg_slug]):
+                topic = f"{topic_prefixes[db_name]}/{msg_slug}"
+                sub_lines.extend([
+                    f"    subs.push_back(node->create_subscription<{msg_class}>(",
+                    f"        \"{topic}\", sensor_qos, [](const std::shared_ptr<{msg_class}> msg) {{",
+                    f"            if (msg) {{",
+                    f"                std::lock_guard<std::mutex> lock(dbc_api_mutex);"
+                ])
+                for sig_slug in sorted(message_signals[msg_slug]):
+                    sub_lines.append(f"                dbc_api.{msg_slug}.{sig_slug} = msg->{sig_slug};")
+                sub_lines.extend([
+                    f"            }}",
+                    f"        }}));"
+                ])
             
         sub_lines.extend([
             "}",
@@ -282,6 +293,19 @@ def main():
         "extern \"C\" const char *ui_get_lv_str() {",
         "    static char buf[16];",
         "    snprintf(buf, sizeof(buf), \"%.1f V\", ui_lv_value);",
+        "    return buf;",
+        "}",
+        "",
+        "extern \"C\" const char *ui_get_lv_current_str() {",
+        "    static char buf[16];",
+        "    snprintf(buf, sizeof(buf), \"%.1f A\", dbc_api.icd_result.icd_current);",
+        "    return buf;",
+        "}",
+        "",
+        "extern \"C\" const char *ui_get_hv_current_str() {",
+        "    static char buf[16];",
+        "    const float current_amps = dbc_api.ivt_msg_result_i.ivt_result_i / 1000.0f;",
+        "    snprintf(buf, sizeof(buf), \"%.1f A\", current_amps);",
         "    return buf;",
         "}",
         "",
@@ -378,8 +402,8 @@ def main():
         "    if (brake_val > 100) brake_val = 100;",
         "    eez::flow::setGlobalVariable(FLOW_GLOBAL_VARIABLE_BRAKE_PEDAL_PRESSURE, eez::IntegerValue(brake_val));",
         "",
-        "    // 2. ACCELL PEDAL PRESSURE (0 to 100) — driven by INV1 target relative current (%)",
-        "    int acc_val = static_cast<int>(dbc_api.inv1_setrelcurrent.inv1_cmd_targetrelativecurrent);",
+        "    // 2. ACCELL PEDAL PRESSURE (0 to 100) — driven by AQT1 throttle percentage",
+        "    int acc_val = static_cast<int>(dbc_api.aqt1.throtle_percentage);",
         "    if (acc_val < 0) acc_val = 0;",
         "    if (acc_val > 100) acc_val = 100;",
         "    eez::flow::setGlobalVariable(FLOW_GLOBAL_VARIABLE_ACCELL_PEDAL_PRESSURE, eez::IntegerValue(acc_val));",
@@ -417,7 +441,7 @@ def main():
         "    constexpr float tire_radius_m = 0.2032f;",
         "    constexpr float gear_ratio = 14.73f;",
         "    constexpr float pi = 3.14159265358979323846f;",
-        "    const float motor_rpm = dbc_api.inv1_erpm_duty_voltage.inv1_actual_erpm * 4.0f;",
+        "    const float motor_rpm = dbc_api.inv1_erpm_duty_voltage.inv1_actual_erpm / 4.0f;",
         "    const float wheel_rpm = motor_rpm / gear_ratio;",
         "    const float speed_kph = wheel_rpm * (2.0f * pi * tire_radius_m) * 60.0f / 1000.0f;",
         "    float speed_val = speed_kph >= 0.0f ? speed_kph : 0.0f;",

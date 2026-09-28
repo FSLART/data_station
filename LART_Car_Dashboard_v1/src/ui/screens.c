@@ -109,7 +109,9 @@ objects_t objects;
 
 static const char *screen_names[] = { 
     "Driver View", 
-    "Autonomous", 
+    "Autonomous"
+#if 0 // Debug screens are excluded from production builds.
+    ,
     "Debug 1", 
     "Debug_Inverter 2", 
     "Debug_3", 
@@ -120,6 +122,7 @@ static const char *screen_names[] = {
     "Debug Autonomous 3", 
     "Debug Autonomous 4", 
     "Debug Autonomous 5" 
+#endif
 };
 static const char *object_names[] = {
     "driver_view",
@@ -203,19 +206,100 @@ static const char *object_names[] = {
 
 lv_obj_t *tick_value_change_obj;
 
-static uint32_t hv_on_overlay_started_at;
+static uint32_t precharge_overlay_started_at;
+static uint32_t precharge_overlay_duration_ms;
 static float previous_precharge_state = -1.0f;
+static bool precharge_sequence_active;
+
+static const char *get_precharge_state_label(int state) {
+    static const char *const labels[] = {
+        "START",
+        "OPEN ALL",
+        "SWITCH HV NEG",
+        "8 4 AIR NEG 2 CLOSE",
+        "CK AIR NEG IS CLOSED",
+        "SWITCH PRECHARGE",
+        "8 4 PRECHARGE 2 CLOSE",
+        "CK PRECHARGE IS CLOSED",
+        "VERIFY CURRENT",
+        "VERIFY BUS VOLTAGE",
+        "SWITCH HV POS",
+        "8 4 AIR POS 2 CLOSE",
+        "CHECKING AIR POS IS CLOSED",
+        "TURN OFF PRECHARGE",
+        "8 4 PRECHARGE 2 OPEN",
+        "CHECKING PRECHARGE IS OPEN",
+        "HV ON",
+        "WRONG",
+        "KILL",
+        "RX CAN"
+    };
+
+    return state >= 0 && state < (int)(sizeof(labels) / sizeof(labels[0]))
+        ? labels[state]
+        : NULL;
+}
+
+static uint32_t get_precharge_state_color(int state) {
+    static const uint32_t bright_colors[] = {
+        0x00e5ff, // cyan
+        0xfff200, // yellow
+        0x39ff14, // green
+        0xff8c00, // orange
+        0xff4fd8  // magenta
+    };
+
+    return bright_colors[state % (int)(sizeof(bright_colors) / sizeof(bright_colors[0]))];
+}
+
+static void show_precharge_overlay(int state) {
+    const bool is_hv_on = state == 16;
+
+    lv_label_set_text(objects.hv_on_label, get_precharge_state_label(state));
+    lv_obj_set_style_bg_color(
+        objects.hv_on_overlay,
+        lv_color_hex(is_hv_on ? 0xff0000 : get_precharge_state_color(state)),
+        LV_PART_MAIN | LV_STATE_DEFAULT
+    );
+    lv_obj_set_style_text_color(
+        objects.hv_on_label,
+        lv_color_hex(is_hv_on ? 0xffffff : 0x080808),
+        LV_PART_MAIN | LV_STATE_DEFAULT
+    );
+    lv_obj_set_style_text_font(
+        objects.hv_on_label,
+        is_hv_on ? &ui_font_orbiter_bold_100 : &ui_font_orbitron_bold_40,
+        LV_PART_MAIN | LV_STATE_DEFAULT
+    );
+    lv_obj_center(objects.hv_on_label);
+
+    precharge_overlay_started_at = lv_tick_get();
+    precharge_overlay_duration_ms = is_hv_on ? 4000 : 500;
+    lv_obj_clear_flag(objects.hv_on_overlay, LV_OBJ_FLAG_HIDDEN);
+}
 
 static void update_hv_on_overlay(void) {
     const float precharge_state = dbc_api.master_precharge_id_1.precharge_state;
+    const int state = (int)precharge_state;
+    const bool state_changed = precharge_state != previous_precharge_state;
+    const bool state_is_valid = precharge_state == (float)state && get_precharge_state_label(state) != NULL;
 
-    if (precharge_state == 16.0f && previous_precharge_state != 16.0f) {
-        hv_on_overlay_started_at = lv_tick_get();
-        lv_obj_clear_flag(objects.hv_on_overlay, LV_OBJ_FLAG_HIDDEN);
+    if (state_changed && state_is_valid) {
+        if (state == 19) {
+            precharge_sequence_active = true;
+        }
+
+        if (precharge_sequence_active || state == 16) {
+            show_precharge_overlay(state);
+        }
+
+        if (state == 16) {
+            precharge_sequence_active = false;
+        }
     }
 
     if (!lv_obj_has_flag(objects.hv_on_overlay, LV_OBJ_FLAG_HIDDEN) &&
-        lv_tick_elaps(hv_on_overlay_started_at) >= 3000) {
+        lv_tick_elaps(precharge_overlay_started_at) >= precharge_overlay_duration_ms) {
         lv_obj_add_flag(objects.hv_on_overlay, LV_OBJ_FLAG_HIDDEN);
     }
 
@@ -587,7 +671,7 @@ void create_screen_driver_view() {
             // hvBar
             lv_obj_t *obj = lv_bar_create(parent_obj);
             objects.hv_bar = obj;
-            lv_obj_set_pos(obj, 734, 106);
+            lv_obj_set_pos(obj, 734, 80);
             lv_obj_set_size(obj, 53, 314);
             lv_bar_set_range(obj, 0, 100);
             lv_bar_set_mode(obj, LV_BAR_MODE_RANGE);
@@ -608,7 +692,7 @@ void create_screen_driver_view() {
             // lvBar
             lv_obj_t *obj = lv_bar_create(parent_obj);
             objects.lv_bar = obj;
-            lv_obj_set_pos(obj, 11, 108);
+            lv_obj_set_pos(obj, 11, 80);
             lv_obj_set_size(obj, 53, 314);
             lv_bar_set_range(obj, 20, 28);
             lv_bar_set_mode(obj, LV_BAR_MODE_RANGE);
@@ -629,7 +713,7 @@ void create_screen_driver_view() {
             // hvLabel
             lv_obj_t *obj = lv_label_create(parent_obj);
             objects.hv_label = obj;
-            lv_obj_set_pos(obj, 733, 436);
+            lv_obj_set_pos(obj, 733, 405);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
             add_style_text(obj);
             lv_label_set_text(obj, "");
@@ -638,21 +722,39 @@ void create_screen_driver_view() {
             // lvLabel
             lv_obj_t *obj = lv_label_create(parent_obj);
             objects.lv_label = obj;
-            lv_obj_set_pos(obj, 9, 436);
+            lv_obj_set_pos(obj, 9, 405);
+            lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            add_style_text(obj);
+            lv_label_set_text(obj, "");
+        }
+        {
+            // hvCurrentLabel
+            lv_obj_t *obj = lv_label_create(parent_obj);
+            objects.hv_current_label = obj;
+            lv_obj_set_pos(obj, 733, 433);
+            lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            add_style_text(obj);
+            lv_label_set_text(obj, "");
+        }
+        {
+            // lvCurrentLabel
+            lv_obj_t *obj = lv_label_create(parent_obj);
+            objects.lv_current_label = obj;
+            lv_obj_set_pos(obj, 9, 433);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
             add_style_text(obj);
             lv_label_set_text(obj, "");
         }
         {
             lv_obj_t *obj = lv_label_create(parent_obj);
-            lv_obj_set_pos(obj, 736, 73);
+            lv_obj_set_pos(obj, 736, 52);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
             add_style_text(obj);
             lv_label_set_text_static(obj, "SOC");
         }
         {
             lv_obj_t *obj = lv_label_create(parent_obj);
-            lv_obj_set_pos(obj, 22, 75);
+            lv_obj_set_pos(obj, 22, 52);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
             add_style_text(obj);
             lv_label_set_text_static(obj, "LV");
@@ -679,6 +781,9 @@ void create_screen_driver_view() {
             lv_obj_t *label = lv_label_create(obj);
             objects.hv_on_label = label;
             lv_label_set_text(label, "HV ON");
+            lv_obj_set_width(label, 760);
+            lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
+            lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_color(label, lv_color_hex(0xffffff), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_font(label, &ui_font_orbiter_bold_100 , LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_center(label);
@@ -808,6 +913,24 @@ void tick_screen_driver_view() {
         if (strcmp(new_val, cur_val) != 0) {
             tick_value_change_obj = objects.lv_label;
             lv_label_set_text(objects.lv_label, new_val);
+            tick_value_change_obj = NULL;
+        }
+    }
+    {
+        const char *new_val = ui_get_lv_current_str();
+        const char *cur_val = lv_label_get_text(objects.lv_current_label);
+        if (strcmp(new_val, cur_val) != 0) {
+            tick_value_change_obj = objects.lv_current_label;
+            lv_label_set_text(objects.lv_current_label, new_val);
+            tick_value_change_obj = NULL;
+        }
+    }
+    {
+        const char *new_val = ui_get_hv_current_str();
+        const char *cur_val = lv_label_get_text(objects.hv_current_label);
+        if (strcmp(new_val, cur_val) != 0) {
+            tick_value_change_obj = objects.hv_current_label;
+            lv_label_set_text(objects.hv_current_label, new_val);
             tick_value_change_obj = NULL;
         }
     }
@@ -1366,6 +1489,7 @@ void tick_screen_autonomous() {
     }
 }
 
+#if 0 // Debug screens are excluded from production builds.
 static void table_draw_event_cb(lv_event_t * e) {
     lv_draw_task_t * draw_task = lv_event_get_draw_task(e);
     if (!draw_task) return;
@@ -2226,11 +2350,14 @@ void tick_screen_debug_autonomous_5() {
     set_cell(table, 9, 2, "", 0xFFFFFF);
     set_cell(table, 9, 3, "", 0xFFFFFF);
 }
+#endif
 
 typedef void (*tick_screen_func_t)();
 tick_screen_func_t tick_screen_funcs[] = {
     tick_screen_driver_view,
-    tick_screen_autonomous,
+    tick_screen_autonomous
+#if 0 // Debug screens are excluded from production builds.
+    ,
     tick_screen_debug_1,
     tick_screen_debug_inverter_2,
     tick_screen_debug_3,
@@ -2241,9 +2368,10 @@ tick_screen_func_t tick_screen_funcs[] = {
     tick_screen_debug_autonomous_3,
     tick_screen_debug_autonomous_4,
     tick_screen_debug_autonomous_5,
+#endif
 };
 void tick_screen(int screen_index) {
-    if (screen_index >= 0 && screen_index < 12) {
+    if (screen_index >= 0 && screen_index < (int)(sizeof(tick_screen_funcs) / sizeof(tick_screen_funcs[0]))) {
         tick_screen_funcs[screen_index]();
     }
 }
@@ -2362,6 +2490,7 @@ eez_flow_init_fonts(fonts, sizeof(fonts) / sizeof(ext_font_desc_t));
     // Create screens
     create_screen_driver_view();
     create_screen_autonomous();
+#if 0 // Debug screens are excluded from production builds.
     create_screen_debug_1();
     create_screen_debug_inverter_2();
     create_screen_debug_3();
@@ -2372,4 +2501,5 @@ eez_flow_init_fonts(fonts, sizeof(fonts) / sizeof(ext_font_desc_t));
     create_screen_debug_autonomous_3();
     create_screen_debug_autonomous_4();
     create_screen_debug_autonomous_5();
+#endif
 }

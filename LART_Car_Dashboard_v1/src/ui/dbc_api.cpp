@@ -49,6 +49,19 @@ extern "C" const char *ui_get_lv_str() {
     return buf;
 }
 
+extern "C" const char *ui_get_lv_current_str() {
+    static char buf[16];
+    snprintf(buf, sizeof(buf), "%.1f A", dbc_api.icd_result.icd_current);
+    return buf;
+}
+
+extern "C" const char *ui_get_hv_current_str() {
+    static char buf[16];
+    const float current_amps = dbc_api.ivt_msg_result_i.ivt_result_i / 1000.0f;
+    snprintf(buf, sizeof(buf), "%.1f A", current_amps);
+    return buf;
+}
+
 extern "C" void ui_set_hv(float hv_value) {
     (void)hv_value;
 }
@@ -142,8 +155,8 @@ extern "C" void ui_update_telemetry_vars(const void *t_ptr) {
     if (brake_val > 100) brake_val = 100;
     eez::flow::setGlobalVariable(FLOW_GLOBAL_VARIABLE_BRAKE_PEDAL_PRESSURE, eez::IntegerValue(brake_val));
 
-    // 2. ACCELL PEDAL PRESSURE (0 to 100) — driven by INV1 target relative current (%)
-    int acc_val = static_cast<int>(dbc_api.inv1_setrelcurrent.inv1_cmd_targetrelativecurrent);
+    // 2. ACCELL PEDAL PRESSURE (0 to 100) — driven by AQT1 throttle percentage
+    int acc_val = static_cast<int>(dbc_api.aqt1.throtle_percentage);
     if (acc_val < 0) acc_val = 0;
     if (acc_val > 100) acc_val = 100;
     eez::flow::setGlobalVariable(FLOW_GLOBAL_VARIABLE_ACCELL_PEDAL_PRESSURE, eez::IntegerValue(acc_val));
