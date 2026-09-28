@@ -1,10 +1,10 @@
-"""Addressable LED strip controller — solid green status light.
+"""Addressable LED strip controller — moving rainbow effect.
 
 Requires adafruit-circuitpython-neopixel + adafruit-blinka:
   pip install adafruit-circuitpython-neopixel
 
 LED behaviour:
-  - All LEDs remain green while the node is running
+  - All LEDs display a moving rainbow while the node is running
   - All LEDs turn off when the node shuts down
 """
 
@@ -18,8 +18,19 @@ try:
 except (ImportError, NotImplementedError):
     _HAS_NEOPIXEL = False
 
-_COLOR_GREEN = (0, 200, 0)
 _COLOR_OFF = (0, 0, 0)
+
+
+def _rainbow_color(position):
+    """Return one RGB color from a 0-255 color wheel."""
+    position %= 256
+    if position < 85:
+        return (255 - position * 3, position * 3, 0)
+    if position < 170:
+        position -= 85
+        return (0, 255 - position * 3, position * 3)
+    position -= 170
+    return (position * 3, 0, 255 - position * 3)
 
 
 class LedControllerNode(Node):
@@ -28,17 +39,23 @@ class LedControllerNode(Node):
 
         self.declare_parameter('led_count', 8)
         self.declare_parameter('led_pin', 18)
+        self.declare_parameter('brightness', 0.5)
+        self.declare_parameter('animation_hz', 20.0)
 
-        self._count = self.get_parameter('led_count').value
+        self._count = int(self.get_parameter('led_count').value)
+        brightness = float(self.get_parameter('brightness').value)
+        animation_hz = float(self.get_parameter('animation_hz').value)
+        self._rainbow_offset = 0
 
         if _HAS_NEOPIXEL:
             pin_num = self.get_parameter('led_pin').value
             gpio_pin = getattr(board, f'D{pin_num}', board.D18)
             self._pixels = neopixel.NeoPixel(
-                gpio_pin, self._count, brightness=0.8, auto_write=False
+                gpio_pin,
+                self._count,
+                brightness=max(0.0, min(brightness, 1.0)),
+                auto_write=False,
             )
-            self._pixels.fill(_COLOR_GREEN)
-            self._pixels.show()
         else:
             self._pixels = None
             self.get_logger().warn(
@@ -46,9 +63,24 @@ class LedControllerNode(Node):
                 'Install: pip install adafruit-circuitpython-neopixel'
             )
 
-        self.get_logger().info(
-            f'LED controller ready — {self._count} LEDs solid green'
+        self._timer = self.create_timer(
+            1.0 / max(animation_hz, 1.0), self._animate_rainbow
         )
+        self.get_logger().info(
+            f'LED controller ready — {self._count} LEDs moving rainbow'
+        )
+
+    # ------------------------------------------------------------------
+
+    def _animate_rainbow(self):
+        if self._pixels is None:
+            return
+
+        for index in range(self._count):
+            position = index * 256 // self._count + self._rainbow_offset
+            self._pixels[index] = _rainbow_color(position)
+        self._pixels.show()
+        self._rainbow_offset = (self._rainbow_offset + 4) % 256
 
     # ------------------------------------------------------------------
 
