@@ -92,7 +92,7 @@ class LedControllerNode(Node):
         half_count = self._count // 2
         percent = max(-100.0, min(float(inverter_percent), 100.0))
         if percent == 0.0:
-            center = {half_count - 1, half_count}
+            center = {7, 8}  # physical LED positions 8 and 9
             for index in range(self._count):
                 self._pixels[index] = (
                     _COLOR_IDLE if index in center else _COLOR_OFF
