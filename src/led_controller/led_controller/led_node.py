@@ -4,11 +4,13 @@ Requires adafruit-circuitpython-neopixel-spi + adafruit-blinka:
   pip install adafruit-circuitpython-neopixel-spi
 
 LED behaviour:
-  - Blue fill shows positive average inverter relative-current request
-  - Green fill shows negative average inverter relative-current request
+  - Red fill shows positive average inverter relative-current request
+  - Blue fill shows negative average inverter relative-current request
   - The two directions fill outward from the centre of the strip
   - All LEDs turn off when the node shuts down
 """
+
+import math
 
 import rclpy
 from rclpy.node import Node
@@ -24,8 +26,8 @@ except (ImportError, NotImplementedError):
 
 _COLOR_OFF = (0, 0, 0)
 _COLOR_IDLE = (255, 255, 255)
-_COLOR_DRIVE = (0, 0, 255)
-_COLOR_REGEN = (0, 255, 0)
+_COLOR_DRIVE = (255, 0, 0)
+_COLOR_REGEN = (0, 0, 255)
 
 
 class LedControllerNode(Node):
@@ -90,13 +92,15 @@ class LedControllerNode(Node):
 
         inverter_percent = (self._inv1_percent + self._inv2_percent) / 2.0
         half_count = self._count // 2
-        percent = max(-100.0, min(float(inverter_percent), 100.0))
+        percent = float(inverter_percent)
+        if not math.isfinite(percent):
+            percent = 0.0
+        percent = max(-100.0, min(percent, 100.0))
         if percent == 0.0:
             center = {7, 8}  # physical LED positions 8 and 9
-            for index in range(self._count):
-                self._pixels[index] = (
-                    _COLOR_IDLE if index in center else _COLOR_OFF
-                )
+            self._pixels.fill(_COLOR_OFF)
+            for index in center:
+                self._pixels[index] = _COLOR_IDLE
             self._pixels.show()
             return
 
@@ -108,8 +112,9 @@ class LedControllerNode(Node):
             color = _COLOR_DRIVE
             lit_indices = range(half_count, half_count + lit_count)
         lit_indices = set(lit_indices)
-        for index in range(self._count):
-            self._pixels[index] = color if index in lit_indices else _COLOR_OFF
+        self._pixels.fill(_COLOR_OFF)
+        for index in lit_indices:
+            self._pixels[index] = color
         self._pixels.show()
 
     # ------------------------------------------------------------------

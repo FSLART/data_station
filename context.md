@@ -140,7 +140,7 @@ DBC files are parsed at build time by `generate_dbc_api.py` (uses `cantools`) to
 - **DBC-driven CAN decoding** — code-generated C++ dispatcher maps raw CAN frame bytes to named signals at compile time (no runtime DBC parsing)
 - **Error/fault notification overlay** — `ui_add_notification()` / `ui_clear_notification()` API surfaces fault signals from any DBC message on top of the active screen
 - **Autonomous vehicle status screen** — ACU state machine, Jetson CPU/GPU/temp, SLAM cone & lap count, mission selector
-- **LED relative-current bar** — 16-pixel WS2812B strip; blue shows positive average inverter relative-current request and green shows negative request, filling outward from the centre
+- **LED relative-current bar** — 16-pixel WS2812B strip; red shows positive average inverter relative-current request and blue shows negative request, filling outward from the centre
 - **Hardware input** — GPIO buttons and rotary encoders via `input_handler`; screen switching and future in-car menus
 - **Simulation stack** — full `sim.launch.py` + `dbc_sim.launch.py` pipelines for development without hardware
 - **Docker-based dev environment** — single `make compose-up` to start all containers on any Linux machine with X11
