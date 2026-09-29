@@ -965,7 +965,9 @@ BO_ 1797 Master_SOC_Accumulator: 8 AMS
  SG_ SOC_Float : 8|16@1+ (0.01,0.01) [0|0] "" Vector__XXX
 
 BO_ 1798 Master_MSC_ID_4: 8 AMS
- SG_ slaves_detected : 0|8@1+ (1,0) [0|63] "" Vector__XXX
+ SG_ slaves_detected : 0|4@1+ (1,0) [0|16] "" Vector__XXX
+ SG_ bal_bitmask_slave_id : 8|8@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ bal_bitmask : 16|16@1+ (1,0) [0|0] "" Vector__XXX
 
 BO_ 129 Start_Charging: 1 HOST
  SG_ Charging_Request : 0|1@1+ (1,0) [0|0] "ON/OFF" Vector__XXX
@@ -1258,6 +1260,10 @@ CM_ SG_ 1795 master_runtime "AMS Master Runtime in seconds";
 CM_ SG_ 1797 SOC_Integer "State of Charge";
 CM_ SG_ 1797 SOC_Float "State of Charge";
 CM_ SG_ 1798 slaves_detected "slaves detected in the daisychain";
+CM_ SG_ 1798 bal_bitmask_slave_id "identifier do slave da bitmaks with the balancing cells
+";
+CM_ SG_ 1798 bal_bitmask "bitmaks of active balancing cells in the slave identifier
+";
 CM_ BO_ 1028 "Node ID: 4 — ERPM, duty cycle, and DC input voltage";
 CM_ SG_ 1028 INV1_Actual_ERPM "Electrical RPM. ERPM = Motor_RPM * pole_pairs";
 CM_ SG_ 1028 INV1_Actual_Duty "Controller duty cycle. Positive=motoring, negative=regen";
