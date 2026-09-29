@@ -19,9 +19,9 @@ cantools>=39.0
 # On other systems / if apt package is unavailable:
 gpiod>=2.0
 
-# Addressable LED strip — NeoPixel RPM gauge (required on car, GPIO 18)
+# Addressable LED strip — NeoPixel relative-current gauge (required on car, SPI0 MOSI / GPIO 10)
 # Requires Adafruit Blinka (CircuitPython HAL for RPi)
-adafruit-circuitpython-neopixel>=6.0
+adafruit-circuitpython-neopixel-spi>=1.0
 adafruit-blinka>=8.0
 
 # Foxglove bag auto-upload (deploy/foxglove_upload.py)

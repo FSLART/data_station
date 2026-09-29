@@ -20,6 +20,7 @@ class _Node:
     def __init__(self, _name):
         self.parameters = {}
         self.timer = None
+        self.subscriptions = {}
 
     def declare_parameter(self, name, default):
         self.parameters[name] = default
@@ -27,8 +28,9 @@ class _Node:
     def get_parameter(self, name):
         return _Parameter(self.parameters[name])
 
-    def create_subscription(self, *_args):
-        pass
+    def create_subscription(self, _msg_type, topic, callback, _qos):
+        self.subscriptions[topic] = callback
+        return callback
 
     def create_timer(self, period, callback):
         self.timer = types.SimpleNamespace(period=period, callback=callback)
@@ -60,10 +62,16 @@ class _NeoPixel:
 def _make_controller(monkeypatch):
     rclpy = types.ModuleType("rclpy")
     rclpy_node = types.ModuleType("rclpy.node")
+    rclpy_qos = types.ModuleType("rclpy.qos")
     rclpy_node.Node = _Node
+    rclpy_qos.qos_profile_sensor_data = object()
     std_msgs = types.ModuleType("std_msgs")
     std_msgs_msg = types.ModuleType("std_msgs.msg")
     std_msgs_msg.Float32 = type("Float32", (), {})
+    lart_msgs = types.ModuleType("lart_msgs")
+    lart_msgs_msg = types.ModuleType("lart_msgs.msg")
+    lart_msgs_msg.Inv1Setrelcurrent = type("Inv1Setrelcurrent", (), {})
+    lart_msgs_msg.Inv2Setrelcurrent = type("Inv2Setrelcurrent", (), {})
     board = types.ModuleType("board")
     spi_bus = object()
     board.SPI = lambda: spi_bus
@@ -73,8 +81,11 @@ def _make_controller(monkeypatch):
 
     monkeypatch.setitem(sys.modules, "rclpy", rclpy)
     monkeypatch.setitem(sys.modules, "rclpy.node", rclpy_node)
+    monkeypatch.setitem(sys.modules, "rclpy.qos", rclpy_qos)
     monkeypatch.setitem(sys.modules, "std_msgs", std_msgs)
     monkeypatch.setitem(sys.modules, "std_msgs.msg", std_msgs_msg)
+    monkeypatch.setitem(sys.modules, "lart_msgs", lart_msgs)
+    monkeypatch.setitem(sys.modules, "lart_msgs.msg", lart_msgs_msg)
     monkeypatch.setitem(sys.modules, "board", board)
     monkeypatch.setitem(sys.modules, "neopixel_spi", neopixel_spi)
 
@@ -85,26 +96,47 @@ def _make_controller(monkeypatch):
     return node
 
 
-def test_controller_animates_a_moving_rainbow_on_all_eight_leds(monkeypatch):
+def test_controller_fills_positive_current_from_centre_in_blue(monkeypatch):
     node = _make_controller(monkeypatch)
 
-    assert len(node._pixels.values) == 8
-    node.timer.callback()
-    first_frame = list(node._pixels.values)
-
-    assert all(
-        isinstance(color, tuple)
-        and len(color) == 3
-        and all(0 <= channel <= 255 for channel in color)
-        for color in first_frame
+    node.subscriptions["/pwt/inv1_setrelcurrent"](
+        types.SimpleNamespace(inv1_cmd_targetrelativecurrent=50.0)
     )
-    assert len(set(first_frame)) == 8
+    node.subscriptions["/pwt/inv2_setrelcurrent"](
+        types.SimpleNamespace(inv2_cmd_targetrelativecurrent=50.0)
+    )
+    node.timer.callback()
+
+    assert node._pixels.values == [(0, 0, 0)] * 8 + [(0, 0, 255)] * 4 + [(0, 0, 0)] * 4
     assert node._pixels.show_count == 1
 
+
+def test_controller_fills_negative_current_from_centre_in_green(monkeypatch):
+    node = _make_controller(monkeypatch)
+
+    node.subscriptions["/pwt/inv1_setrelcurrent"](
+        types.SimpleNamespace(inv1_cmd_targetrelativecurrent=-25.0)
+    )
+    node.subscriptions["/pwt/inv2_setrelcurrent"](
+        types.SimpleNamespace(inv2_cmd_targetrelativecurrent=-25.0)
+    )
     node.timer.callback()
 
-    assert node._pixels.values != first_frame
-    assert node._pixels.show_count == 2
+    assert node._pixels.values == [(0, 0, 0)] * 6 + [(0, 255, 0)] * 2 + [(0, 0, 0)] * 8
+
+
+def test_negative_average_inverter_request_fills_eight_green_leds(monkeypatch):
+    node = _make_controller(monkeypatch)
+    node.subscriptions["/pwt/inv1_setrelcurrent"](
+        types.SimpleNamespace(inv1_cmd_targetrelativecurrent=-25.0)
+    )
+    node.subscriptions["/pwt/inv2_setrelcurrent"](
+        types.SimpleNamespace(inv2_cmd_targetrelativecurrent=-75.0)
+    )
+
+    node.timer.callback()
+
+    assert node._pixels.values == [(0, 0, 0)] * 4 + [(0, 255, 0)] * 4 + [(0, 0, 0)] * 8
 
 
 def test_controller_turns_off_every_led_on_shutdown(monkeypatch):
@@ -113,5 +145,5 @@ def test_controller_turns_off_every_led_on_shutdown(monkeypatch):
 
     node.destroy_node()
 
-    assert node._pixels.values == [(0, 0, 0)] * 8
+    assert node._pixels.values == [(0, 0, 0)] * 16
     assert node._pixels.show_count == 2

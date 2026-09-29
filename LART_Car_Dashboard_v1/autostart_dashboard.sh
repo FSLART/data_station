@@ -46,7 +46,7 @@ else
     echo "WARNING: bag_recorder not found at $BAG_RECORDER_BIN – CAN data will not be recorded."
 fi
 
-# 2c. Start the RPM LED bar controller (GPIO and thresholds come from rpi_config.yaml)
+# 2c. Start the relative-current LED bar controller (strip settings come from rpi_config.yaml)
 LED_CONTROLLER_BIN="/home/lart2026/GIT/data_station/install/led_controller/lib/led_controller/led_controller"
 if [ -x "$LED_CONTROLLER_BIN" ]; then
     echo "Starting led_controller..."

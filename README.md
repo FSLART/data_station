@@ -56,7 +56,7 @@ flowchart LR
 │   ├── lart_msgs/        custom ROS 2 messages (CanFrame, ButtonEvent, EncoderDelta, DashboardState)
 │   ├── sim/              mock_can.py — simulated vehicle values for home testing
 │   ├── input_handler/    GPIO buttons + encoders (sim_mode skips hardware)
-│   └── led_controller/   WS2812 RPM bar (safe no-op without NeoPixel libs)
+│   └── led_controller/   WS2812 relative-current bar (safe no-op without NeoPixel libs)
 ├── LART_Car_Dashboard_v1/
 │   └── src/ui/           LVGL C++ dashboard (ui_runner, can_bridge, generated DBC API)
 ├── dbc_signals/          DBC source files (data_t26.dbc, powertrain_t26.dbc, autonomous_t26.dbc)
@@ -75,7 +75,7 @@ flowchart LR
 - `sim/mock_can.py`: simulated vehicle values for home testing.
 - `LART_Car_Dashboard_v1/src/ui`: LVGL C++ dashboard interface (production `ui_runner` application).
 - `input_handler`: GPIO buttons + encoders (`sim_mode` skips hardware).
-- `led_controller`: WS2812 RPM bar (safe no-op on machines without NeoPixel libs).
+- `led_controller`: WS2812 relative-current bar (safe no-op on machines without NeoPixel libs).
 
 ## Data flow
 
@@ -83,7 +83,7 @@ flowchart LR
 - Topics published: `/can/frames`, `/vehicle/rpm`, `/vehicle/dashboard_state` and dynamic `/can/*` topics.
 - Jetson/ACU autonomous stack publishes its own ROS 2 topics directly (no CAN involved); `ui_runner` subscribes to them.
 - `ui_runner` (LVGL dashboard) consumes the CAN topics, autonomous topics, and state topics to render the cockpit UI.
-- `led_controller` consumes RPM and drives LED strip.
+- `led_controller` consumes inverter relative-current requests and drives the LED strip.
 - `input_handler` publishes `/input/buttons` and `/input/encoders`.
 
 ## Build

@@ -1,15 +1,19 @@
-"""Addressable LED strip controller — moving rainbow effect.
+"""Addressable LED strip controller — relative-current gauge.
 
 Requires adafruit-circuitpython-neopixel-spi + adafruit-blinka:
   pip install adafruit-circuitpython-neopixel-spi
 
 LED behaviour:
-  - All LEDs display a moving rainbow while the node is running
+  - Blue fill shows positive average inverter relative-current request
+  - Green fill shows negative average inverter relative-current request
+  - The two directions fill outward from the centre of the strip
   - All LEDs turn off when the node shuts down
 """
 
 import rclpy
 from rclpy.node import Node
+from rclpy.qos import qos_profile_sensor_data
+from lart_msgs.msg import Inv1Setrelcurrent, Inv2Setrelcurrent
 
 try:
     import board
@@ -19,32 +23,23 @@ except (ImportError, NotImplementedError):
     _HAS_NEOPIXEL_SPI = False
 
 _COLOR_OFF = (0, 0, 0)
-
-
-def _rainbow_color(position):
-    """Return one RGB color from a 0-255 color wheel."""
-    position %= 256
-    if position < 85:
-        return (255 - position * 3, position * 3, 0)
-    if position < 170:
-        position -= 85
-        return (0, 255 - position * 3, position * 3)
-    position -= 170
-    return (position * 3, 0, 255 - position * 3)
+_COLOR_DRIVE = (0, 0, 255)
+_COLOR_REGEN = (0, 255, 0)
 
 
 class LedControllerNode(Node):
     def __init__(self):
         super().__init__('led_controller')
 
-        self.declare_parameter('led_count', 8)
+        self.declare_parameter('led_count', 16)
         self.declare_parameter('brightness', 0.5)
         self.declare_parameter('animation_hz', 20.0)
 
         self._count = int(self.get_parameter('led_count').value)
         brightness = float(self.get_parameter('brightness').value)
         animation_hz = float(self.get_parameter('animation_hz').value)
-        self._rainbow_offset = 0
+        self._inv1_percent = 0.0
+        self._inv2_percent = 0.0
 
         if _HAS_NEOPIXEL_SPI:
             self._pixels = neopixel_spi.NeoPixel_SPI(
@@ -61,24 +56,51 @@ class LedControllerNode(Node):
                 'Install: pip install adafruit-circuitpython-neopixel-spi'
             )
 
+        self.create_subscription(
+            Inv1Setrelcurrent,
+            '/pwt/inv1_setrelcurrent',
+            self._on_inv1,
+            qos_profile_sensor_data,
+        )
+        self.create_subscription(
+            Inv2Setrelcurrent,
+            '/pwt/inv2_setrelcurrent',
+            self._on_inv2,
+            qos_profile_sensor_data,
+        )
         self._timer = self.create_timer(
-            1.0 / max(animation_hz, 1.0), self._animate_rainbow
+            1.0 / max(animation_hz, 1.0), self._update_bar
         )
         self.get_logger().info(
-            f'LED controller ready — {self._count} LEDs moving rainbow'
+            f'LED controller ready — {self._count} LEDs relative-current gauge'
         )
 
     # ------------------------------------------------------------------
 
-    def _animate_rainbow(self):
+    def _on_inv1(self, msg):
+        self._inv1_percent = msg.inv1_cmd_targetrelativecurrent
+
+    def _on_inv2(self, msg):
+        self._inv2_percent = msg.inv2_cmd_targetrelativecurrent
+
+    def _update_bar(self):
         if self._pixels is None:
             return
 
+        inverter_percent = (self._inv1_percent + self._inv2_percent) / 2.0
+        half_count = self._count // 2
+        percent = max(-100.0, min(float(inverter_percent), 100.0))
+        lit_count = round(abs(percent) * half_count / 100.0)
+        if percent < 0.0:
+            color = _COLOR_REGEN
+            lit_indices = range(half_count - lit_count, half_count)
+        else:
+            color = _COLOR_DRIVE
+            lit_indices = range(half_count, half_count + lit_count)
+        lit_indices = set(lit_indices)
         for index in range(self._count):
-            position = index * 256 // self._count + self._rainbow_offset
-            self._pixels[index] = _rainbow_color(position)
+            self._pixels[index] = color if index in lit_indices else _COLOR_OFF
         self._pixels.show()
-        self._rainbow_offset = (self._rainbow_offset + 4) % 256
 
     # ------------------------------------------------------------------
 

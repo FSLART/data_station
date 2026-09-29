@@ -16,7 +16,7 @@ setup(
     zip_safe=True,
     maintainer='LART',
     maintainer_email='lart@example.com',
-    description='SPI-driven addressable LED strip rainbow controller',
+    description='SPI-driven relative-current LED gauge',
     license='MIT',
     entry_points={
         'console_scripts': [
