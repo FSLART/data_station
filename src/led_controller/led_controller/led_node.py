@@ -23,6 +23,7 @@ except (ImportError, NotImplementedError):
     _HAS_NEOPIXEL_SPI = False
 
 _COLOR_OFF = (0, 0, 0)
+_COLOR_IDLE = (255, 255, 255)
 _COLOR_DRIVE = (0, 0, 255)
 _COLOR_REGEN = (0, 255, 0)
 
@@ -32,7 +33,7 @@ class LedControllerNode(Node):
         super().__init__('led_controller')
 
         self.declare_parameter('led_count', 16)
-        self.declare_parameter('brightness', 0.5)
+        self.declare_parameter('brightness', 0.3)
         self.declare_parameter('animation_hz', 20.0)
 
         self._count = int(self.get_parameter('led_count').value)
@@ -90,6 +91,15 @@ class LedControllerNode(Node):
         inverter_percent = (self._inv1_percent + self._inv2_percent) / 2.0
         half_count = self._count // 2
         percent = max(-100.0, min(float(inverter_percent), 100.0))
+        if percent == 0.0:
+            center = {half_count - 1, half_count}
+            for index in range(self._count):
+                self._pixels[index] = (
+                    _COLOR_IDLE if index in center else _COLOR_OFF
+                )
+            self._pixels.show()
+            return
+
         lit_count = round(abs(percent) * half_count / 100.0)
         if percent < 0.0:
             color = _COLOR_REGEN
