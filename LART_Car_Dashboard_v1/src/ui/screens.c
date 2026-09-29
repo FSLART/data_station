@@ -731,7 +731,7 @@ void create_screen_driver_view() {
             // hvCurrentLabel
             lv_obj_t *obj = lv_label_create(parent_obj);
             objects.hv_current_label = obj;
-            lv_obj_set_pos(obj, 733, 433);
+            lv_obj_set_pos(obj, 723, 433);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
             add_style_text(obj);
             lv_label_set_text(obj, "");
