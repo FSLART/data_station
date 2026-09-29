@@ -35,7 +35,7 @@ class LedControllerNode(Node):
         super().__init__('led_controller')
 
         self.declare_parameter('led_count', 16)
-        self.declare_parameter('brightness', 0.3)
+        self.declare_parameter('brightness', 0.15)
         self.declare_parameter('animation_hz', 20.0)
 
         self._count = int(self.get_parameter('led_count').value)
@@ -107,10 +107,11 @@ class LedControllerNode(Node):
         lit_count = round(abs(percent) * half_count / 100.0)
         if percent < 0.0:
             color = _COLOR_REGEN
-            lit_indices = range(half_count - lit_count, half_count)
+            lit_indices = range(half_count, half_count + lit_count)
         else:
             color = _COLOR_DRIVE
-            lit_indices = range(half_count, half_count + lit_count)
+            lit_indices = range(half_count - lit_count, half_count)
+            
         lit_indices = set(lit_indices)
         self._pixels.fill(_COLOR_OFF)
         for index in lit_indices:
