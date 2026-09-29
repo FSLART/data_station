@@ -403,10 +403,10 @@ int main(int argc, char **argv) {
 
         // Test 1: Intermediate precharge states use the overlay for 0.5 seconds.
         assert(lv_obj_has_flag(objects.hv_on_overlay, LV_OBJ_FLAG_HIDDEN));
-        dbc_api.master_precharge_id_1.precharge_state = 19.0f;
+        dbc_api.master_precharge_id_1.precharge_state = 2.0f;
         ui_tick();
         assert(!lv_obj_has_flag(objects.hv_on_overlay, LV_OBJ_FLAG_HIDDEN));
-        assert(std::strcmp(lv_label_get_text(objects.hv_on_label), "RX CAN") == 0);
+        assert(std::strcmp(lv_label_get_text(objects.hv_on_label), "SWITCH HV NEG") == 0);
 
         lv_tick_inc(499);
         ui_tick();
@@ -415,10 +415,10 @@ int main(int argc, char **argv) {
         ui_tick();
         assert(lv_obj_has_flag(objects.hv_on_overlay, LV_OBJ_FLAG_HIDDEN));
 
-        dbc_api.master_precharge_id_1.precharge_state = 2.0f;
+        dbc_api.master_precharge_id_1.precharge_state = 3.0f;
         ui_tick();
         assert(!lv_obj_has_flag(objects.hv_on_overlay, LV_OBJ_FLAG_HIDDEN));
-        assert(std::strcmp(lv_label_get_text(objects.hv_on_label), "SWITCH HV NEG") == 0);
+        assert(std::strcmp(lv_label_get_text(objects.hv_on_label), "8 4 AIR NEG 2 CLOSE") == 0);
         lv_tick_inc(500);
         ui_tick();
         assert(lv_obj_has_flag(objects.hv_on_overlay, LV_OBJ_FLAG_HIDDEN));

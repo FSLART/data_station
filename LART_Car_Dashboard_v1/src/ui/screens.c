@@ -285,7 +285,7 @@ static void update_hv_on_overlay(void) {
     const bool state_is_valid = precharge_state == (float)state && get_precharge_state_label(state) != NULL;
 
     if (state_changed && state_is_valid) {
-        if (state == 19) {
+        if (state <= 15 || state == 19) {
             precharge_sequence_active = true;
         }
 
