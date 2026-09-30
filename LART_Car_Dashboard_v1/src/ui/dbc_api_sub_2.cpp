@@ -424,6 +424,8 @@ void init_dbc_api_subscribers_chunk_2(std::shared_ptr<rclcpp::Node> node, std::v
         "/pwt/master_msc_id_4", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::MasterMscId4> msg) {
             if (msg) {
                 std::lock_guard<std::mutex> lock(dbc_api_mutex);
+                dbc_api.master_msc_id_4.bal_bitmask = msg->bal_bitmask;
+                dbc_api.master_msc_id_4.bal_bitmask_slave_id = msg->bal_bitmask_slave_id;
                 dbc_api.master_msc_id_4.slaves_detected = msg->slaves_detected;
             }
         }));

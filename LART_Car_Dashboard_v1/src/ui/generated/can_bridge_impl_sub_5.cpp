@@ -284,6 +284,8 @@ bool CanBridgeImpl::handle_frame_chunk_5(uint32_t can_id, const uint8_t* data, s
                     struct powertrain_t26_master_msc_id_4_t decoded = {};
                     if (powertrain_t26_master_msc_id_4_unpack(&decoded, data, dlc) == 0) {
                         out.slaves_detected = powertrain_t26_master_msc_id_4_slaves_detected_decode(decoded.slaves_detected);
+                        out.bal_bitmask_slave_id = powertrain_t26_master_msc_id_4_bal_bitmask_slave_id_decode(decoded.bal_bitmask_slave_id);
+                        out.bal_bitmask = powertrain_t26_master_msc_id_4_bal_bitmask_decode(decoded.bal_bitmask);
                         decoded_any = true;
                     }
                 }

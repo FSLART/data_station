@@ -758,6 +758,8 @@ typedef struct {
         float overall_minimum_voltage;
     } master_msc_id_3;
     struct {
+        float bal_bitmask;
+        float bal_bitmask_slave_id;
         float slaves_detected;
     } master_msc_id_4;
     struct {
