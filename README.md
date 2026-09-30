@@ -45,7 +45,13 @@ flowchart LR
     DDS --> Input["input_handler / led_controller"]
 ```
 
-![DataStation interface](imgs/Interface.jpeg)
+## Interface preview
+
+![Data Station driver interface](imgs/Interface.jpeg)
+
+The driver view keeps speed, readiness, temperatures, voltage, SOC, lap data and
+pedal status visible with high contrast. Engineering-only signals remain on the
+debug pages and in the recorded telemetry.
 
 ## Project structure
 
