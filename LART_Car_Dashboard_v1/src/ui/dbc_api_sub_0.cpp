@@ -13,8 +13,6 @@ extern std::mutex dbc_api_mutex;
 #include <lart_msgs/msg/aqt2.hpp>
 #include <lart_msgs/msg/aqt3.hpp>
 #include <lart_msgs/msg/aqt4.hpp>
-#include <lart_msgs/msg/aqt5.hpp>
-#include <lart_msgs/msg/aqt6.hpp>
 #include <lart_msgs/msg/aqt7.hpp>
 #include <lart_msgs/msg/aqt8.hpp>
 #include <lart_msgs/msg/asf_signals.hpp>
@@ -36,6 +34,8 @@ extern std::mutex dbc_api_mutex;
 #include <lart_msgs/msg/inv1_setaccurrent.hpp>
 #include <lart_msgs/msg/inv1_setbrakecurrent.hpp>
 #include <lart_msgs/msg/inv1_setdigoutput.hpp>
+#include <lart_msgs/msg/inv1_setdriveenable.hpp>
+#include <lart_msgs/msg/inv1_seterpm.hpp>
 
 void init_dbc_api_subscribers_chunk_0(std::shared_ptr<rclcpp::Node> node, std::vector<rclcpp::SubscriptionBase::SharedPtr>& subs) {
     auto sensor_qos = rclcpp::QoS(10).best_effort();
@@ -94,32 +94,22 @@ void init_dbc_api_subscribers_chunk_0(std::shared_ptr<rclcpp::Node> node, std::v
         "/can/aqt2", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::Aqt2> msg) {
             if (msg) {
                 std::lock_guard<std::mutex> lock(dbc_api_mutex);
-                dbc_api.aqt2.brake_temp = msg->brake_temp;
-                dbc_api.aqt2.tire_temp = msg->tire_temp;
+                dbc_api.aqt2.front_left_wheel_rpm = msg->front_left_wheel_rpm;
+                dbc_api.aqt2.front_right_wheel_rpm = msg->front_right_wheel_rpm;
             }
         }));
     subs.push_back(node->create_subscription<lart_msgs::msg::Aqt2>(
         "/data/aqt2", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::Aqt2> msg) {
             if (msg) {
                 std::lock_guard<std::mutex> lock(dbc_api_mutex);
-                dbc_api.aqt2.brake_temp = msg->brake_temp;
-                dbc_api.aqt2.tire_temp = msg->tire_temp;
+                dbc_api.aqt2.front_left_wheel_rpm = msg->front_left_wheel_rpm;
+                dbc_api.aqt2.front_right_wheel_rpm = msg->front_right_wheel_rpm;
             }
         }));
     subs.push_back(node->create_subscription<lart_msgs::msg::Aqt3>(
         "/can/aqt3", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::Aqt3> msg) {
             if (msg) {
                 std::lock_guard<std::mutex> lock(dbc_api_mutex);
-                dbc_api.aqt3.brake_temp = msg->brake_temp;
-                dbc_api.aqt3.tire_temp = msg->tire_temp;
-            }
-        }));
-    subs.push_back(node->create_subscription<lart_msgs::msg::Aqt3>(
-        "/data/aqt3", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::Aqt3> msg) {
-            if (msg) {
-                std::lock_guard<std::mutex> lock(dbc_api_mutex);
-                dbc_api.aqt3.brake_temp = msg->brake_temp;
-                dbc_api.aqt3.tire_temp = msg->tire_temp;
             }
         }));
     subs.push_back(node->create_subscription<lart_msgs::msg::Aqt4>(
@@ -131,22 +121,6 @@ void init_dbc_api_subscribers_chunk_0(std::shared_ptr<rclcpp::Node> node, std::v
                 dbc_api.aqt4.st_angle = msg->st_angle;
                 dbc_api.aqt4.susp_l = msg->susp_l;
                 dbc_api.aqt4.susp_r = msg->susp_r;
-            }
-        }));
-    subs.push_back(node->create_subscription<lart_msgs::msg::Aqt5>(
-        "/data/aqt5", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::Aqt5> msg) {
-            if (msg) {
-                std::lock_guard<std::mutex> lock(dbc_api_mutex);
-                dbc_api.aqt5.brake_temp = msg->brake_temp;
-                dbc_api.aqt5.tire_temp = msg->tire_temp;
-            }
-        }));
-    subs.push_back(node->create_subscription<lart_msgs::msg::Aqt6>(
-        "/data/aqt6", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::Aqt6> msg) {
-            if (msg) {
-                std::lock_guard<std::mutex> lock(dbc_api_mutex);
-                dbc_api.aqt6.brake_temp = msg->brake_temp;
-                dbc_api.aqt6.tire_temp = msg->tire_temp;
             }
         }));
     subs.push_back(node->create_subscription<lart_msgs::msg::Aqt7>(
@@ -488,6 +462,20 @@ void init_dbc_api_subscribers_chunk_0(std::shared_ptr<rclcpp::Node> node, std::v
                 dbc_api.inv1_setdigoutput.inv1_cmd_setdigoutput2 = msg->inv1_cmd_setdigoutput2;
                 dbc_api.inv1_setdigoutput.inv1_cmd_setdigoutput3 = msg->inv1_cmd_setdigoutput3;
                 dbc_api.inv1_setdigoutput.inv1_cmd_setdigoutput4 = msg->inv1_cmd_setdigoutput4;
+            }
+        }));
+    subs.push_back(node->create_subscription<lart_msgs::msg::Inv1Setdriveenable>(
+        "/pwt/inv1_setdriveenable", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::Inv1Setdriveenable> msg) {
+            if (msg) {
+                std::lock_guard<std::mutex> lock(dbc_api_mutex);
+                dbc_api.inv1_setdriveenable.inv1_cmd_driveenable = msg->inv1_cmd_driveenable;
+            }
+        }));
+    subs.push_back(node->create_subscription<lart_msgs::msg::Inv1Seterpm>(
+        "/pwt/inv1_seterpm", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::Inv1Seterpm> msg) {
+            if (msg) {
+                std::lock_guard<std::mutex> lock(dbc_api_mutex);
+                dbc_api.inv1_seterpm.inv1_cmd_targetspeed = msg->inv1_cmd_targetspeed;
             }
         }));
 }

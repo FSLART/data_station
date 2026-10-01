@@ -23,7 +23,8 @@ int main(int argc, char **argv) {
     // Instantiate target DBC dispatcher class
     CanBridgeImpl bridge(node.get(), "data_t26");
     
-    float received_temperature = -1.0f;
+    float received_left_rpm = -1.0f;
+    float received_right_rpm = -1.0f;
     bool received = false;
     
     // Subscribe to test target topic
@@ -31,14 +32,16 @@ int main(int argc, char **argv) {
         "/data/aqt2",
         rclcpp::QoS(10).best_effort(),
         [&](const lart_msgs::msg::Aqt2::SharedPtr msg) {
-            received_temperature = msg->tire_temp;
+            received_left_rpm = msg->front_left_wheel_rpm;
+            received_right_rpm = msg->front_right_wheel_rpm;
             received = true;
         }
     );
     
     // Pack sample DBC data using the cantools unpack/pack C bindings
     struct data_t26_aqt2_t sample = {};
-    sample.tire_temp = data_t26_aqt2_tire_temp_encode(42.5f);
+    sample.front_left_wheel_rpm = data_t26_aqt2_front_left_wheel_rpm_encode(1234);
+    sample.front_right_wheel_rpm = data_t26_aqt2_front_right_wheel_rpm_encode(5678);
     
     uint8_t buffer[8] = {0};
     int pack_res = data_t26_aqt2_pack(buffer, &sample, sizeof(buffer));
@@ -54,9 +57,10 @@ int main(int argc, char **argv) {
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
     
-    std::cout << "Received temperature: " << received_temperature << " (Expected: ~42.5)" << std::endl;
+    std::cout << "Received wheel RPM: " << received_left_rpm << ", " << received_right_rpm << std::endl;
     assert(received);
-    assert(std::abs(received_temperature - 42.5f) < 0.1f);
+    assert(received_left_rpm == 1234.0f);
+    assert(received_right_rpm == 5678.0f);
 
     float received_throttle = -1.0f;
     bool received_aqt1 = false;

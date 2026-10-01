@@ -3,6 +3,7 @@
 #include "vars.h"
 #include "ros2subscriber.h"
 #include "dbc_api.h"
+#include "fonts.h"
 #include <cmath>
 #include <cstring>
 #include <cassert>
@@ -397,6 +398,8 @@ int main(int argc, char **argv) {
             std::fprintf(stderr, "[EEZ-Flow Error] Component %d: %s\n", componentIndex, errorMessage);
         };
 
+        // Start without a valid precharge state so screen creation stays quiet.
+        dbc_api.master_precharge_id_1.precharge_state = -1.0f;
         ui_init();
 
         std::printf("[TEST] Running telemetry mapping unit tests...\n");
@@ -407,6 +410,11 @@ int main(int argc, char **argv) {
         ui_tick();
         assert(!lv_obj_has_flag(objects.hv_on_overlay, LV_OBJ_FLAG_HIDDEN));
         assert(std::strcmp(lv_label_get_text(objects.hv_on_label), "SWITCH HV NEG") == 0);
+        lv_obj_update_layout(objects.hv_on_overlay);
+        assert(lv_obj_get_y(objects.hv_on_overlay) == 360);
+        assert(lv_obj_get_width(objects.hv_on_overlay) == 800);
+        assert(lv_obj_get_height(objects.hv_on_overlay) == 120);
+        assert(lv_obj_get_style_bg_opa(objects.hv_on_overlay, LV_PART_MAIN) == LV_OPA_80);
 
         lv_tick_inc(499);
         ui_tick();
@@ -428,6 +436,7 @@ int main(int argc, char **argv) {
         ui_tick();
         assert(!lv_obj_has_flag(objects.hv_on_overlay, LV_OBJ_FLAG_HIDDEN));
         assert(std::strcmp(lv_label_get_text(objects.hv_on_label), "HV ON") == 0);
+        assert(lv_obj_get_style_text_font(objects.hv_on_label, LV_PART_MAIN) == &ui_font_orbitron_bold_50);
 
         lv_tick_inc(3999);
         ui_tick();
@@ -440,8 +449,23 @@ int main(int argc, char **argv) {
         ui_tick();
         assert(lv_obj_has_flag(objects.hv_on_overlay, LV_OBJ_FLAG_HIDDEN));
 
-        // Intermediate states stay quiet after HV ON until RX CAN starts a new sequence.
-        dbc_api.master_precharge_id_1.precharge_state = 3.0f;
+        // Fault states stay quiet after HV ON until a new sequence starts.
+        dbc_api.master_precharge_id_1.precharge_state = 17.0f;
+        ui_tick();
+        assert(lv_obj_has_flag(objects.hv_on_overlay, LV_OBJ_FLAG_HIDDEN));
+
+        // A new sequence must fit even the longest progress message in the banner.
+        dbc_api.master_precharge_id_1.precharge_state = 19.0f;
+        ui_tick();
+        dbc_api.master_precharge_id_1.precharge_state = 15.0f;
+        ui_tick();
+        lv_obj_update_layout(objects.hv_on_overlay);
+        assert(std::strcmp(lv_label_get_text(objects.hv_on_label), "CHECKING PRECHARGE IS OPEN") == 0);
+        assert(lv_obj_get_style_text_font(objects.hv_on_label, LV_PART_MAIN) == &ui_font_orbitron_bold_30);
+        assert(lv_obj_get_y(objects.hv_on_label) >= 0);
+        assert(lv_obj_get_y(objects.hv_on_label) + lv_obj_get_height(objects.hv_on_label) <=
+               lv_obj_get_content_height(objects.hv_on_overlay));
+        lv_tick_inc(500);
         ui_tick();
         assert(lv_obj_has_flag(objects.hv_on_overlay, LV_OBJ_FLAG_HIDDEN));
 

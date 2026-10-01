@@ -4,15 +4,6 @@
 void CanBridgeImpl::init_publishers_chunk_2(rclcpp::Node* node) {
     auto sensor_qos = rclcpp::QoS(10).best_effort();
     if (database_ == "powertrain_t26") {
-        pub_inv2_temperatures = node->create_publisher<lart_msgs::msg::Inv2Temperatures>(database_ == "data_t26" ? "/data/inv2_temperatures" : database_ == "powertrain_t26" ? "/pwt/inv2_temperatures" : "/can/inv2_temperatures", sensor_qos);
-    }
-    if (database_ == "powertrain_t26") {
-        pub_ivt_msg_cmd = node->create_publisher<lart_msgs::msg::IvtMsgCmd>(database_ == "data_t26" ? "/data/ivt_msg_cmd" : database_ == "powertrain_t26" ? "/pwt/ivt_msg_cmd" : "/can/ivt_msg_cmd", sensor_qos);
-    }
-    if (database_ == "powertrain_t26") {
-        pub_ivt_msg_response = node->create_publisher<lart_msgs::msg::IvtMsgResponse>(database_ == "data_t26" ? "/data/ivt_msg_response" : database_ == "powertrain_t26" ? "/pwt/ivt_msg_response" : "/can/ivt_msg_response", sensor_qos);
-    }
-    if (database_ == "powertrain_t26") {
         pub_ivt_msg_result_as = node->create_publisher<lart_msgs::msg::IvtMsgResultAs>(database_ == "data_t26" ? "/data/ivt_msg_result_as" : database_ == "powertrain_t26" ? "/pwt/ivt_msg_result_as" : "/can/ivt_msg_result_as", sensor_qos);
     }
     if (database_ == "powertrain_t26") {
@@ -92,6 +83,15 @@ void CanBridgeImpl::init_publishers_chunk_2(rclcpp::Node* node) {
     }
     if (database_ == "powertrain_t26") {
         pub_slave_02_msc_id_1 = node->create_publisher<lart_msgs::msg::Slave02MscId1>(database_ == "data_t26" ? "/data/slave_02_msc_id_1" : database_ == "powertrain_t26" ? "/pwt/slave_02_msc_id_1" : "/can/slave_02_msc_id_1", sensor_qos);
+    }
+    if (database_ == "powertrain_t26") {
+        pub_slave_02_msc_id_2 = node->create_publisher<lart_msgs::msg::Slave02MscId2>(database_ == "data_t26" ? "/data/slave_02_msc_id_2" : database_ == "powertrain_t26" ? "/pwt/slave_02_msc_id_2" : "/can/slave_02_msc_id_2", sensor_qos);
+    }
+    if (database_ == "powertrain_t26") {
+        pub_slave_02_temperature_id_1 = node->create_publisher<lart_msgs::msg::Slave02TemperatureId1>(database_ == "data_t26" ? "/data/slave_02_temperature_id_1" : database_ == "powertrain_t26" ? "/pwt/slave_02_temperature_id_1" : "/can/slave_02_temperature_id_1", sensor_qos);
+    }
+    if (database_ == "powertrain_t26") {
+        pub_slave_02_temperature_id_2 = node->create_publisher<lart_msgs::msg::Slave02TemperatureId2>(database_ == "data_t26" ? "/data/slave_02_temperature_id_2" : database_ == "powertrain_t26" ? "/pwt/slave_02_temperature_id_2" : "/can/slave_02_temperature_id_2", sensor_qos);
     }
 }
 

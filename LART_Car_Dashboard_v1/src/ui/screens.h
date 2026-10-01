@@ -101,8 +101,8 @@ typedef struct _objects_t {
     lv_obj_t *autonomous_debug_text_5;
     lv_obj_t *temp_max_container;   // overall maximum temperature (accumulator) box
     lv_obj_t *temp_max_label;       // live overall maximum temperature value label
-    lv_obj_t *hv_on_overlay;        // temporary HV ON full-screen alert
-    lv_obj_t *hv_on_label;           // temporary HV ON alert text
+    lv_obj_t *hv_on_overlay;        // temporary precharge notification banner
+    lv_obj_t *hv_on_label;           // precharge notification text
 } objects_t;
 
 extern objects_t objects;

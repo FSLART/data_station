@@ -16,10 +16,7 @@
 #include <lart_msgs/msg/apps_adc_raw.hpp>
 #include <lart_msgs/msg/aqt1.hpp>
 #include <lart_msgs/msg/aqt2.hpp>
-#include <lart_msgs/msg/aqt3.hpp>
 #include <lart_msgs/msg/aqt4.hpp>
-#include <lart_msgs/msg/aqt5.hpp>
-#include <lart_msgs/msg/aqt6.hpp>
 #include <lart_msgs/msg/aqt7.hpp>
 #include <lart_msgs/msg/aqt8.hpp>
 #include <lart_msgs/msg/asf_signals.hpp>
@@ -213,10 +210,7 @@ private:
     rclcpp::Publisher<lart_msgs::msg::AppsAdcRaw>::SharedPtr pub_apps_adc_raw;
     rclcpp::Publisher<lart_msgs::msg::Aqt1>::SharedPtr pub_aqt1;
     rclcpp::Publisher<lart_msgs::msg::Aqt2>::SharedPtr pub_aqt2;
-    rclcpp::Publisher<lart_msgs::msg::Aqt3>::SharedPtr pub_aqt3;
     rclcpp::Publisher<lart_msgs::msg::Aqt4>::SharedPtr pub_aqt4;
-    rclcpp::Publisher<lart_msgs::msg::Aqt5>::SharedPtr pub_aqt5;
-    rclcpp::Publisher<lart_msgs::msg::Aqt6>::SharedPtr pub_aqt6;
     rclcpp::Publisher<lart_msgs::msg::Aqt7>::SharedPtr pub_aqt7;
     rclcpp::Publisher<lart_msgs::msg::Aqt8>::SharedPtr pub_aqt8;
     rclcpp::Publisher<lart_msgs::msg::AsfSignals>::SharedPtr pub_asf_signals;

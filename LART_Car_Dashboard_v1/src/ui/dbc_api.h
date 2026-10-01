@@ -33,12 +33,10 @@ typedef struct {
         float throtle_percentage;
     } aqt1;
     struct {
-        float brake_temp;
-        float tire_temp;
+        float front_left_wheel_rpm;
+        float front_right_wheel_rpm;
     } aqt2;
     struct {
-        float brake_temp;
-        float tire_temp;
     } aqt3;
     struct {
         float emergency;
@@ -47,14 +45,6 @@ typedef struct {
         float susp_l;
         float susp_r;
     } aqt4;
-    struct {
-        float brake_temp;
-        float tire_temp;
-    } aqt5;
-    struct {
-        float brake_temp;
-        float tire_temp;
-    } aqt6;
     struct {
         float susp_l;
         float susp_r;
