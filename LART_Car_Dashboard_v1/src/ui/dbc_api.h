@@ -37,8 +37,6 @@ typedef struct {
         float front_right_wheel_rpm;
     } aqt2;
     struct {
-    } aqt3;
-    struct {
         float emergency;
         float inertia;
         float st_angle;

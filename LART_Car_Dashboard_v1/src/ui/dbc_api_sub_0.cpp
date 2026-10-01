@@ -11,7 +11,6 @@ extern std::mutex dbc_api_mutex;
 #include <lart_msgs/msg/apps_adc_raw.hpp>
 #include <lart_msgs/msg/aqt1.hpp>
 #include <lart_msgs/msg/aqt2.hpp>
-#include <lart_msgs/msg/aqt3.hpp>
 #include <lart_msgs/msg/aqt4.hpp>
 #include <lart_msgs/msg/aqt7.hpp>
 #include <lart_msgs/msg/aqt8.hpp>
@@ -36,6 +35,7 @@ extern std::mutex dbc_api_mutex;
 #include <lart_msgs/msg/inv1_setdigoutput.hpp>
 #include <lart_msgs/msg/inv1_setdriveenable.hpp>
 #include <lart_msgs/msg/inv1_seterpm.hpp>
+#include <lart_msgs/msg/inv1_setmaxacbrakecurrent.hpp>
 
 void init_dbc_api_subscribers_chunk_0(std::shared_ptr<rclcpp::Node> node, std::vector<rclcpp::SubscriptionBase::SharedPtr>& subs) {
     auto sensor_qos = rclcpp::QoS(10).best_effort();
@@ -104,12 +104,6 @@ void init_dbc_api_subscribers_chunk_0(std::shared_ptr<rclcpp::Node> node, std::v
                 std::lock_guard<std::mutex> lock(dbc_api_mutex);
                 dbc_api.aqt2.front_left_wheel_rpm = msg->front_left_wheel_rpm;
                 dbc_api.aqt2.front_right_wheel_rpm = msg->front_right_wheel_rpm;
-            }
-        }));
-    subs.push_back(node->create_subscription<lart_msgs::msg::Aqt3>(
-        "/can/aqt3", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::Aqt3> msg) {
-            if (msg) {
-                std::lock_guard<std::mutex> lock(dbc_api_mutex);
             }
         }));
     subs.push_back(node->create_subscription<lart_msgs::msg::Aqt4>(
@@ -476,6 +470,13 @@ void init_dbc_api_subscribers_chunk_0(std::shared_ptr<rclcpp::Node> node, std::v
             if (msg) {
                 std::lock_guard<std::mutex> lock(dbc_api_mutex);
                 dbc_api.inv1_seterpm.inv1_cmd_targetspeed = msg->inv1_cmd_targetspeed;
+            }
+        }));
+    subs.push_back(node->create_subscription<lart_msgs::msg::Inv1Setmaxacbrakecurrent>(
+        "/pwt/inv1_setmaxacbrakecurrent", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::Inv1Setmaxacbrakecurrent> msg) {
+            if (msg) {
+                std::lock_guard<std::mutex> lock(dbc_api_mutex);
+                dbc_api.inv1_setmaxacbrakecurrent.inv1_cmd_maxacbrakecurrent = msg->inv1_cmd_maxacbrakecurrent;
             }
         }));
 }

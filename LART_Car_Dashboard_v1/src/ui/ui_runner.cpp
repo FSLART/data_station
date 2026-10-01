@@ -469,6 +469,23 @@ int main(int argc, char **argv) {
         ui_tick();
         assert(lv_obj_has_flag(objects.hv_on_overlay, LV_OBJ_FLAG_HIDDEN));
 
+        // Completing one run must not suppress the next complete sequence.
+        for (int run = 0; run < 2; ++run) {
+            dbc_api.master_precharge_id_1.precharge_state = 19.0f;
+            ui_tick();
+            assert(std::strcmp(lv_label_get_text(objects.hv_on_label), "RX CAN") == 0);
+            for (int state = 0; state <= 16; ++state) {
+                lv_tick_inc(500);
+                dbc_api.master_precharge_id_1.precharge_state = (float)state;
+                ui_tick();
+                assert(!lv_obj_has_flag(objects.hv_on_overlay, LV_OBJ_FLAG_HIDDEN));
+            }
+            assert(std::strcmp(lv_label_get_text(objects.hv_on_label), "HV ON") == 0);
+            lv_tick_inc(4000);
+            ui_tick();
+            assert(lv_obj_has_flag(objects.hv_on_overlay, LV_OBJ_FLAG_HIDDEN));
+        }
+
         if (test_precharge_overlay && !test_mappings) {
             std::printf("[TEST] ✓ Precharge overlay tests passed successfully!\n");
             std::_Exit(0);

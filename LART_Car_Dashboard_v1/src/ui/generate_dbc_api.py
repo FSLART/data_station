@@ -45,14 +45,14 @@ def main():
     message_signals = {}
     signal_types = {}
     for msg in db.messages:
-        if not msg.signals:
+        included_signals = [sig for sig in msg.signals
+                            if (msg.name, sig.name) not in _EXCLUDED_SIGNALS]
+        if not included_signals:
             continue
         msg_slug = _ros_name(msg.name)
         if msg_slug not in message_signals:
             message_signals[msg_slug] = set()
-        for sig in msg.signals:
-            if (msg.name, sig.name) in _EXCLUDED_SIGNALS:
-                continue
+        for sig in included_signals:
             sig_slug = _ros_name(sig.name)
             message_signals[msg_slug].add(sig_slug)
             # Preserve established interfaces; new ICD integer fields must be exact.

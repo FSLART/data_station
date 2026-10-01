@@ -6,7 +6,6 @@
 #include <mutex>
 #include <vector>
 extern std::mutex dbc_api_mutex;
-#include <lart_msgs/msg/inv1_setmaxacbrakecurrent.hpp>
 #include <lart_msgs/msg/inv1_setmaxaccurrent.hpp>
 #include <lart_msgs/msg/inv1_setmaxdcbrakecurrent.hpp>
 #include <lart_msgs/msg/inv1_setmaxdccurrent.hpp>
@@ -36,17 +35,11 @@ extern std::mutex dbc_api_mutex;
 #include <lart_msgs/msg/inv2_targetiq.hpp>
 #include <lart_msgs/msg/inv2_temperatures.hpp>
 #include <lart_msgs/msg/ivt_msg_cmd.hpp>
+#include <lart_msgs/msg/ivt_msg_response.hpp>
 
 void init_dbc_api_subscribers_chunk_1(std::shared_ptr<rclcpp::Node> node, std::vector<rclcpp::SubscriptionBase::SharedPtr>& subs) {
     auto sensor_qos = rclcpp::QoS(10).best_effort();
 
-    subs.push_back(node->create_subscription<lart_msgs::msg::Inv1Setmaxacbrakecurrent>(
-        "/pwt/inv1_setmaxacbrakecurrent", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::Inv1Setmaxacbrakecurrent> msg) {
-            if (msg) {
-                std::lock_guard<std::mutex> lock(dbc_api_mutex);
-                dbc_api.inv1_setmaxacbrakecurrent.inv1_cmd_maxacbrakecurrent = msg->inv1_cmd_maxacbrakecurrent;
-            }
-        }));
     subs.push_back(node->create_subscription<lart_msgs::msg::Inv1Setmaxaccurrent>(
         "/pwt/inv1_setmaxaccurrent", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::Inv1Setmaxaccurrent> msg) {
             if (msg) {
@@ -398,6 +391,112 @@ void init_dbc_api_subscribers_chunk_1(std::shared_ptr<rclcpp::Node> node, std::v
                 dbc_api.ivt_msg_cmd.val_7a_get_sw_version_dummy = msg->val_7a_get_sw_version_dummy;
                 dbc_api.ivt_msg_cmd.val_7b_get_serien_nr_dummy = msg->val_7b_get_serien_nr_dummy;
                 dbc_api.ivt_msg_cmd.val_7c_get_art_nr_dummy = msg->val_7c_get_art_nr_dummy;
+            }
+        }));
+    subs.push_back(node->create_subscription<lart_msgs::msg::IvtMsgResponse>(
+        "/pwt/ivt_msg_response", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::IvtMsgResponse> msg) {
+            if (msg) {
+                std::lock_guard<std::mutex> lock(dbc_api_mutex);
+                dbc_api.ivt_msg_response.a0_resp_cycletime_i = msg->a0_resp_cycletime_i;
+                dbc_api.ivt_msg_response.a0_resp_endianess_i = msg->a0_resp_endianess_i;
+                dbc_api.ivt_msg_response.a0_resp_sign_i = msg->a0_resp_sign_i;
+                dbc_api.ivt_msg_response.a0_resp_triggermode_i = msg->a0_resp_triggermode_i;
+                dbc_api.ivt_msg_response.a1_resp_cycletime_u1 = msg->a1_resp_cycletime_u1;
+                dbc_api.ivt_msg_response.a1_resp_endianess_u1 = msg->a1_resp_endianess_u1;
+                dbc_api.ivt_msg_response.a1_resp_sign_u1 = msg->a1_resp_sign_u1;
+                dbc_api.ivt_msg_response.a1_resp_triggermode_u1 = msg->a1_resp_triggermode_u1;
+                dbc_api.ivt_msg_response.a2_resp_cycletime_u2 = msg->a2_resp_cycletime_u2;
+                dbc_api.ivt_msg_response.a2_resp_endianess_u2 = msg->a2_resp_endianess_u2;
+                dbc_api.ivt_msg_response.a2_resp_sign_u2 = msg->a2_resp_sign_u2;
+                dbc_api.ivt_msg_response.a2_resp_triggermode_u2 = msg->a2_resp_triggermode_u2;
+                dbc_api.ivt_msg_response.a3_resp_cycletime_u3 = msg->a3_resp_cycletime_u3;
+                dbc_api.ivt_msg_response.a3_resp_endianess_u3 = msg->a3_resp_endianess_u3;
+                dbc_api.ivt_msg_response.a3_resp_sign_u3 = msg->a3_resp_sign_u3;
+                dbc_api.ivt_msg_response.a3_resp_triggermode_u3 = msg->a3_resp_triggermode_u3;
+                dbc_api.ivt_msg_response.a4_resp_cycletime_t = msg->a4_resp_cycletime_t;
+                dbc_api.ivt_msg_response.a4_resp_endianess_t = msg->a4_resp_endianess_t;
+                dbc_api.ivt_msg_response.a4_resp_sign_t = msg->a4_resp_sign_t;
+                dbc_api.ivt_msg_response.a4_resp_triggermode_t = msg->a4_resp_triggermode_t;
+                dbc_api.ivt_msg_response.a5_resp_cycletime_w = msg->a5_resp_cycletime_w;
+                dbc_api.ivt_msg_response.a5_resp_endianess_w = msg->a5_resp_endianess_w;
+                dbc_api.ivt_msg_response.a5_resp_sign_w = msg->a5_resp_sign_w;
+                dbc_api.ivt_msg_response.a5_resp_triggermode_w = msg->a5_resp_triggermode_w;
+                dbc_api.ivt_msg_response.a6_resp_cycletime_as = msg->a6_resp_cycletime_as;
+                dbc_api.ivt_msg_response.a6_resp_endianess_as = msg->a6_resp_endianess_as;
+                dbc_api.ivt_msg_response.a6_resp_sign_as = msg->a6_resp_sign_as;
+                dbc_api.ivt_msg_response.a6_resp_triggermode_as = msg->a6_resp_triggermode_as;
+                dbc_api.ivt_msg_response.a7_resp_cycletime_wh = msg->a7_resp_cycletime_wh;
+                dbc_api.ivt_msg_response.a7_resp_endianess_wh = msg->a7_resp_endianess_wh;
+                dbc_api.ivt_msg_response.a7_resp_sign_wh = msg->a7_resp_sign_wh;
+                dbc_api.ivt_msg_response.a7_resp_triggermode_wh = msg->a7_resp_triggermode_wh;
+                dbc_api.ivt_msg_response.b0_resp_reset_device_sn = msg->b0_resp_reset_device_sn;
+                dbc_api.ivt_msg_response.b0_resp_reset_item = msg->b0_resp_reset_item;
+                dbc_api.ivt_msg_response.b1_00_trigger_i = msg->b1_00_trigger_i;
+                dbc_api.ivt_msg_response.b1_01_trigger_u1 = msg->b1_01_trigger_u1;
+                dbc_api.ivt_msg_response.b1_02_trigger_u2 = msg->b1_02_trigger_u2;
+                dbc_api.ivt_msg_response.b1_03_trigger_u3 = msg->b1_03_trigger_u3;
+                dbc_api.ivt_msg_response.b1_04_trigger_t = msg->b1_04_trigger_t;
+                dbc_api.ivt_msg_response.b1_05_trigger_w = msg->b1_05_trigger_w;
+                dbc_api.ivt_msg_response.b1_06_trigger_as = msg->b1_06_trigger_as;
+                dbc_api.ivt_msg_response.b1_07_trigger_wh = msg->b1_07_trigger_wh;
+                dbc_api.ivt_msg_response.b1_trigger_spare = msg->b1_trigger_spare;
+                dbc_api.ivt_msg_response.b2_resp_store_device_sn = msg->b2_resp_store_device_sn;
+                dbc_api.ivt_msg_response.b2_resp_store_dummy = msg->b2_resp_store_dummy;
+                dbc_api.ivt_msg_response.b3_resp_oc_test_time = msg->b3_resp_oc_test_time;
+                dbc_api.ivt_msg_response.b4_resp_actual_mode = msg->b4_resp_actual_mode;
+                dbc_api.ivt_msg_response.b4_resp_code_level = msg->b4_resp_code_level;
+                dbc_api.ivt_msg_response.b4_resp_startup_mode = msg->b4_resp_startup_mode;
+                dbc_api.ivt_msg_response.b5_resp_oc_pos_reset_threshold = msg->b5_resp_oc_pos_reset_threshold;
+                dbc_api.ivt_msg_response.b5_resp_oc_pos_set_threshold = msg->b5_resp_oc_pos_set_threshold;
+                dbc_api.ivt_msg_response.b6_resp_oc_neg_reset_threshold = msg->b6_resp_oc_neg_reset_threshold;
+                dbc_api.ivt_msg_response.b6_resp_oc_neg_set_threshold = msg->b6_resp_oc_neg_set_threshold;
+                dbc_api.ivt_msg_response.b9_resp_device_com = msg->b9_resp_device_com;
+                dbc_api.ivt_msg_response.b9_resp_device_current = msg->b9_resp_device_current;
+                dbc_api.ivt_msg_response.b9_resp_device_toi = msg->b9_resp_device_toi;
+                dbc_api.ivt_msg_response.b9_resp_device_type = msg->b9_resp_device_type;
+                dbc_api.ivt_msg_response.b9_resp_device_v_supply = msg->b9_resp_device_v_supply;
+                dbc_api.ivt_msg_response.b9_resp_device_voltage_chan = msg->b9_resp_device_voltage_chan;
+                dbc_api.ivt_msg_response.ba_resp_sw_ver_day = msg->ba_resp_sw_ver_day;
+                dbc_api.ivt_msg_response.ba_resp_sw_ver_internal = msg->ba_resp_sw_ver_internal;
+                dbc_api.ivt_msg_response.ba_resp_sw_ver_major_hw = msg->ba_resp_sw_ver_major_hw;
+                dbc_api.ivt_msg_response.ba_resp_sw_ver_minor = msg->ba_resp_sw_ver_minor;
+                dbc_api.ivt_msg_response.ba_resp_sw_ver_month = msg->ba_resp_sw_ver_month;
+                dbc_api.ivt_msg_response.ba_resp_sw_ver_revision = msg->ba_resp_sw_ver_revision;
+                dbc_api.ivt_msg_response.ba_resp_sw_ver_vear = msg->ba_resp_sw_ver_vear;
+                dbc_api.ivt_msg_response.bb_resp_serien_nr = msg->bb_resp_serien_nr;
+                dbc_api.ivt_msg_response.bc_resp_art_n = msg->bc_resp_art_n;
+                dbc_api.ivt_msg_response.bf_restart_alive_cmd_id = msg->bf_restart_alive_cmd_id;
+                dbc_api.ivt_msg_response.bf_restart_alive_sn = msg->bf_restart_alive_sn;
+                dbc_api.ivt_msg_response.ff_wrong_command = msg->ff_wrong_command;
+                dbc_api.ivt_msg_response.ivt_id_response = msg->ivt_id_response;
+                dbc_api.ivt_msg_response.val_80_resp_measerror_count_mask = msg->val_80_resp_measerror_count_mask;
+                dbc_api.ivt_msg_response.val_80_resp_measerror_item = msg->val_80_resp_measerror_item;
+                dbc_api.ivt_msg_response.val_81_resp_systemerror_count_mask = msg->val_81_resp_systemerror_count_mask;
+                dbc_api.ivt_msg_response.val_81_resp_systemerror_item = msg->val_81_resp_systemerror_item;
+                dbc_api.ivt_msg_response.val_82_resp_alllogdata_counter = msg->val_82_resp_alllogdata_counter;
+                dbc_api.ivt_msg_response.val_82_resp_alllogdata_item = msg->val_82_resp_alllogdata_item;
+                dbc_api.ivt_msg_response.val_83_resp_logdata_counter = msg->val_83_resp_logdata_counter;
+                dbc_api.ivt_msg_response.val_83_resp_logdata_item = msg->val_83_resp_logdata_item;
+                dbc_api.ivt_msg_response.val_90_resp_can_id_sn_i = msg->val_90_resp_can_id_sn_i;
+                dbc_api.ivt_msg_response.val_90_resp_can_id_val_i = msg->val_90_resp_can_id_val_i;
+                dbc_api.ivt_msg_response.val_91_resp_can_id_sn_u1 = msg->val_91_resp_can_id_sn_u1;
+                dbc_api.ivt_msg_response.val_91_resp_can_id_val_u1 = msg->val_91_resp_can_id_val_u1;
+                dbc_api.ivt_msg_response.val_92_resp_can_id_sn_u2 = msg->val_92_resp_can_id_sn_u2;
+                dbc_api.ivt_msg_response.val_92_resp_can_id_val_u2 = msg->val_92_resp_can_id_val_u2;
+                dbc_api.ivt_msg_response.val_93_resp_can_id_sn_u3 = msg->val_93_resp_can_id_sn_u3;
+                dbc_api.ivt_msg_response.val_93_resp_can_id_val_u3 = msg->val_93_resp_can_id_val_u3;
+                dbc_api.ivt_msg_response.val_94_resp_can_id_sn_t = msg->val_94_resp_can_id_sn_t;
+                dbc_api.ivt_msg_response.val_94_resp_can_id_val_t = msg->val_94_resp_can_id_val_t;
+                dbc_api.ivt_msg_response.val_95_resp_can_id_sn_w = msg->val_95_resp_can_id_sn_w;
+                dbc_api.ivt_msg_response.val_95_resp_can_id_val_w = msg->val_95_resp_can_id_val_w;
+                dbc_api.ivt_msg_response.val_96_resp_can_id_sn_as = msg->val_96_resp_can_id_sn_as;
+                dbc_api.ivt_msg_response.val_96_resp_can_id_val_as = msg->val_96_resp_can_id_val_as;
+                dbc_api.ivt_msg_response.val_97_resp_can_id_sn_wh = msg->val_97_resp_can_id_sn_wh;
+                dbc_api.ivt_msg_response.val_97_resp_can_id_val_wh = msg->val_97_resp_can_id_val_wh;
+                dbc_api.ivt_msg_response.val_9d_resp_can_id_sn_command = msg->val_9d_resp_can_id_sn_command;
+                dbc_api.ivt_msg_response.val_9d_resp_can_id_val_command = msg->val_9d_resp_can_id_val_command;
+                dbc_api.ivt_msg_response.val_9f_resp_can_id_sn_response = msg->val_9f_resp_can_id_sn_response;
+                dbc_api.ivt_msg_response.val_9f_resp_can_id_val_response = msg->val_9f_resp_can_id_val_response;
             }
         }));
 }

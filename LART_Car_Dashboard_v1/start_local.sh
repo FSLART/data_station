@@ -23,7 +23,12 @@ export ROS_DOMAIN_ID="${ROS_DOMAIN_ID:-42}"
 # 4. Start the DBC simulation stack in the background
 #    (isolated simulators/bridges → /data/*, /pwt/*, /can/*)
 echo "Starting DBC simulation stack (can_simulator + can_bridge + dashboard_state_bridge)..."
-ros2 launch lart_bringup dbc_sim.launch.py &
+SIM_NODES="$(ros2 node list)"
+if printf '%s\n' "$SIM_NODES" | grep -Eq '^/can_simulator(_(data|powertrain|autonomous))?$'; then
+    echo "ERROR: A CAN simulation stack is already running. Stop it before starting another local stack."
+    exit 1
+fi
+setsid ros2 launch lart_bringup dbc_sim.launch.py &
 SIM_STACK_PID=$!
 echo "DBC simulation stack PID: $SIM_STACK_PID"
 
@@ -42,8 +47,13 @@ fi
 # Stop the background stack when this script exits (Ctrl+C, or UI exit below)
 cleanup() {
     echo "Shutting down local stack..."
-    [ -n "$SIM_STACK_PID" ] && kill "$SIM_STACK_PID" 2>/dev/null
-    [ -n "$BAG_RECORDER_PID" ] && kill -INT "$BAG_RECORDER_PID" 2>/dev/null
+    if [ -n "$SIM_STACK_PID" ]; then
+        kill -TERM -- "-$SIM_STACK_PID" 2>/dev/null || true
+        wait "$SIM_STACK_PID" 2>/dev/null || true
+    fi
+    if [ -n "$BAG_RECORDER_PID" ]; then
+        kill -INT "$BAG_RECORDER_PID" 2>/dev/null || true
+    fi
 }
 trap cleanup EXIT
 

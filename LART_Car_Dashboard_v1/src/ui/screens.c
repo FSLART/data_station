@@ -216,18 +216,19 @@ static const char *get_precharge_state_label(int state) {
         "START",
         "OPEN ALL",
         "SWITCH HV NEG",
-        "8 4 AIR NEG 2 CLOSE",
-        "CK AIR NEG IS CLOSED",
+        "WAIT FOR HV NEG TO OPEN",
+        "WAIT FOR AIR NEG TO CLOSE",
+        "CHECK IF AIR NEG IS CLOSED",
         "SWITCH PRECHARGE",
-        "8 4 PRECHARGE 2 CLOSE",
+        "WAIT FOR PRECHARGE TOCLOSE",
         "CK PRECHARGE IS CLOSED",
         "VERIFY CURRENT",
         "VERIFY BUS VOLTAGE",
         "SWITCH HV POS",
-        "8 4 AIR POS 2 CLOSE",
+        "WAIT FOR AIR POS TO CLOSE",
         "CHECKING AIR POS IS CLOSED",
         "TURN OFF PRECHARGE",
-        "8 4 PRECHARGE 2 OPEN",
+        "WAIT FOR PRECHARGE TO OPEN",
         "CHECKING PRECHARGE IS OPEN",
         "HV ON",
         "WRONG",
@@ -263,7 +264,7 @@ static void show_precharge_overlay(int state) {
     );
     lv_obj_set_style_text_color(
         objects.hv_on_label,
-        lv_color_hex(is_hv_on ? 0xffffff : 0x080808),
+        lv_color_hex(0xffffff),
         LV_PART_MAIN | LV_STATE_DEFAULT
     );
     lv_obj_set_style_text_font(
@@ -731,7 +732,7 @@ void create_screen_driver_view() {
             // hvCurrentLabel
             lv_obj_t *obj = lv_label_create(parent_obj);
             objects.hv_current_label = obj;
-            lv_obj_set_pos(obj, 723, 433);
+            lv_obj_set_pos(obj, 713, 433);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
             add_style_text(obj);
             lv_label_set_text(obj, "");
