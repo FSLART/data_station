@@ -230,7 +230,7 @@ static const char *get_precharge_state_label(int state) {
         "CHECKING AIR POS IS CLOSED",
         "TURN OFF PRECHARGE",
         "WAIT FOR PRECHARGE TO OPEN",
-        "CHECKING PRECHARGE IS OPEN",
+        "HV ON",
         "HV ON",
         "WRONG",
         "KILL",
