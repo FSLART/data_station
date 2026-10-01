@@ -155,3 +155,5 @@ source ~/ros2_jazzy/install/local_setup.bash
 source ~/GIT/lart_dashboard_ws/install/setup.bash
 ros2 launch lart_bringup car.launch.py
 ```
+
+For DBC changes, follow the [DBC update guide](docs/DBC-Update-Guide.md) to validate, regenerate, rebuild, and update consumers.

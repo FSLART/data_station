@@ -78,34 +78,37 @@ def main():
         for sig_slug in sorted(list(sig_slugs)):
             lines.append(f"{signal_types[(msg_slug, sig_slug)][0]} {sig_slug}")
             
+        # Keep established types, headers and constants for existing interfaces.
+        if os.path.exists(msg_path):
+            with open(msg_path, encoding="utf-8") as mf:
+                previous = mf.read().splitlines()
+            lines = []
+            retained = set()
+            for line in previous:
+                field = line.split("#", 1)[0].split()
+                if len(field) < 2 or "=" in line or field[1] == "header":
+                    lines.append(line)
+                elif field[1] in sig_slugs:
+                    lines.append(line)
+                    retained.add(field[1])
+            lines.extend(f"{signal_types[(msg_slug, sig)][0]} {sig}"
+                         for sig in sorted(sig_slugs - retained))
         with open(msg_path, "w", encoding="utf-8") as mf:
             mf.write("\n".join(lines) + "\n")
         generated_msg_files.append(msg_filename)
         
     cmake_path = os.path.join(lart_msgs_dir, "CMakeLists.txt")
-    standard_msgs = []
-    all_msgs = standard_msgs + [f"msg/{mf}" for mf in sorted(generated_msg_files)]
-    
-    cmake_lines = [
-        "cmake_minimum_required(VERSION 3.8)",
-        "project(lart_msgs)",
-        "",
-        "find_package(ament_cmake REQUIRED)",
-        "find_package(rosidl_default_generators REQUIRED)",
-        "find_package(builtin_interfaces REQUIRED)",
-        "",
-        "rosidl_generate_interfaces(${PROJECT_NAME}"
-    ]
-    for m in all_msgs:
-        cmake_lines.append(f'  "{m}"')
-    cmake_lines.extend([
-        "  DEPENDENCIES builtin_interfaces",
-        ")",
-        "",
-        "ament_package()"
-    ])
+    # Replace only generated entries; preserve custom messages, services and dependencies.
+    with open(cmake_path, encoding="utf-8") as cf:
+        cmake = cf.read()
+    cmake = re.sub(r'^\s*"dbc_msgs/[^"\n]+\.msg"[ \t]*\n', '', cmake, flags=re.MULTILINE)
+    entries = ''.join(f'  "dbc_msgs/{mf}"\n' for mf in sorted(generated_msg_files))
+    marker = "rosidl_generate_interfaces(${PROJECT_NAME}\n"
+    if cmake.count(marker) != 1:
+        raise ValueError("Expected one rosidl_generate_interfaces block in lart_msgs/CMakeLists.txt")
+    cmake = cmake.replace(marker, marker + entries)
     with open(cmake_path, "w", encoding="utf-8") as cf:
-        cf.write("\n".join(cmake_lines) + "\n")
+        cf.write(cmake)
     print(f"Generated {len(generated_msg_files)} .msg files and updated CMakeLists.txt")
             
     # Identify error signals for checking
@@ -288,7 +291,7 @@ def main():
         "",
         "// Last LV value shown on the dashboard (Volts) — used by the screen tick",
         "// code to render the LV label with one decimal.",
-        "static float ui_lv_value = 20.0f;",
+        "static float ui_lv_value = 24.0f;",
         "",
         "extern \"C\" const char *ui_get_lv_str() {",
         "    static char buf[16];",
@@ -326,6 +329,14 @@ def main():
         "        FLOW_GLOBAL_VARIABLE_SPEED,",
         "        eez::FloatValue(speed_kph)",
         "    );",
+        "}",
+        "",
+        "extern \"C\" int ui_get_apps_percentage() {",
+        "    return eez::flow::getGlobalVariable(FLOW_GLOBAL_VARIABLE_ACCELL_PEDAL_PRESSURE).getInt();",
+        "}",
+        "",
+        "extern \"C\" int ui_get_brake_percentage() {",
+        "    return eez::flow::getGlobalVariable(FLOW_GLOBAL_VARIABLE_BRAKE_PEDAL_PRESSURE).getInt();",
         "}",
         "",
         "extern \"C\" float ui_get_speed() {",
@@ -424,9 +435,9 @@ def main():
         "        if (dbc_api.master_msc_id_1.mcu_vref >= 5.0f && dbc_api.master_msc_id_1.mcu_vref <= 30.0f) {",
         "            lv_val = dbc_api.master_msc_id_1.mcu_vref;",
         "        } else {",
-        "            // No valid LV data received — set to bar minimum (20.0 V) so the",
-        "            // indicator appears empty rather than partially filled.",
-        "            lv_val = 20.0f;",
+        "            // No valid LV data received — use the default display value (24.0 V)",
+        "            // so the indicator appears empty rather than partially filled.",
+        "            lv_val = 24.0f;",
         "        }",
         "    }",
         "    ui_lv_value = lv_val;",
@@ -492,7 +503,7 @@ def main():
         "        case 6: return \"AUTOCROSS\";",
         "        default: return \"MANUAL\";",
         "    }",
-        "}"
+        "}",
     ])
 
     source_lines.extend([

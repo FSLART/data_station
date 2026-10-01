@@ -375,12 +375,10 @@ ros2 launch lart_bringup car.launch.py
 
 ### Regenerate DBC API (after changing .dbc files)
 
-```bash
-# Run from the ui/ directory (or inside the Docker container)
-pip install cantools
-python3 LART_Car_Dashboard_v1/src/ui/generate_dbc_api.py
-# Outputs: dbc_api.h, dbc_api.cpp, generated/can_bridge_impl.hpp
-```
+Follow [the DBC update guide](docs/DBC-Update-Guide.md) for strict validation,
+C decoder generation, ROS/API/bridge regeneration, consumer changes and rebuilding.
+Run commands from the repository root. `generate_dbc_api.py` does not generate
+the C decoder or `generated/can_bridge_impl*`; those require separate commands.
 
 ### Makefile Reference
 
