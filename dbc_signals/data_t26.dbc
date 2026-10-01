@@ -57,10 +57,10 @@ BO_ 1824 AQT2: 4 Acquisition_Board2
  SG_ FRONT_LEFT_WHEEL_RPM : 0|16@1+ (1,0) [0|0] "RPM"  Data_Station
  SG_ FRONT_RIGHT_WHEEL_RPM : 16|16@1+ (1,0) [0|0] "RPM"  Data_Station
 
-BO_ 1904 AQT7: 4 Acquisition_Board7
+BO_ 1904 AQT7: 8 Acquisition_Board7
  SG_ SUSP_L : 0|16@1- (0.1,0) [0|0] "mm"  Data_Station
  SG_ SUSP_R : 16|16@1- (0.1,0) [0|0] "mm"  Data_Station
- SG_ NTC_1 : 16|8@1+ (1,0) [0|0] "ºC" Vector__XXX
+ SG_ NTC_1 : 32|8@1+ (1,0) [0|0] "ºC" Vector__XXX
 
 BO_ 1920 AQT8: 6 Acquisition_Board8
  SG_ NTC1 : 0|16@1+ (0.1,0) [0|0] "ºC"  Data_Station
