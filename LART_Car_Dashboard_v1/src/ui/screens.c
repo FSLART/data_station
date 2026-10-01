@@ -109,7 +109,8 @@ objects_t objects;
 
 static const char *screen_names[] = { 
     "Driver View", 
-    "Autonomous"
+    "Autonomous",
+    "Driver Gauge"
 #if 0 // Debug screens are excluded from production builds.
     ,
     "Debug 1", 
@@ -127,7 +128,7 @@ static const char *screen_names[] = {
 static const char *object_names[] = {
     "driver_view",
     "autonomous",
-    "debug_1",
+    "driver_gauge",
     "debug_inverter_2",
     "debug_3",
     "debug_wheels_4",
@@ -279,7 +280,12 @@ static void show_precharge_overlay(int state) {
     lv_obj_clear_flag(objects.hv_on_overlay, LV_OBJ_FLAG_HIDDEN);
 }
 
-static void update_hv_on_overlay(void) {
+void update_driver_precharge_overlay(void) {
+    lv_obj_t *screen = lv_screen_active();
+    if (lv_obj_get_parent(objects.hv_on_overlay) != screen) {
+        lv_obj_set_parent(objects.hv_on_overlay, screen);
+        lv_obj_move_foreground(objects.hv_on_overlay);
+    }
     const float precharge_state = dbc_api.master_precharge_id_1.precharge_state;
     const int state = (int)precharge_state;
     const bool state_changed = precharge_state != previous_precharge_state;
@@ -798,7 +804,7 @@ void create_screen_driver_view() {
 void tick_screen_driver_view() {
     ui_update_telemetry_vars(NULL);
     ui_update_network_status();
-    update_hv_on_overlay();
+    update_driver_precharge_overlay();
     {
         bool eth_ok = ui_is_ethernet_connected();
         lv_led_set_color(objects.eth_led, eth_ok ? lv_color_hex(0x00ff00) : lv_color_hex(0xff0000));
@@ -2337,7 +2343,8 @@ void tick_screen_debug_autonomous_5() {
 typedef void (*tick_screen_func_t)();
 tick_screen_func_t tick_screen_funcs[] = {
     tick_screen_driver_view,
-    tick_screen_autonomous
+    tick_screen_autonomous,
+    tick_screen_driver_gauge
 #if 0 // Debug screens are excluded from production builds.
     ,
     tick_screen_debug_1,
@@ -2472,6 +2479,7 @@ eez_flow_init_fonts(fonts, sizeof(fonts) / sizeof(ext_font_desc_t));
     // Create screens
     create_screen_driver_view();
     create_screen_autonomous();
+    create_screen_driver_gauge();
 #if 0 // Debug screens are excluded from production builds.
     create_screen_debug_1();
     create_screen_debug_inverter_2();

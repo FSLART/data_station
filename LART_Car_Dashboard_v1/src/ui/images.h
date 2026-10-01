@@ -8,6 +8,7 @@ extern "C" {
 #endif
 
 extern const lv_img_dsc_t img_lart_logo;
+extern const lv_image_dsc_t img_lart_logo_principal;
 
 #ifndef EXT_IMG_DESC_T
 #define EXT_IMG_DESC_T

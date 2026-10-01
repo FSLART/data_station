@@ -81,6 +81,14 @@ extern "C" void ui_set_speed(float speed_kph) {
     );
 }
 
+extern "C" int ui_get_apps_percentage() {
+    return eez::flow::getGlobalVariable(FLOW_GLOBAL_VARIABLE_ACCELL_PEDAL_PRESSURE).getInt();
+}
+
+extern "C" int ui_get_brake_percentage() {
+    return eez::flow::getGlobalVariable(FLOW_GLOBAL_VARIABLE_BRAKE_PEDAL_PRESSURE).getInt();
+}
+
 extern "C" float ui_get_speed() {
     return eez::flow::getGlobalVariable(FLOW_GLOBAL_VARIABLE_SPEED).getFloat();
 }
