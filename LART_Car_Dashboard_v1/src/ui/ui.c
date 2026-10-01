@@ -517,6 +517,7 @@ ActionExecFunc actions[] = {
 
 void ui_init() {
     eez_flow_init(assets, sizeof(assets), (lv_obj_t **)&objects, sizeof(objects), images, sizeof(images), actions);
+    eez_flow_set_screen(SCREEN_ID_DRIVER_GAUGE, LV_SCR_LOAD_ANIM_NONE, 0, 0);
     
     if (ros2subscriber_init() != 0) {
         ui_set_speed(0.0f);
@@ -532,7 +533,7 @@ static const char *ui_screen_name(int eez_id) {
         "?", 
         "Driver View", 
         "Autonomous", 
-        "Debug 1", 
+        "Driver Gauge",
         "Debug Inverter 2", 
         "Debug 3", 
         "Debug Wheels 4", 
@@ -616,10 +617,10 @@ void ui_fini(void) {
     ros2subscriber_fini();
 }
 
-// Request a screen change by ROS2 0-based ID (0=Driver View, 1=Autonomous, 2-6=Debug 1-5, 7-11=Debug Autonomous 1-5).
+// Production ROS2 IDs: 0=Driver View, 1=Autonomous, 2=Driver Gauge.
 // Converts to EEZ-Flow's 1-based ID and queues it for the next tick.
 void ui_set_screen(int screen_id) {
-    if (screen_id >= 0 && screen_id <= 11) {
+    if (screen_id >= 0 && screen_id < _SCREEN_ID_LAST) {
         g_pending_screen_id = screen_id + 1; // 0-based -> 1-based EEZ-Flow ID
         printf("[ui_set_screen] Queued screen: ROS2 id=%d (%s) -> eez_id=%d\n",
                screen_id, ui_screen_name(screen_id + 1), screen_id + 1);

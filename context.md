@@ -18,7 +18,7 @@
 | **Developer target** | Any Linux x86-64 workstation via Docker + virtual CAN (`vcan0`) |
 
 The system supports two operational modes:
-1. **Car mode** — reads live CAN frames via SocketCAN, decodes using DBC files, and drives the full dashboard + LED RPM bar.
+1. **Car mode** — reads live CAN frames via SocketCAN, decodes using DBC files, and drives the full dashboard + relative-current LED bar.
 2. **Simulation mode** — uses a virtual CAN interface and mock nodes so the entire stack can be developed and tested without hardware.
 
 ---
@@ -97,7 +97,7 @@ There are **two independent ways this system runs**, and they don't share a `can
 | `can_bridge` (×2) | `lart_bringup` | Python (`python-can`) | SocketCAN reader → optional DBC decoder → ROS 2 publisher |
 | `dashboard_state_bridge` | `lart_bringup` | Python | Aggregates raw topics into `/vehicle/dashboard_state` |
 | `input_handler` | `input_handler` | Python | GPIO buttons + encoders → `/input/buttons`, `/input/encoders` |
-| `led_controller` | `led_controller` | Python | WS2812B RPM LED strip driven by `/vehicle/rpm` |
+| `led_controller` | `led_controller` | Python | 16-pixel WS2812B relative-current gauge on SPI0 MOSI (GPIO 10) |
 | `dashboard_ui` | `dashboard_ui` | Python (pygame) | Alternate dashboard UI, only reachable through this launch path |
 | `mock_can` | `sim` | Python | Simulates CAN frames over `vcan0` for home testing |
 | `can_simulator` | `sim` | Python | DBC-driven simulator; publishes all messages from a DBC file |
@@ -140,7 +140,7 @@ DBC files are parsed at build time by `generate_dbc_api.py` (uses `cantools`) to
 - **DBC-driven CAN decoding** — code-generated C++ dispatcher maps raw CAN frame bytes to named signals at compile time (no runtime DBC parsing)
 - **Error/fault notification overlay** — `ui_add_notification()` / `ui_clear_notification()` API surfaces fault signals from any DBC message on top of the active screen
 - **Autonomous vehicle status screen** — ACU state machine, Jetson CPU/GPU/temp, SLAM cone & lap count, mission selector
-- **LED RPM bar** — WS2812B strip driven by `/vehicle/rpm`; shifts colour above configurable RPM threshold
+- **LED relative-current bar** — 16-pixel WS2812B strip; red shows positive average inverter relative-current request and blue shows negative request, filling outward from the centre
 - **Hardware input** — GPIO buttons and rotary encoders via `input_handler`; screen switching and future in-car menus
 - **Simulation stack** — full `sim.launch.py` + `dbc_sim.launch.py` pipelines for development without hardware
 - **Docker-based dev environment** — single `make compose-up` to start all containers on any Linux machine with X11
@@ -236,7 +236,7 @@ data_station/                         ← workspace root
 │   │
 │   ├── dashboard_ui/                 ← Pygame dashboard — only used by this launch path (car.launch.py), not the real-car boot sequence
 │   ├── input_handler/                ← GPIO buttons + rotary encoders
-│   ├── led_controller/               ← WS2812B RPM LED strip
+│   ├── led_controller/               ← WS2812B relative-current LED strip
 │   └── sim/                          ← mock_can + can_simulator nodes
 │
 └── LART_Car_Dashboard_v1/            ← LVGL dashboard UI — this is the production UI on the vehicle (see autostart_dashboard.sh below); Docker Compose here is amd64 desktop-dev tooling, not the RPi deployment path
@@ -291,7 +291,7 @@ data_station/                         ← workspace root
 - **Python 3.10+** with the packages in `requirements.txt` (only needed for native / non-Docker workflow):
   - `python-can`, `cantools`, `rclpy` — CAN I/O and DBC decoding, safe to install anywhere
   - `gpiod` — GPIO buttons/encoders, **required on car** (`apt install python3-gpiod` preferred on RPi OS Bookworm)
-  - `adafruit-circuitpython-neopixel`, `adafruit-blinka` — WS2812B LED strip, **required on car** (GPIO 18); `led_controller` no-ops safely if these aren't installed
+  - `adafruit-circuitpython-neopixel-spi`, `adafruit-blinka` — WS2812B LED strip, **required on car** (SPI0 MOSI / GPIO 10); `led_controller` no-ops safely if these aren't installed
   - `pygame` — only needed to run the alternate `dashboard_ui` node via `car.launch.py`/`sim.launch.py`, not for the real production UI (which is LVGL/`ui_runner`, a C++ binary with no Python dependency)
 - **ROS 2 Jazzy** (only needed for native builds on RPi or if not using Docker)
 - **SDL2 dev headers** (`libsdl2-dev`) + the bundled LVGL git submodule — required to build `ui_runner` natively (`make display-local`), independent of Docker
@@ -375,12 +375,10 @@ ros2 launch lart_bringup car.launch.py
 
 ### Regenerate DBC API (after changing .dbc files)
 
-```bash
-# Run from the ui/ directory (or inside the Docker container)
-pip install cantools
-python3 LART_Car_Dashboard_v1/src/ui/generate_dbc_api.py
-# Outputs: dbc_api.h, dbc_api.cpp, generated/can_bridge_impl.hpp
-```
+Follow [the DBC update guide](docs/DBC-Update-Guide.md) for strict validation,
+C decoder generation, ROS/API/bridge regeneration, consumer changes and rebuilding.
+Run commands from the repository root. `generate_dbc_api.py` does not generate
+the C decoder or `generated/can_bridge_impl*`; those require separate commands.
 
 ### Makefile Reference
 
@@ -416,7 +414,7 @@ python3 LART_Car_Dashboard_v1/src/ui/generate_dbc_api.py
 
 - `can_bridge_can0.*` / `can_bridge_can1.*` — one block per CAN channel; `can_interface` (`can0`/`can1`), `rpm_can_id` (**update to match your ECU's CAN ID**), `dbc_path` (path to a `.dbc` file to enable `/can/*` topics)
 - `dashboard_state_bridge.*_topic` — map DBC signal topics to dashboard state fields
-- `led_controller.rpm_shift` / `rpm_max` — LED colour threshold RPMs
+- `led_controller.led_count` / `brightness` / `animation_hz` — relative-current bar hardware and refresh settings
 - `input_handler.button_a/b`, `encoder_a/b_*` — GPIO pin assignments
 
 ### Architectural Rules & Constraints

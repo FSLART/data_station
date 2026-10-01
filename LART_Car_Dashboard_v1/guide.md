@@ -431,3 +431,33 @@ LART_Car_Dashboard_v1/
 
 sudo apt install libsdl2-dev pkg-config
 sudo apt install docker-buildx
+
+## Driver Gauge screen
+
+The gauge is the default screen when the dashboard starts.
+
+Use `/dashboard/set_screen` to open the LART gauge layout and switch
+screens (0 = original driver, 1 = autonomous, 2 = gauge). Select it through ROS 2:
+
+```bash
+ros2 topic pub --once /dashboard/set_screen std_msgs/msg/Int32 '{data: 2}'
+```
+
+The central readout shows speed in km/h using the existing driver calculation.
+The needle uses INV1 electrical RPM divided by four and displays RPM magnitude
+on a 0–20,000 scale. The red sector is a visual styling cue, not a calibrated
+motor limit. Motor and inverter
+temperatures use INV1, battery temperature uses the accumulator maximum, and
+LV and SOC use the existing driver telemetry sources. The gauge uses
+`imgs/LART_LogoPrincipal.png` and shares the original driver precharge banner,
+including its messages, colors, and display durations. APPS and brake percentage
+bars use the same clamped 0–100 values as the original driver screen.
+
+Headless telemetry, navigation, and precharge regression check after building:
+
+```bash
+LART_TEST_DRIVER_GAUGE=1 ./build/ui-build/ui_runner
+```
+
+Set `LART_GAUGE_PREVIEW=/tmp/driver-gauge.bmp` alongside the test flag to save a
+rendered preview using sample telemetry.

@@ -3,6 +3,7 @@
 #include "vars.h"
 #include "ros2subscriber.h"
 #include "dbc_api.h"
+#include "fonts.h"
 #include <cmath>
 #include <cstring>
 #include <cassert>
@@ -383,6 +384,130 @@ void check_expired_notifications() {
 }  // namespace
 
 int main(int argc, char **argv) {
+    if (std::getenv("LART_TEST_DRIVER_GAUGE")) {
+        init_lvgl();
+        dbc_api.master_precharge_id_1.precharge_state = -1.0f;
+        ui_init();
+        assert(eez_flow_get_current_screen() == SCREEN_ID_DRIVER_GAUGE);
+        assert(lv_screen_active() == objects.driver_gauge);
+        dbc_api.inv1_erpm_duty_voltage.inv1_actual_erpm = 18000.0f;
+        dbc_api.inv1_temperatures.inv1_actual_tempmotor = 67.0f;
+        dbc_api.inv1_temperatures.inv1_actual_tempcontroller = 42.0f;
+        dbc_api.master_msc_id_3.overall_maximum_temperature = 35.0f;
+        dbc_api.pdm_lv.lv_voltage_mv = 25.2f;
+        dbc_api.master_soc_accumulator.soc_float = 78.0f;
+        dbc_api.aqt1.throtle_percentage = 65.0f;
+        dbc_api.asf_signals.brake_pressure_front = 12.0f;
+        dbc_api.asf_signals.brake_pressure_rear = 35.0f;
+        ui_tick();
+        assert(eez_flow_get_current_screen() == SCREEN_ID_DRIVER_GAUGE);
+        assert(lv_screen_active() == objects.driver_gauge);
+        assert(std::strcmp(lv_label_get_text(objects.gauge_speed), "23") == 0);
+        assert(std::strcmp(lv_label_get_text(objects.gauge_motor_temp), "67") == 0);
+        assert(std::strcmp(lv_label_get_text(objects.gauge_inv_temp), "42") == 0);
+        assert(std::strcmp(lv_label_get_text(objects.gauge_bat_temp), "35") == 0);
+        assert(std::strcmp(lv_label_get_text(objects.gauge_lv), "25.2 V") == 0);
+        assert(std::strcmp(lv_label_get_text(objects.gauge_soc), "78") == 0);
+        assert(lv_bar_get_value(objects.gauge_apps_bar) == 65);
+        assert(lv_bar_get_value(objects.gauge_brake_bar) == 35);
+        assert(std::strcmp(lv_label_get_text(objects.gauge_apps_label), "APPS 65%") == 0);
+        assert(std::strcmp(lv_label_get_text(objects.gauge_brake_label), "BRAKE 35%") == 0);
+        assert(lv_obj_get_style_bg_opa(objects.gauge_logo, LV_PART_MAIN) == LV_OPA_TRANSP);
+        lv_obj_update_layout(objects.driver_gauge);
+        lv_area_t dial_area;
+        lv_obj_get_coords(objects.gauge_dial, &dial_area);
+        assert(dial_area.x1 + dial_area.x2 + 1 == kUiWidth);
+        assert(dial_area.y1 + dial_area.y2 + 1 == kUiHeight);
+        assert(lv_obj_get_content_width(objects.gauge_dial) == 472);
+        assert(lv_obj_get_content_height(objects.gauge_dial) == 472);
+        const auto save_preview = [&](const char *suffix) {
+            if (const char *path = std::getenv("LART_GAUGE_PREVIEW")) {
+                lv_refr_now(g_display);
+                SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormatFrom(
+                    g_framebuffer.data(), kUiWidth, kUiHeight, 32, kUiWidth * 4,
+                    SDL_PIXELFORMAT_ARGB8888);
+                assert(surface);
+                const std::string filename = std::string(path) + suffix;
+                assert(SDL_SaveBMP(surface, filename.c_str()) == 0);
+                SDL_FreeSurface(surface);
+            }
+        };
+        save_preview("");
+        dbc_api.aqt1.throtle_percentage = 150.0f;
+        dbc_api.vcu_hv.brake_pressure_front = 145.0f;
+        ui_tick();
+        assert(lv_bar_get_value(objects.gauge_apps_bar) == 100);
+        assert(lv_bar_get_value(objects.gauge_brake_bar) == 100);
+        dbc_api.aqt1.throtle_percentage = -5.0f;
+        dbc_api.asf_signals.brake_pressure_front = -5.0f;
+        dbc_api.asf_signals.brake_pressure_rear = -5.0f;
+        dbc_api.vcu_hv.brake_pressure_front = -5.0f;
+        dbc_api.vcu_hv.brake_pressure_rear = -5.0f;
+        dbc_api.inv1_misc.inv1_actual_brake = -5.0f;
+        ui_tick();
+        assert(lv_bar_get_value(objects.gauge_apps_bar) == 0);
+        assert(lv_bar_get_value(objects.gauge_brake_bar) == 0);
+        dbc_api.inv1_erpm_duty_voltage.inv1_actual_erpm = -8000.0f;
+        ui_tick();
+        assert(std::strcmp(lv_label_get_text(objects.gauge_speed), "0") == 0);
+        dbc_api.inv1_erpm_duty_voltage.inv1_actual_erpm = 80000.0f;
+        ui_tick();
+        assert(std::strcmp(lv_label_get_text(objects.gauge_speed), "104") == 0);
+        const auto *line = reinterpret_cast<const lv_line_t *>(objects.gauge_needle);
+        const lv_point_precise_t full_scale = line->point_array[1];
+        assert(std::fabs(full_scale.x - (236.0f + 190.0f / std::sqrt(2.0f))) < 1.0f);
+        assert(std::fabs(full_scale.y - full_scale.x) < 1.0f);
+        dbc_api.inv1_erpm_duty_voltage.inv1_actual_erpm = 96000.0f;
+        ui_tick();
+        assert(std::strcmp(lv_label_get_text(objects.gauge_speed), "125") == 0);
+        assert(line->point_array[1].x == full_scale.x);
+        assert(line->point_array[1].y == full_scale.y);
+        dbc_api.master_precharge_id_1.precharge_state = 2.0f;
+        ui_tick();
+        assert(lv_obj_get_parent(objects.hv_on_overlay) == objects.driver_gauge);
+        assert(!lv_obj_has_flag(objects.hv_on_overlay, LV_OBJ_FLAG_HIDDEN));
+        assert(std::strcmp(lv_label_get_text(objects.hv_on_label), "SWITCH HV NEG") == 0);
+        assert(lv_obj_get_style_bg_opa(objects.hv_on_overlay, LV_PART_MAIN) == LV_OPA_80);
+        save_preview(".precharge.bmp");
+        lv_tick_inc(500);
+        ui_tick();
+        assert(lv_obj_has_flag(objects.hv_on_overlay, LV_OBJ_FLAG_HIDDEN));
+        ui_set_screen(SCREEN_ID_DRIVER_VIEW - 1);
+        ui_tick();
+        assert(lv_screen_active() == objects.driver_view);
+        // A live banner retains the original text, font, and remaining lifetime
+        // when moving from the original driver screen to the gauge screen.
+        for (int state : {3, 16, 19}) {
+            dbc_api.master_precharge_id_1.precharge_state = static_cast<float>(state);
+            ui_tick();
+            assert(!lv_obj_has_flag(objects.hv_on_overlay, LV_OBJ_FLAG_HIDDEN));
+            const std::string original_text = lv_label_get_text(objects.hv_on_label);
+            const lv_font_t *original_font = lv_obj_get_style_text_font(objects.hv_on_label, LV_PART_MAIN);
+            ui_set_screen(SCREEN_ID_DRIVER_GAUGE - 1);
+            ui_tick();
+            assert(lv_obj_get_parent(objects.hv_on_overlay) == objects.driver_gauge);
+            assert(original_text == lv_label_get_text(objects.hv_on_label));
+            if (state == 16) {
+                assert(original_text == "HV ON");
+                save_preview(".hv-on.bmp");
+            }
+            assert(original_font == lv_obj_get_style_text_font(objects.hv_on_label, LV_PART_MAIN));
+            lv_tick_inc(state == 16 ? 3999 : 499);
+            ui_tick();
+            assert(!lv_obj_has_flag(objects.hv_on_overlay, LV_OBJ_FLAG_HIDDEN));
+            lv_tick_inc(1);
+            ui_tick();
+            assert(lv_obj_has_flag(objects.hv_on_overlay, LV_OBJ_FLAG_HIDDEN));
+            ui_set_screen(SCREEN_ID_DRIVER_VIEW - 1);
+            ui_tick();
+        }
+        ui_set_screen(SCREEN_ID_AUTONOMOUS - 1);
+        ui_tick();
+        assert(lv_screen_active() == objects.autonomous);
+        std::puts("[TEST] Driver gauge telemetry, navigation, and shared precharge alerts passed");
+        ui_fini();
+        return 0;
+    }
     const bool test_mappings = std::getenv("LART_TEST_MAPPINGS") != nullptr;
     const bool test_precharge_overlay = std::getenv("LART_TEST_PRECHARGE_OVERLAY") != nullptr;
     if (test_mappings || test_precharge_overlay) {
@@ -397,16 +522,23 @@ int main(int argc, char **argv) {
             std::fprintf(stderr, "[EEZ-Flow Error] Component %d: %s\n", componentIndex, errorMessage);
         };
 
+        // Start without a valid precharge state so screen creation stays quiet.
+        dbc_api.master_precharge_id_1.precharge_state = -1.0f;
         ui_init();
 
         std::printf("[TEST] Running telemetry mapping unit tests...\n");
 
         // Test 1: Intermediate precharge states use the overlay for 0.5 seconds.
         assert(lv_obj_has_flag(objects.hv_on_overlay, LV_OBJ_FLAG_HIDDEN));
-        dbc_api.master_precharge_id_1.precharge_state = 19.0f;
+        dbc_api.master_precharge_id_1.precharge_state = 2.0f;
         ui_tick();
         assert(!lv_obj_has_flag(objects.hv_on_overlay, LV_OBJ_FLAG_HIDDEN));
-        assert(std::strcmp(lv_label_get_text(objects.hv_on_label), "RX CAN") == 0);
+        assert(std::strcmp(lv_label_get_text(objects.hv_on_label), "SWITCH HV NEG") == 0);
+        lv_obj_update_layout(objects.hv_on_overlay);
+        assert(lv_obj_get_y(objects.hv_on_overlay) == 360);
+        assert(lv_obj_get_width(objects.hv_on_overlay) == 800);
+        assert(lv_obj_get_height(objects.hv_on_overlay) == 120);
+        assert(lv_obj_get_style_bg_opa(objects.hv_on_overlay, LV_PART_MAIN) == LV_OPA_80);
 
         lv_tick_inc(499);
         ui_tick();
@@ -415,10 +547,10 @@ int main(int argc, char **argv) {
         ui_tick();
         assert(lv_obj_has_flag(objects.hv_on_overlay, LV_OBJ_FLAG_HIDDEN));
 
-        dbc_api.master_precharge_id_1.precharge_state = 2.0f;
+        dbc_api.master_precharge_id_1.precharge_state = 3.0f;
         ui_tick();
         assert(!lv_obj_has_flag(objects.hv_on_overlay, LV_OBJ_FLAG_HIDDEN));
-        assert(std::strcmp(lv_label_get_text(objects.hv_on_label), "SWITCH HV NEG") == 0);
+        assert(std::strcmp(lv_label_get_text(objects.hv_on_label), "WAIT FOR HV NEG TO OPEN") == 0);
         lv_tick_inc(500);
         ui_tick();
         assert(lv_obj_has_flag(objects.hv_on_overlay, LV_OBJ_FLAG_HIDDEN));
@@ -428,6 +560,7 @@ int main(int argc, char **argv) {
         ui_tick();
         assert(!lv_obj_has_flag(objects.hv_on_overlay, LV_OBJ_FLAG_HIDDEN));
         assert(std::strcmp(lv_label_get_text(objects.hv_on_label), "HV ON") == 0);
+        assert(lv_obj_get_style_text_font(objects.hv_on_label, LV_PART_MAIN) == &ui_font_orbitron_bold_50);
 
         lv_tick_inc(3999);
         ui_tick();
@@ -440,10 +573,42 @@ int main(int argc, char **argv) {
         ui_tick();
         assert(lv_obj_has_flag(objects.hv_on_overlay, LV_OBJ_FLAG_HIDDEN));
 
-        // Intermediate states stay quiet after HV ON until RX CAN starts a new sequence.
-        dbc_api.master_precharge_id_1.precharge_state = 3.0f;
+        // Fault states stay quiet after HV ON until a new sequence starts.
+        dbc_api.master_precharge_id_1.precharge_state = 17.0f;
         ui_tick();
         assert(lv_obj_has_flag(objects.hv_on_overlay, LV_OBJ_FLAG_HIDDEN));
+
+        // A new sequence must fit even the longest progress message in the banner.
+        dbc_api.master_precharge_id_1.precharge_state = 19.0f;
+        ui_tick();
+        dbc_api.master_precharge_id_1.precharge_state = 15.0f;
+        ui_tick();
+        lv_obj_update_layout(objects.hv_on_overlay);
+        assert(std::strcmp(lv_label_get_text(objects.hv_on_label), "WAIT FOR PRECHARGE TO OPEN") == 0);
+        assert(lv_obj_get_style_text_font(objects.hv_on_label, LV_PART_MAIN) == &ui_font_orbitron_bold_30);
+        assert(lv_obj_get_y(objects.hv_on_label) >= 0);
+        assert(lv_obj_get_y(objects.hv_on_label) + lv_obj_get_height(objects.hv_on_label) <=
+               lv_obj_get_content_height(objects.hv_on_overlay));
+        lv_tick_inc(500);
+        ui_tick();
+        assert(lv_obj_has_flag(objects.hv_on_overlay, LV_OBJ_FLAG_HIDDEN));
+
+        // Completing one run must not suppress the next complete sequence.
+        for (int run = 0; run < 2; ++run) {
+            dbc_api.master_precharge_id_1.precharge_state = 19.0f;
+            ui_tick();
+            assert(std::strcmp(lv_label_get_text(objects.hv_on_label), "KILL") == 0);
+            for (int state = 0; state <= 16; ++state) {
+                lv_tick_inc(500);
+                dbc_api.master_precharge_id_1.precharge_state = (float)state;
+                ui_tick();
+                assert(!lv_obj_has_flag(objects.hv_on_overlay, LV_OBJ_FLAG_HIDDEN));
+            }
+            assert(std::strcmp(lv_label_get_text(objects.hv_on_label), "HV ON") == 0);
+            lv_tick_inc(4000);
+            ui_tick();
+            assert(lv_obj_has_flag(objects.hv_on_overlay, LV_OBJ_FLAG_HIDDEN));
+        }
 
         if (test_precharge_overlay && !test_mappings) {
             std::printf("[TEST] ✓ Precharge overlay tests passed successfully!\n");
@@ -526,8 +691,8 @@ int main(int argc, char **argv) {
         assert(std::strcmp(eez::flow::getGlobalVariable(FLOW_GLOBAL_VARIABLE_MISSION).getString(), "ACCEL") == 0);
 
         // Test 5: Test emergency screen transition on as_state = 4
-        // The default screen after ui_init is SCREEN_ID_DRIVER_VIEW (1)
-        assert(eez_flow_get_current_screen() == SCREEN_ID_DRIVER_VIEW);
+        // The gauge is the startup screen.
+        assert(eez_flow_get_current_screen() == SCREEN_ID_DRIVER_GAUGE);
 
         dbc_api.acu.as_state = 4.0f;
         ui_tick(); // Tick once to detect the state change and queue the screen change

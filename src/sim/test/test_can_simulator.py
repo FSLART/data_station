@@ -26,6 +26,20 @@ class PrechargeSequenceTest(unittest.TestCase):
         self.assertEqual(sequence.value(-1.0, now=31.0), -1.0)
         self.assertEqual(sequence.value(19.0, now=32.0), 19.0)
 
+    def test_parameter_update_rearms_without_a_can_tick_between_updates(self):
+        sequence = _PrechargeSequence()
+        self.assertEqual(sequence.value(19.0, now=10.0), 19.0)
+        self.assertEqual(sequence.value(19.0, now=30.0), 16.0)
+
+        # Parameter callbacks run even if no CAN tick observes the -1 reset.
+        sequence.reset()
+        self.assertEqual(sequence.value(19.0, now=30.1), 19.0)
+        self.assertEqual(sequence.value(19.0, now=30.6), 0.0)
+
+        # A new request can also interrupt a sequence already in progress.
+        sequence.reset()
+        self.assertEqual(sequence.value(19.0, now=30.7), 19.0)
+
 
 if __name__ == '__main__':
     unittest.main()

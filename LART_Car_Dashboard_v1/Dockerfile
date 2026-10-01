@@ -44,7 +44,7 @@ RUN pip install --break-system-packages \
     python-can>=4.0 \
     cantools>=39.0 \
     gpiod>=2.0 \
-    adafruit-circuitpython-neopixel>=6.0 \
+    adafruit-circuitpython-neopixel-spi>=1.0 \
     adafruit-blinka>=8.0 \
     2>&1 || echo "Some packages may not be available on this architecture"
 

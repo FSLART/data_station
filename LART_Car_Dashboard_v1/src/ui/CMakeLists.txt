@@ -97,6 +97,7 @@ if(SDL2_FOUND AND LVGL_SOURCES)
         images.c
         screen_api.cpp
         screens.c
+        driver_gauge.c
         styles.c
         ui.c
         fonts/ui_font_orbiter_bold_100.c
@@ -109,6 +110,7 @@ if(SDL2_FOUND AND LVGL_SOURCES)
         fonts/ui_font_orbitron_bold_40.c
         fonts/ui_font_orbitron_bold_50.c
         images/ui_image_lart_logo.c
+        images/ui_image_lart_logo_principal.c
         ui_runner.cpp
     )
 

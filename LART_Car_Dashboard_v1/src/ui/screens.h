@@ -13,6 +13,8 @@ enum ScreensEnum {
     _SCREEN_ID_FIRST = 1,
     SCREEN_ID_DRIVER_VIEW = 1,
     SCREEN_ID_AUTONOMOUS = 2,
+    // Production gauge reuses the disabled Debug 1 screen slot.
+    SCREEN_ID_DRIVER_GAUGE = 3,
     SCREEN_ID_DEBUG_1 = 3,
     SCREEN_ID_DEBUG_INVERTER_2 = 4,
     SCREEN_ID_DEBUG_3 = 5,
@@ -23,13 +25,16 @@ enum ScreensEnum {
     SCREEN_ID_DEBUG_AUTONOMOUS_3 = 10,
     SCREEN_ID_DEBUG_AUTONOMOUS_4 = 11,
     SCREEN_ID_DEBUG_AUTONOMOUS_5 = 12,
-    _SCREEN_ID_LAST = SCREEN_ID_AUTONOMOUS
+    _SCREEN_ID_LAST = SCREEN_ID_DRIVER_GAUGE
 };
 
 typedef struct _objects_t {
     lv_obj_t *driver_view;
     lv_obj_t *autonomous;
-    lv_obj_t *debug_1;
+    union {
+        lv_obj_t *debug_1;
+        lv_obj_t *driver_gauge;
+    }; // Keep generated EEZ object indices stable.
     lv_obj_t *debug_inverter_2;
     lv_obj_t *debug_3;
     lv_obj_t *debug_wheels_4;
@@ -101,11 +106,28 @@ typedef struct _objects_t {
     lv_obj_t *autonomous_debug_text_5;
     lv_obj_t *temp_max_container;   // overall maximum temperature (accumulator) box
     lv_obj_t *temp_max_label;       // live overall maximum temperature value label
-    lv_obj_t *hv_on_overlay;        // temporary HV ON full-screen alert
-    lv_obj_t *hv_on_label;           // temporary HV ON alert text
+    lv_obj_t *hv_on_overlay;        // temporary precharge notification banner
+    lv_obj_t *hv_on_label;           // precharge notification text
+    lv_obj_t *gauge_speed;
+    lv_obj_t *gauge_motor_temp;
+    lv_obj_t *gauge_inv_temp;
+    lv_obj_t *gauge_bat_temp;
+    lv_obj_t *gauge_lv;
+    lv_obj_t *gauge_soc;
+    lv_obj_t *gauge_dial;
+    lv_obj_t *gauge_needle;
+    lv_obj_t *gauge_logo;
+    lv_obj_t *gauge_apps_bar;
+    lv_obj_t *gauge_brake_bar;
+    lv_obj_t *gauge_apps_label;
+    lv_obj_t *gauge_brake_label;
 } objects_t;
 
 extern objects_t objects;
+
+void update_driver_precharge_overlay(void);
+void create_screen_driver_gauge();
+void tick_screen_driver_gauge();
 
 void create_screen_driver_view();
 void tick_screen_driver_view();

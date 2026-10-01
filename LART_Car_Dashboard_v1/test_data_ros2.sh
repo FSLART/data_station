@@ -21,7 +21,7 @@ BAG_RECORD_PID=""
 cleanup_background() {
     if [ -n "$CAN_SIM_PID" ] && kill -0 "$CAN_SIM_PID" 2>/dev/null; then
         echo "Stopping CAN simulator (PID $CAN_SIM_PID)..."
-        kill "$CAN_SIM_PID" 2>/dev/null
+        kill -TERM -- "-$CAN_SIM_PID" 2>/dev/null || true
     fi
     if [ -n "$BAG_RECORD_PID" ] && kill -0 "$BAG_RECORD_PID" 2>/dev/null; then
         echo "Stopping bag record (PID $BAG_RECORD_PID)..."
@@ -212,15 +212,21 @@ test_custom() {
 toggle_can_sim() {
     if [ -n "$CAN_SIM_PID" ] && kill -0 "$CAN_SIM_PID" 2>/dev/null; then
         echo "Stopping CAN simulator (PID $CAN_SIM_PID)..."
-        kill "$CAN_SIM_PID" 2>/dev/null
-        wait "$CAN_SIM_PID" 2>/dev/null
+        kill -TERM -- "-$CAN_SIM_PID" 2>/dev/null || true
+        wait "$CAN_SIM_PID" 2>/dev/null || true
         CAN_SIM_PID=""
         echo "✓ CAN simulator stopped"
         return
     fi
 
+    local nodes
+    nodes="$(ros2 node list)" || return 1
+    if printf '%s\n' "$nodes" | grep -Eq '^/can_simulator(_(data|powertrain|autonomous))?$'; then
+        echo "✓ A CAN simulator is already running; using the existing stack."
+        return
+    fi
     echo "Starting CAN simulator (dbc_sim.launch.py)..."
-    ros2 launch lart_bringup dbc_sim.launch.py &
+    setsid ros2 launch lart_bringup dbc_sim.launch.py &
     CAN_SIM_PID=$!
     echo "✓ CAN simulator started (PID $CAN_SIM_PID)"
 }
@@ -245,6 +251,28 @@ toggle_bag_record() {
     echo "✓ Bag record started (PID $BAG_RECORD_PID)"
 }
 
+simulator_node() {
+    local bus=$1
+    local nodes candidate count
+    if ! nodes="$(ros2 node list)"; then
+        echo "✗ Could not discover simulator nodes (ROS_DOMAIN_ID=$ROS_DOMAIN_ID)." >&2
+        return 1
+    fi
+    for candidate in "/can_simulator_$bus" /can_simulator; do
+        count="$(printf '%s\n' "$nodes" | grep -Fxc -- "$candidate" || true)"
+        if [ "$count" -gt 1 ]; then
+            echo "✗ Duplicate $candidate nodes are running. Stop the extra simulation stack before sending parameters." >&2
+            return 1
+        fi
+        if [ "$count" -eq 1 ]; then
+            printf '%s\n' "$candidate"
+            return 0
+        fi
+    done
+    echo "✗ No $bus CAN simulator found (ROS_DOMAIN_ID=$ROS_DOMAIN_ID). Start start_local.sh or option 'a' using the same ROS domain." >&2
+    return 1
+}
+
 set_mission_select() {
     read -p "Select Mission_select raw value [0-7]: " mission
 
@@ -253,7 +281,9 @@ set_mission_select() {
         return 1
     fi
 
-    if ! ros2 param set /can_simulator mission_select_value "$mission.0"; then
+    local node
+    node="$(simulator_node autonomous)" || return 1
+    if ! ros2 param set "$node" mission_select_value "$mission.0"; then
         echo "✗ Failed to set mission_select_value (is the CAN simulator running? option 'a')"
         return 1
     fi
@@ -270,7 +300,9 @@ set_as_mission() {
         return 1
     fi
 
-    if ! ros2 param set /can_simulator as_mission_value "$mission.0"; then
+    local node
+    node="$(simulator_node autonomous)" || return 1
+    if ! ros2 param set "$node" as_mission_value "$mission.0"; then
         echo "✗ Failed to set as_mission_value (is the CAN simulator running? option 'a')"
         return 1
     fi
@@ -278,12 +310,14 @@ set_as_mission() {
 }
 
 set_hv_on() {
+    local node
+    node="$(simulator_node powertrain)" || return 1
     # Reset first so selecting this option again retriggers the edge-based sequence.
-    if ! ros2 param set /can_simulator precharge_state_value "-1.0" >/dev/null; then
+    if ! ros2 param set "$node" precharge_state_value "-1.0" >/dev/null; then
         echo "✗ Failed to reset precharge_state_value (is the CAN simulator running? option 'a')"
         return 1
     fi
-    if ! ros2 param set /can_simulator precharge_state_value "19.0"; then
+    if ! ros2 param set "$node" precharge_state_value "19.0"; then
         echo "✗ Failed to set precharge_state_value (is the CAN simulator running? option 'a')"
         return 1
     fi
@@ -364,13 +398,14 @@ Test Scenarios:
   8. Screen    - Change dashboard screen via ROS topic
                  0=Driver View, 1=Autonomous, 2-6=Debug 1-5, 7-11=Debug Autonomous 1-5
   c. Mission_select - Set the CAN simulator's Mission_select value (0-7) via
-                  ros2 param set /can_simulator mission_select_value
+                  ros2 param set /can_simulator_autonomous mission_select_value
   d. AS_MISSION - Set the CAN simulator's AS_MISSION value (0-7) via
-                  ros2 param set /can_simulator as_mission_value
+                  ros2 param set /can_simulator_autonomous as_mission_value
                   (dashboard falls back to this when Mission_select is 0)
   e. HV ON - Run the CAN simulator's Master_PreCharge sequence from RX_CAN (19)
              through states 0-16 at 0.5 seconds per state, ending at HV_ON
-             via ros2 param set /can_simulator precharge_state_value
+             via ros2 param set /can_simulator_powertrain precharge_state_value
+             (single-DBC launches use /can_simulator instead)
 
 Prerequisites:
   - ROS 2 Jazzy must be installed and sourced.

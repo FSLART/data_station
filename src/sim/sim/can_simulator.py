@@ -130,13 +130,15 @@ def _precharge_sequence_value(elapsed_seconds: float) -> float:
 
 class _PrechargeSequence:
     def __init__(self) -> None:
+        self.reset()
+
+    def reset(self) -> None:
         self._started_at = None
         self._trigger_consumed = False
 
     def value(self, override: float, now: float) -> float:
         if override != 19.0:
-            self._started_at = None
-            self._trigger_consumed = False
+            self.reset()
             return override
 
         if not self._trigger_consumed:
@@ -558,11 +560,18 @@ class CanSimulatorNode(Node):
         self._t = 0.0
         self._dt = 1.0 / hz
         self._precharge_sequence = _PrechargeSequence()
+        self.add_post_set_parameters_callback(self._on_parameters_set)
 
         self.create_timer(self._dt, self._tick)
         self.get_logger().info('CAN simulator running — sending frames to ' + iface)
 
     # -----------------------------------------------------------------------
+
+    def _on_parameters_set(self, parameters) -> None:
+        # Rearm immediately after an accepted request, even when -1 -> 19
+        # happens between CAN ticks or 19 is requested again directly.
+        if any(parameter.name == 'precharge_state_value' for parameter in parameters):
+            self._precharge_sequence.reset()
 
     def _tick(self) -> None:
         self._t += self._dt

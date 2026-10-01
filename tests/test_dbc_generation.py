@@ -1,0 +1,37 @@
+"""Regeneration must preserve hand-written ROS interfaces and match DBC fields."""
+from pathlib import Path
+import shutil
+import subprocess
+import sys
+
+import cantools
+
+
+def test_api_generation_preserves_ros_package(tmp_path):
+    root = Path(__file__).resolve().parents[1]
+    ui = tmp_path / "LART_Car_Dashboard_v1/src/ui"
+    ui.mkdir(parents=True)
+    shutil.copy(root / "LART_Car_Dashboard_v1/src/ui/generate_dbc_api.py", ui)
+    shutil.copytree(root / "src/lart_msgs", tmp_path / "src/lart_msgs")
+    dbc_dir = tmp_path / "dbc_signals"
+    dbc_dir.mkdir()
+    # Small valid input isolates generator behavior from the incoming DBC layout.
+    dbc = 'VERSION ""\nNS_ :\nBS_:\nBU_: Board\nBO_ 1904 AQT7: 4 Board\n SG_ SUSP_L : 0|16@1- (0.1,0) [0|0] "mm" Board\n SG_ SUSP_R : 16|16@1- (0.1,0) [0|0] "mm" Board\n'
+    for name in ("data_t26", "powertrain_t26", "autonomous_t26"):
+        (dbc_dir / f"{name}.dbc").write_text(dbc)
+        cantools.database.load_file(dbc_dir / f"{name}.dbc")
+    cmake = tmp_path / "src/lart_msgs/CMakeLists.txt"
+    original = cmake.read_text()
+    interface = tmp_path / "src/lart_msgs/dbc_msgs/Aqt7.msg"
+    interface.write_text("std_msgs/Header header\n\nint16 susp_l\nfloat32 removed_signal\nint16 LIMIT = 100\n")
+    subprocess.run([sys.executable, str(ui / "generate_dbc_api.py")], check=True)
+    result = cmake.read_text()
+    assert '"msg/ASStatus.msg"' in result
+    assert '"srv/Heartbeat.srv"' in result
+    assert 'find_package(geometry_msgs REQUIRED)' in result
+    assert '"dbc_msgs/Aqt7.msg"' in result
+    assert '"msg/Aqt7.msg"' not in result
+    assert result.split('rosidl_generate_interfaces')[0] == original.split('rosidl_generate_interfaces')[0]
+    assert (tmp_path / "src/lart_msgs/dbc_msgs/Aqt7.msg").read_text() == 'std_msgs/Header header\n\nint16 susp_l\nint16 LIMIT = 100\nfloat32 susp_r\n'
+    subprocess.run([sys.executable, str(ui / "generate_dbc_api.py")], check=True)
+    assert cmake.read_text() == result

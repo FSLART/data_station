@@ -16,7 +16,7 @@ setup(
     zip_safe=True,
     maintainer='LART',
     maintainer_email='lart@example.com',
-    description='Addressable LED strip controller for RPM gauge',
+    description='SPI-driven relative-current LED gauge',
     license='MIT',
     entry_points={
         'console_scripts': [

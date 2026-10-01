@@ -41,7 +41,7 @@ void init_dbc_api_subscribers(std::shared_ptr<rclcpp::Node> node, std::vector<rc
 
 // Last LV value shown on the dashboard (Volts) — used by the screen tick
 // code to render the LV label with one decimal.
-static float ui_lv_value = 20.0f;
+static float ui_lv_value = 24.0f;
 
 extern "C" const char *ui_get_lv_str() {
     static char buf[16];
@@ -79,6 +79,14 @@ extern "C" void ui_set_speed(float speed_kph) {
         FLOW_GLOBAL_VARIABLE_SPEED,
         eez::FloatValue(speed_kph)
     );
+}
+
+extern "C" int ui_get_apps_percentage() {
+    return eez::flow::getGlobalVariable(FLOW_GLOBAL_VARIABLE_ACCELL_PEDAL_PRESSURE).getInt();
+}
+
+extern "C" int ui_get_brake_percentage() {
+    return eez::flow::getGlobalVariable(FLOW_GLOBAL_VARIABLE_BRAKE_PEDAL_PRESSURE).getInt();
 }
 
 extern "C" float ui_get_speed() {
@@ -177,9 +185,9 @@ extern "C" void ui_update_telemetry_vars(const void *t_ptr) {
         if (dbc_api.master_msc_id_1.mcu_vref >= 5.0f && dbc_api.master_msc_id_1.mcu_vref <= 30.0f) {
             lv_val = dbc_api.master_msc_id_1.mcu_vref;
         } else {
-            // No valid LV data received — set to bar minimum (20.0 V) so the
-            // indicator appears empty rather than partially filled.
-            lv_val = 20.0f;
+            // No valid LV data received — use the default display value (24.0 V)
+            // so the indicator appears empty rather than partially filled.
+            lv_val = 24.0f;
         }
     }
     ui_lv_value = lv_val;

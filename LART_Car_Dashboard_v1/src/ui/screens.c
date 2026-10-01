@@ -109,7 +109,8 @@ objects_t objects;
 
 static const char *screen_names[] = { 
     "Driver View", 
-    "Autonomous"
+    "Autonomous",
+    "Driver Gauge"
 #if 0 // Debug screens are excluded from production builds.
     ,
     "Debug 1", 
@@ -127,7 +128,7 @@ static const char *screen_names[] = {
 static const char *object_names[] = {
     "driver_view",
     "autonomous",
-    "debug_1",
+    "driver_gauge",
     "debug_inverter_2",
     "debug_3",
     "debug_wheels_4",
@@ -216,19 +217,20 @@ static const char *get_precharge_state_label(int state) {
         "START",
         "OPEN ALL",
         "SWITCH HV NEG",
-        "8 4 AIR NEG 2 CLOSE",
-        "CK AIR NEG IS CLOSED",
+        "WAIT FOR HV NEG TO OPEN",
+        "WAIT FOR AIR NEG TO CLOSE",
+        "CHECK IF AIR NEG IS CLOSED",
         "SWITCH PRECHARGE",
-        "8 4 PRECHARGE 2 CLOSE",
+        "WAIT FOR PRECHARGE TOCLOSE",
         "CK PRECHARGE IS CLOSED",
         "VERIFY CURRENT",
         "VERIFY BUS VOLTAGE",
         "SWITCH HV POS",
-        "8 4 AIR POS 2 CLOSE",
+        "WAIT FOR AIR POS TO CLOSE",
         "CHECKING AIR POS IS CLOSED",
         "TURN OFF PRECHARGE",
-        "8 4 PRECHARGE 2 OPEN",
-        "CHECKING PRECHARGE IS OPEN",
+        "WAIT FOR PRECHARGE TO OPEN",
+        "HV ON",
         "HV ON",
         "WRONG",
         "KILL",
@@ -263,12 +265,12 @@ static void show_precharge_overlay(int state) {
     );
     lv_obj_set_style_text_color(
         objects.hv_on_label,
-        lv_color_hex(is_hv_on ? 0xffffff : 0x080808),
+        lv_color_hex(0xffffff),
         LV_PART_MAIN | LV_STATE_DEFAULT
     );
     lv_obj_set_style_text_font(
         objects.hv_on_label,
-        is_hv_on ? &ui_font_orbiter_bold_100 : &ui_font_orbitron_bold_40,
+        is_hv_on ? &ui_font_orbitron_bold_50 : &ui_font_orbitron_bold_30,
         LV_PART_MAIN | LV_STATE_DEFAULT
     );
     lv_obj_center(objects.hv_on_label);
@@ -278,14 +280,19 @@ static void show_precharge_overlay(int state) {
     lv_obj_clear_flag(objects.hv_on_overlay, LV_OBJ_FLAG_HIDDEN);
 }
 
-static void update_hv_on_overlay(void) {
+void update_driver_precharge_overlay(void) {
+    lv_obj_t *screen = lv_screen_active();
+    if (lv_obj_get_parent(objects.hv_on_overlay) != screen) {
+        lv_obj_set_parent(objects.hv_on_overlay, screen);
+        lv_obj_move_foreground(objects.hv_on_overlay);
+    }
     const float precharge_state = dbc_api.master_precharge_id_1.precharge_state;
     const int state = (int)precharge_state;
     const bool state_changed = precharge_state != previous_precharge_state;
     const bool state_is_valid = precharge_state == (float)state && get_precharge_state_label(state) != NULL;
 
     if (state_changed && state_is_valid) {
-        if (state == 19) {
+        if (state <= 15 || state == 19) {
             precharge_sequence_active = true;
         }
 
@@ -731,7 +738,7 @@ void create_screen_driver_view() {
             // hvCurrentLabel
             lv_obj_t *obj = lv_label_create(parent_obj);
             objects.hv_current_label = obj;
-            lv_obj_set_pos(obj, 733, 433);
+            lv_obj_set_pos(obj, 713, 433);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
             add_style_text(obj);
             lv_label_set_text(obj, "");
@@ -767,13 +774,13 @@ void create_screen_driver_view() {
             lv_label_set_text_static(obj, "STATUS");
         }
         {
-            // HV ON overlay
+            // Precharge notification banner across the bottom quarter.
             lv_obj_t *obj = lv_obj_create(parent_obj);
             objects.hv_on_overlay = obj;
-            lv_obj_set_pos(obj, 0, 0);
-            lv_obj_set_size(obj, 800, 480);
+            lv_obj_set_pos(obj, 0, 360);
+            lv_obj_set_size(obj, 800, 120);
             lv_obj_set_style_bg_color(obj, lv_color_hex(0xff0000), LV_PART_MAIN | LV_STATE_DEFAULT);
-            lv_obj_set_style_bg_opa(obj, LV_OPA_COVER, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_bg_opa(obj, LV_OPA_80, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_border_width(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_radius(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
@@ -785,7 +792,7 @@ void create_screen_driver_view() {
             lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
             lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_color(label, lv_color_hex(0xffffff), LV_PART_MAIN | LV_STATE_DEFAULT);
-            lv_obj_set_style_text_font(label, &ui_font_orbiter_bold_100 , LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_font(label, &ui_font_orbitron_bold_50, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_center(label);
             lv_obj_add_flag(obj, LV_OBJ_FLAG_HIDDEN);
         }
@@ -797,7 +804,7 @@ void create_screen_driver_view() {
 void tick_screen_driver_view() {
     ui_update_telemetry_vars(NULL);
     ui_update_network_status();
-    update_hv_on_overlay();
+    update_driver_precharge_overlay();
     {
         bool eth_ok = ui_is_ethernet_connected();
         lv_led_set_color(objects.eth_led, eth_ok ? lv_color_hex(0x00ff00) : lv_color_hex(0xff0000));
@@ -1862,7 +1869,7 @@ void create_screen_debug_wheels_4() {
     lv_obj_set_size(obj, 800, 480);
     lv_obj_set_style_bg_color(obj, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
     {
-        objects.general_debug_text_4 = create_debug_table(obj, 5);
+        objects.general_debug_text_4 = create_debug_table(obj, 2);
     }
     tick_screen_debug_wheels_4();
 }
@@ -1878,30 +1885,11 @@ void tick_screen_debug_wheels_4() {
     lv_table_add_cell_ctrl(table, 0, 1, LV_TABLE_CELL_CTRL_MERGE_RIGHT);
     lv_table_add_cell_ctrl(table, 0, 2, LV_TABLE_CELL_CTRL_MERGE_RIGHT);
 
-    // Row 1: FL temperatures
-    set_cell(table, 1, 0, "FL Temp:", 0xFFFFFF);
-    set_cell_fmt(table, 1, 1, 0xFFFFFF, "%4.1f C", dbc_api.aqt2.tire_temp);
-    set_cell(table, 1, 2, "FL BrkT:", 0xFFFFFF);
-    set_cell_fmt(table, 1, 3, 0xFFFFFF, "%4.1f C", dbc_api.aqt2.brake_temp);
-
-    // Row 2: FR temperatures
-    set_cell(table, 2, 0, "FR Temp:", 0xFFFFFF);
-    set_cell_fmt(table, 2, 1, 0xFFFFFF, "%4.1f C", dbc_api.aqt3.tire_temp);
-    set_cell(table, 2, 2, "FR BrkT:", 0xFFFFFF);
-    set_cell_fmt(table, 2, 3, 0xFFFFFF, "%4.1f C", dbc_api.aqt3.brake_temp);
-
-    // Row 3: RL temperatures
-    set_cell(table, 3, 0, "RL Temp:", 0xFFFFFF);
-    set_cell_fmt(table, 3, 1, 0xFFFFFF, "%4.1f C", dbc_api.aqt5.tire_temp);
-    set_cell(table, 3, 2, "RL BrkT:", 0xFFFFFF);
-    set_cell_fmt(table, 3, 3, 0xFFFFFF, "%4.1f C", dbc_api.aqt5.brake_temp);
-
-    // Row 4: RR temperatures
-    set_cell(table, 4, 0, "RR Temp:", 0xFFFFFF);
-    set_cell_fmt(table, 4, 1, 0xFFFFFF, "%4.1f C", dbc_api.aqt6.tire_temp);
-    set_cell(table, 4, 2, "RR BrkT:", 0xFFFFFF);
-    set_cell_fmt(table, 4, 3, 0xFFFFFF, "%4.1f C", dbc_api.aqt6.brake_temp);
-
+    // AQT2 now reports both front wheel speeds; temperature frames were removed.
+    set_cell(table, 1, 0, "FL RPM:", 0xFFFFFF);
+    set_cell_fmt(table, 1, 1, 0xFFFFFF, "%5.0f RPM", dbc_api.aqt2.front_left_wheel_rpm);
+    set_cell(table, 1, 2, "FR RPM:", 0xFFFFFF);
+    set_cell_fmt(table, 1, 3, 0xFFFFFF, "%5.0f RPM", dbc_api.aqt2.front_right_wheel_rpm);
 }
 
 void create_screen_debug_5() {
@@ -2355,7 +2343,8 @@ void tick_screen_debug_autonomous_5() {
 typedef void (*tick_screen_func_t)();
 tick_screen_func_t tick_screen_funcs[] = {
     tick_screen_driver_view,
-    tick_screen_autonomous
+    tick_screen_autonomous,
+    tick_screen_driver_gauge
 #if 0 // Debug screens are excluded from production builds.
     ,
     tick_screen_debug_1,
@@ -2490,6 +2479,7 @@ eez_flow_init_fonts(fonts, sizeof(fonts) / sizeof(ext_font_desc_t));
     // Create screens
     create_screen_driver_view();
     create_screen_autonomous();
+    create_screen_driver_gauge();
 #if 0 // Debug screens are excluded from production builds.
     create_screen_debug_1();
     create_screen_debug_inverter_2();
