@@ -418,8 +418,8 @@ int main(int argc, char **argv) {
         lv_obj_get_coords(objects.gauge_dial, &dial_area);
         assert(dial_area.x1 + dial_area.x2 + 1 == kUiWidth);
         assert(dial_area.y1 + dial_area.y2 + 1 == kUiHeight);
-        assert(lv_obj_get_content_width(objects.gauge_dial) == 432);
-        assert(lv_obj_get_content_height(objects.gauge_dial) == 432);
+        assert(lv_obj_get_content_width(objects.gauge_dial) == 472);
+        assert(lv_obj_get_content_height(objects.gauge_dial) == 472);
         const auto save_preview = [&](const char *suffix) {
             if (const char *path = std::getenv("LART_GAUGE_PREVIEW")) {
                 lv_refr_now(g_display);
@@ -455,7 +455,7 @@ int main(int argc, char **argv) {
         assert(std::strcmp(lv_label_get_text(objects.gauge_speed), "104") == 0);
         const auto *line = reinterpret_cast<const lv_line_t *>(objects.gauge_needle);
         const lv_point_precise_t full_scale = line->point_array[1];
-        assert(std::fabs(full_scale.x - (216.0f + 170.0f / std::sqrt(2.0f))) < 1.0f);
+        assert(std::fabs(full_scale.x - (236.0f + 190.0f / std::sqrt(2.0f))) < 1.0f);
         assert(std::fabs(full_scale.y - full_scale.x) < 1.0f);
         dbc_api.inv1_erpm_duty_voltage.inv1_actual_erpm = 96000.0f;
         ui_tick();
@@ -487,6 +487,10 @@ int main(int argc, char **argv) {
             ui_tick();
             assert(lv_obj_get_parent(objects.hv_on_overlay) == objects.driver_gauge);
             assert(original_text == lv_label_get_text(objects.hv_on_label));
+            if (state == 16) {
+                assert(original_text == "HV ON");
+                save_preview(".hv-on.bmp");
+            }
             assert(original_font == lv_obj_get_style_text_font(objects.hv_on_label, LV_PART_MAIN));
             lv_tick_inc(state == 16 ? 3999 : 499);
             ui_tick();
@@ -546,7 +550,7 @@ int main(int argc, char **argv) {
         dbc_api.master_precharge_id_1.precharge_state = 3.0f;
         ui_tick();
         assert(!lv_obj_has_flag(objects.hv_on_overlay, LV_OBJ_FLAG_HIDDEN));
-        assert(std::strcmp(lv_label_get_text(objects.hv_on_label), "8 4 AIR NEG 2 CLOSE") == 0);
+        assert(std::strcmp(lv_label_get_text(objects.hv_on_label), "WAIT FOR HV NEG TO OPEN") == 0);
         lv_tick_inc(500);
         ui_tick();
         assert(lv_obj_has_flag(objects.hv_on_overlay, LV_OBJ_FLAG_HIDDEN));
@@ -580,7 +584,7 @@ int main(int argc, char **argv) {
         dbc_api.master_precharge_id_1.precharge_state = 15.0f;
         ui_tick();
         lv_obj_update_layout(objects.hv_on_overlay);
-        assert(std::strcmp(lv_label_get_text(objects.hv_on_label), "CHECKING PRECHARGE IS OPEN") == 0);
+        assert(std::strcmp(lv_label_get_text(objects.hv_on_label), "WAIT FOR PRECHARGE TO OPEN") == 0);
         assert(lv_obj_get_style_text_font(objects.hv_on_label, LV_PART_MAIN) == &ui_font_orbitron_bold_30);
         assert(lv_obj_get_y(objects.hv_on_label) >= 0);
         assert(lv_obj_get_y(objects.hv_on_label) + lv_obj_get_height(objects.hv_on_label) <=
@@ -593,7 +597,7 @@ int main(int argc, char **argv) {
         for (int run = 0; run < 2; ++run) {
             dbc_api.master_precharge_id_1.precharge_state = 19.0f;
             ui_tick();
-            assert(std::strcmp(lv_label_get_text(objects.hv_on_label), "RX CAN") == 0);
+            assert(std::strcmp(lv_label_get_text(objects.hv_on_label), "KILL") == 0);
             for (int state = 0; state <= 16; ++state) {
                 lv_tick_inc(500);
                 dbc_api.master_precharge_id_1.precharge_state = (float)state;
