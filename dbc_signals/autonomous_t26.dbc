@@ -1,4 +1,4 @@
-VERSION " "
+VERSION ""
 
 
 NS_ : 
@@ -36,6 +36,9 @@ BS_:
 BU_: JETSON VCU ACU RES DYN_F DYN_R FSG_DATA_LOGGER AK10_9 Acquisition_Board1 Acquisition_Board2 Acquisition_Board3 Acquisition_Board4 Acquisition_Board7
 
 
+BO_ 3221225472 VECTOR__INDEPENDENT_SIG_MSG: 0 Vector__XXX
+ SG_ WHEEL_SPD : 0|16@1- (0.1,0) [0|0] "ms"  JETSON
+ SG_ WHEEL_SPD : 0|16@1- (0.1,0) [0|0] "ms"  JETSON
 
 BO_ 81 ACU: 8 ACU
  SG_ IGN : 24|1@1+ (1,0) [0|1] ""  JETSON
@@ -63,16 +66,10 @@ BO_ 1808 AQT1: 3 Acquisition_Board1
  SG_ RES : 16|1@1+ (1,0) [0|0] ""  JETSON
  SG_ BOTS : 17|1@1+ (1,0) [0|0] ""  JETSON
 
-BO_ 1824 AQT2: 2 Acquisition_Board2
- SG_ WHEEL_SPD : 0|16@1- (0.1,0) [0|0] "ms"  JETSON
-
-BO_ 1840 AQT3: 2 Acquisition_Board3
- SG_ WHEEL_SPD : 0|16@1- (0.1,0) [0|0] "ms"  JETSON
-
 BO_ 1856 AQT4: 7 Acquisition_Board4
  SG_ ST_ANGLE : 0|16@1- (0.1,0) [0|0] "º"  JETSON
- SG_ SUSP_L : 16|16@1+ (0.1,0) [0|0] "mm" Vector__XXX
- SG_ SUSP_R : 32|16@1+ (0.1,0) [0|0] "mm" Vector__XXX
+ SG_ SUSP_L : 16|16@1- (0.1,0) [0|0] "mm" Vector__XXX
+ SG_ SUSP_R : 32|16@1- (0.1,0) [0|0] "mm" Vector__XXX
  SG_ INERTIA : 48|1@1+ (1,0) [0|0] "" Vector__XXX
  SG_ EMERGENCY : 49|1@1+ (1,0) [0|0] "" Vector__XXX
 
@@ -166,12 +163,10 @@ VAL_ 81 AS_STATE 1 "OFF" 2 "READY" 3 "DRIVING" 4 "EMERGENCY" 5 "FINISH" ;
 VAL_ 81 ACU_STATE 0 "INIT" 1 "MISSION_SELECT" 2 "JETSON_WAITING" 3 "INIT_SEQUENCE" 4 "READY" 5 "DRIVING" 6 "EBS_ERROR" 7 "EMERGENCY" 8 "FINISHED" 9 "MANUAL" ;
 VAL_ 81 ASSI_STATE 1 "OFF" 2 "READY" 3 "DRIVING" 4 "EMERGENCY" 5 "FINISH" ;
 VAL_ 81 EMERGENCY_cause 0 "None" 1 "SDC_OPEN" 2 "RES" 3 "Pressure_checks" 4 "VCU_timeout" 5 "Jetson_timeout" 6 "ACU_WDT_TRIGGERED" 7 "dir_actuator_timeout" 8 "CAN_Dynamics_Pressure_timeout" ;
+VAL_ 2147494248 Error_Code 0 "None" 1 "OVER-VOLTAGE" 2 "UNDER-VOLTAGE" 3 "DRIVER-FAULT" 4 "OVER-CURRENT" 5 "MOSFET-OVER-TEMP" 6 "MOTOR-OVER-TEMP" 7 "GATE-DRIVE-OVER-VOLTAGE" 8 "GATE-DRIVE-UNDER-VOLTAGE" 9 "MCU-UNDER-VOLTAGE" 10 "REBOOTING-FROM-WATCHDOG" 11 "ENCODER-FAULT" 12 "MIN-ENCODER-LIMIT-EXCEEDED" 13 "MAX-ENCODER-LIMIT-EXCEEDED" 14 "FLASH-FAULT" 15 "HIGH-OFFSET-CURRENT-SENSOR1" 16 "HIGH-OFFSET-CURRENT-SENSOR2" ;
 VAL_ 1282 AS_status 1 "AS_status_off" 2 "AS_status_ready" 3 "AS_status_driving" 4 "AS_status_emergency" 5 "AS_status_finished" ;
 VAL_ 1282 ASB_EBS_state 1 "ASB_EBS_state_deactivated" 2 "ASB_EBS_state_initial_checkup_passed" 3 "ASB_EBS_state_activated" ;
 VAL_ 1282 AMI_state 1 "AMI_state_acceleration" 2 "AMI_state_skidpad" 3 "AMI_state_trackdrive" 4 "AMI_state_braketest" 5 "AMI_state_inspection" 6 "AMI_state_autocross" ;
 VAL_ 1282 ASB_redundancy_state 1 "ASB_redundancy_state_deactivated" 2 "ASB_redundancy_state_engaged" 3 "ASB_redundancy_state_initial_checkup_passed" ;
 VAL_ 97 EMERGENCY_CAUSE 0 "None" 1 "RES" 2 "ACU" 3 "ZED" 4 "Steering_error" 5 "Steering_timeout" 6 "Planner" 7 "SLAM" 8 "P-Puma" 9 "IMU" ;
 
-
-
-VAL_ 2147494248 Error_Code 0 "None" 1 "OVER-VOLTAGE" 2 "UNDER-VOLTAGE" 3 "DRIVER-FAULT" 4 "OVER-CURRENT" 5 "MOSFET-OVER-TEMP" 6 "MOTOR-OVER-TEMP" 7 "GATE-DRIVE-OVER-VOLTAGE" 8 "GATE-DRIVE-UNDER-VOLTAGE" 9 "MCU-UNDER-VOLTAGE" 10 "REBOOTING-FROM-WATCHDOG" 11 "ENCODER-FAULT" 12 "MIN-ENCODER-LIMIT-EXCEEDED" 13 "MAX-ENCODER-LIMIT-EXCEEDED" 14 "FLASH-FAULT" 15 "HIGH-OFFSET-CURRENT-SENSOR1" 16 "HIGH-OFFSET-CURRENT-SENSOR2" ;
