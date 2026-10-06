@@ -25,6 +25,9 @@ import can
 import cantools
 import rclpy
 from rclpy.node import Node
+from rcl_interfaces.msg import SetParametersResult
+
+from .admin_controls import ControlConfig, MessageSchedule, control_value, tick_period
 
 # ---------------------------------------------------------------------------
 # Real-world FS-EV magnitudes.
@@ -455,6 +458,9 @@ class CanSimulatorNode(Node):
         self.declare_parameter('can_interface', 'vcan0')
         self.declare_parameter('dbc_path', '')
         self.declare_parameter('publish_hz', 10.0)
+        self.declare_parameter('enabled', True)
+        self.declare_parameter('signal_controls', '{}')
+        self.declare_parameter('message_intervals_ms', '{}')
         self.declare_parameter('message_ids', rclpy.parameter.Parameter.Type.INTEGER_ARRAY)
         # Manual override for Mission_select (see test_data_ros2.sh) — raw
         # 3-bit value, 0-7, no DBC-defined labels. Change live with:
@@ -557,28 +563,66 @@ class CanSimulatorNode(Node):
             if mux_valid_ids:
                 self._msg_mux_valid_ids[m.name] = mux_valid_ids
 
+        self._controls = ControlConfig(self._messages)
+        self._signal_controls, intervals = self._controls.validate(
+            self.get_parameter('signal_controls').value,
+            self.get_parameter('message_intervals_ms').value, hz)
+        self._schedule = MessageSchedule([m.name for m in self._messages], 1000 / hz, intervals)
         self._t = 0.0
-        self._dt = 1.0 / hz
+        self.add_on_set_parameters_callback(self._validate_parameters)
         self._precharge_sequence = _PrechargeSequence()
         self.add_post_set_parameters_callback(self._on_parameters_set)
 
-        self.create_timer(self._dt, self._tick)
+        self._timer = self.create_timer(tick_period(1000 / hz, intervals), self._tick)
         self.get_logger().info('CAN simulator running — sending frames to ' + iface)
 
     # -----------------------------------------------------------------------
 
+    def _validate_parameters(self, parameters):
+        values = {p.name: p.value for p in parameters}
+        try:
+            if any(name in values for name in ('can_interface', 'dbc_path', 'message_ids')):
+                raise ValueError('Interface, DBC and message filter require restarting the simulator')
+            if 'enabled' in values and not isinstance(values['enabled'], bool):
+                raise ValueError('enabled must be boolean')
+            self._controls.validate(
+                values.get('signal_controls', self.get_parameter('signal_controls').value),
+                values.get('message_intervals_ms', self.get_parameter('message_intervals_ms').value),
+                values.get('publish_hz', self.get_parameter('publish_hz').value))
+        except (ValueError, TypeError) as exc:
+            return SetParametersResult(successful=False, reason=str(exc))
+        return SetParametersResult(successful=True)
+
     def _on_parameters_set(self, parameters) -> None:
+        names = {p.name for p in parameters}
+        if names & {'publish_hz', 'signal_controls', 'message_intervals_ms'}:
+            hz = self.get_parameter('publish_hz').value
+            self._signal_controls, intervals = self._controls.validate(
+                self.get_parameter('signal_controls').value,
+                self.get_parameter('message_intervals_ms').value, hz)
+            self._schedule.default_ms = 1000 / hz
+            self._schedule.intervals = intervals
+            if names & {'publish_hz', 'message_intervals_ms'}:
+                self._schedule.deadlines = dict.fromkeys(self._schedule.names, self._schedule.elapsed)
+                self.destroy_timer(self._timer)
+                self._timer = self.create_timer(tick_period(1000 / hz, intervals), self._tick)
+        if 'enabled' in names:
+            self._schedule.previous = time.monotonic()
+            self._schedule.was_enabled = self.get_parameter('enabled').value
         # Rearm immediately after an accepted request, even when -1 -> 19
         # happens between CAN ticks or 19 is requested again directly.
         if any(parameter.name == 'precharge_state_value' for parameter in parameters):
             self._precharge_sequence.reset()
 
     def _tick(self) -> None:
-        self._t += self._dt
-        if not self._messages:
+        due = set(self._schedule.advance(time.monotonic(), self.get_parameter('enabled').value))
+        self._t = self._schedule.elapsed
+        if not due:
             return
 
         for dbc_msg in self._messages:
+            if dbc_msg.name not in due:
+                continue
             # Build signal values dict
             signals: dict[str, float] = {}
 
@@ -586,7 +630,10 @@ class CanSimulatorNode(Node):
             mux_valid_ids = self._msg_mux_valid_ids.get(dbc_msg.name, {})
 
             for sig in dbc_msg.signals:
-                if sig.name in mux_valid_ids:
+                override = control_value(sig, self._signal_controls.get(dbc_msg.name, {}).get(sig.name, {}), self._t)
+                if override is not None:
+                    signals[sig.name] = override
+                elif sig.name in mux_valid_ids:
                     # Cycle through the valid multiplexer IDs based on t
                     valid_list = mux_valid_ids[sig.name]
                     idx = int(self._t * 0.5) % len(valid_list)
@@ -614,7 +661,7 @@ class CanSimulatorNode(Node):
             # padding=True  → zero-pad frames whose signals don't fill all bytes.
             try:
                 data = dbc_msg.encode(
-                    signals, scaling=True, padding=True
+                    signals, scaling=True, padding=True, strict=False
                 )
             except Exception as exc:
                 self.get_logger().warn(
@@ -622,8 +669,8 @@ class CanSimulatorNode(Node):
                 )
                 continue
 
-            # Determine if this is an extended frame (ID > 0x7FF)
-            is_extended = dbc_msg.frame_id > 0x7FF
+            # Extended DBC frames may also have IDs below 0x7FF.
+            is_extended = dbc_msg.is_extended_frame
 
             frame = can.Message(
                 arbitration_id=dbc_msg.frame_id,

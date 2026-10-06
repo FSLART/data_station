@@ -157,3 +157,60 @@ ros2 launch lart_bringup car.launch.py
 ```
 
 For DBC changes, follow the [DBC update guide](docs/DBC-Update-Guide.md) to validate, regenerate, rebuild, and update consumers.
+
+## Python CAN admin panel
+
+Build once after updating the workspace, then open the desktop panel:
+
+```bash
+source /opt/ros/jazzy/setup.bash
+colcon build --symlink-install --packages-select sim lart_bringup
+source install/setup.bash
+export ROS_DOMAIN_ID="${ROS_DOMAIN_ID:-42}"
+ros2 run sim admin_panel
+```
+
+Tkinter is required (`sudo apt install python3-tk` if missing). The panel uses
+existing virtual CAN interfaces; set them up once with
+`sudo ./scripts/setup_vcan_interfaces.sh vcan_data vcan_pwt vcan_auto`.
+Start the dashboard separately with the same ROS domain.
+`LART_Car_Dashboard_v1/start_local.sh` opens it minimized in a normal window
+and leaves simulation startup to the Python panel. Opening the panel starts or
+attaches to the simulation stack automatically.
+
+- **Start / attach** starts `dbc_sim.launch.py` or connects to its existing nodes.
+  **Pause/Resume** controls one bus or all buses. **Stop owned stack** only stops
+  a launch started by this panel.
+- Select a signal, choose **Auto**, **Fixed**, **Sweep**, or **Random**, and apply.
+  Values and min/max use DBC physical units. Sweep duration is a complete
+  minimum → maximum → minimum cycle. Discrete choices and multiplexer branches
+  support fixed/random valid values. Inactive branch values appear when selected
+  by the multiplexer. Blank message timing restores the bus default.
+- The scenario controls reproduce the shell test menu's speed sequences, with
+  an editable step interval (500 ms by default). Speed is converted into inverter
+  ERPM using the dashboard's existing gearing and tire dimensions; it does not
+  publish the unused `/vehicle/speed_kph` topic.
+- **CAN simulation** tests the full simulator → CAN bridge → current ROS topics
+  path. **Direct ROS** edits current aggregated `/data/*`, `/pwt/*`, `/can/*`
+  messages, preserving other fields. An initial message is required. Affected
+  simulator buses pause during direct tests; **Cancel / end test** restores
+  their prior state. CAN scenarios restore prior controls on completion/cancel.
+- Mission selectors and **HV ON sequence** use the existing simulator parameters.
+  Screen buttons select the three production screens. **Record / stop bag** uses
+  `BAG_DIR` (default `~/bags`) and `BAG_RECORD_REGEX` from the shell test menu.
+  Closing the panel ends temporary tests and finalizes recordings it started.
+
+Live simulator parameters are `enabled`, `publish_hz`, `signal_controls`, and
+`message_intervals_ms`. The latter two are JSON strings, for example:
+
+```json
+{"INV1_ERPM_DUTY_VOLTAGE": {"INV1_Actual_ERPM": {"mode": "fixed", "value": 20000}}}
+```
+
+```json
+{"INV1_ERPM_DUTY_VOLTAGE": 50}
+```
+
+Controls remain in memory for the simulator session. Existing simulators must
+be restarted after rebuilding to expose the new parameters. If a single DBC
+launch is used, set up its `vcan0` interface instead.

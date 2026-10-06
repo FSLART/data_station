@@ -127,7 +127,10 @@ void pointer_read_cb(lv_indev_drv_t *, lv_indev_data_t *data) {
 }
 
 bool create_window() {
-    const uint32_t window_flags = SDL_WINDOW_SHOWN | SDL_WINDOW_FULLSCREEN_DESKTOP;
+    const char *minimized = std::getenv("LART_UI_START_MINIMIZED");
+    const bool start_minimized = minimized && std::strcmp(minimized, "1") == 0;
+    const uint32_t window_flags = SDL_WINDOW_SHOWN |
+        (start_minimized ? SDL_WINDOW_MINIMIZED : SDL_WINDOW_FULLSCREEN_DESKTOP);
 
     g_window = SDL_CreateWindow(
         "LART UI Runner",
