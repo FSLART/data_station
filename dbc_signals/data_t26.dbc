@@ -90,7 +90,7 @@ BO_ 1282 ICD_Result: 8 ICD
  SG_ ICD_Current : 15|32@0- (0.001,0) [-2500|2500] "A"  Data_Station
  SG_ ICD_Ubat : 47|16@0+ (0.001,0) [0|65.535] "V"  Data_Station
 
-BO_ 1280 ICD_Request: 8 BMS
+BO_ 1280 ICD_Request: 8 PDM
  SG_ Req_MuxID M : 0|8@1+ (1,0) [0|255] ""  ICD,Data_Station
  SG_ Req_OpMode m16 : 8|8@1+ (1,0) [0|2] ""  ICD,Data_Station
  SG_ Req_OpOutputRate m16 : 23|16@0+ (1,0) [0|65535] "ms"  ICD,Data_Station
@@ -217,6 +217,12 @@ BO_ 1281 ICD_Response: 8 ICD
 
 BO_ 1792 AQT1: 8 Acquisition_Board1
  SG_ Throtle_Percentage : 0|8@1+ (1,0) [0|0] "" Vector__XXX
+
+BO_ 1872 Master_MSC_ID_3: 8 BMS
+ SG_ overall_maximum_voltage : 0|16@1+ (0.001,0) [0|0] "V" Vector__XXX
+ SG_ overall_maximum_temperature : 16|16@1+ (0.01,0) [0|0] "degC" Vector__XXX
+ SG_ overall_minimum_voltage : 32|16@1+ (0.001,0) [0|0] "V" Vector__XXX
+ SG_ overall_minimum_temperature : 48|16@1+ (0.01,0) [0|0] "degC" Vector__XXX
 
 
 

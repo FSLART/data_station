@@ -55,13 +55,18 @@ dashboard_state_bridge:
 
 input_handler:
   ros__parameters:
-    button_a: 17
-    button_b: 27
-    encoder_a_clk: 22
-    encoder_a_dt: 23
-    encoder_b_clk: 24
-    encoder_b_dt: 25
+    # Pull-ups are on, wire every switch/encoder common to GND. Do NOT use GPIO 8-11, 13, 16-22:
+    # the SPI0/SPI1 + MCP2515 CAN overlays in config.txt own them.
+    button_a: 26                 # OK   (right steering button) — was on GPIO17 (SPI1 CS, busy): move wire to GPIO26
+    button_b: 27                 # NEXT (left steering button)
+    encoder_a_clk: 24            # encoder A = right steering encoder
+    encoder_a_dt: 5
+    encoder_b_clk: 25            # encoder B = left steering encoder
+    encoder_b_dt: 23
     debounce_ms: 50
+    encoder_debounce_us: 2000    # raise if an encoder still jitters, lower if it misses fast turns
+    encoder_steps_per_detent: 4  # 4 for most encoders, 2 if one click only gives half the expected count
+    encoder_reverse: false       # true flips CW/CCW
     sim_mode: false              # set true in sim launch to skip GPIO init
 
 led_controller:
