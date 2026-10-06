@@ -9,11 +9,91 @@
 // Display scale only; the red sector is styling, not a motor safety limit.
 #define DIAL_MAX_RPM 20000.0f
 #define AMBER 0xffd32a
+#define WARNING_OFF 0x626262
+#define WARNING_ON 0xb0b0b0
+#define WARNING_RED 0xff272e
+
+// Dashboard advisories, not protection limits; tune to the installed hardware.
+#define LOW_LV_ON_V 24.5f
+#define LOW_LV_CLEAR_V 24.8f
+#define LOW_SOC_ON_PERCENT 15.0f
+#define LOW_SOC_CLEAR_PERCENT 17.0f
+#define MOTOR_WARN_C 100.0f
+#define INVERTER_WARN_C 80.0f
+#define BATTERY_WARN_C 55.0f
+#define TEMP_HYSTERESIS_C 5.0f
+
+enum { WARN_TEMP, WARN_DRIVE, WARN_SOC, WARN_LV };
+static bool motor_hot, inverter_hot, battery_hot, soc_low, lv_low;
+static lv_obj_t *warning_banner;
 
 static lv_obj_t *needle;
 static lv_obj_t *ready;
 static lv_point_precise_t needle_points[2];
 static lv_point_precise_t ticks[41][2];
+
+// Native vector strokes keep the telltales crisp without image assets or fonts.
+static void draw_warning_icon(lv_event_t *event) {
+    static const int8_t thermometer[][4] = {
+        {18, 5, 18, 27}, {18, 5, 24, 5}, {24, 5, 24, 27},
+        {21, 12, 21, 31}, {27, 12, 31, 12}, {27, 18, 33, 18},
+        {27, 24, 31, 24}, {4, 38, 9, 35}, {9, 35, 14, 38},
+        {28, 38, 33, 35}, {33, 35, 38, 38}
+    };
+    static const int8_t motor[][4] = {
+        {9, 10, 34, 10}, {34, 10, 34, 32}, {34, 32, 9, 32},
+        {9, 32, 9, 10}, {9, 15, 4, 15}, {4, 15, 4, 27},
+        {4, 27, 9, 27}, {34, 20, 40, 20}, {34, 24, 40, 24},
+        {14, 16, 29, 16}, {14, 22, 29, 22}, {14, 28, 29, 28}
+    };
+    static const int8_t battery[][4] = {
+        {3, 13, 39, 13}, {39, 13, 39, 35}, {39, 35, 3, 35},
+        {3, 35, 3, 13}, {9, 9, 9, 13}, {32, 9, 32, 13},
+        {9, 24, 17, 24}, {13, 20, 13, 28}, {27, 24, 33, 24}
+    };
+    lv_obj_t *obj = lv_event_get_target(event);
+    lv_layer_t *layer = lv_event_get_layer(event);
+    int kind = (int)(intptr_t)lv_event_get_user_data(event);
+    lv_area_t area;
+    lv_obj_get_coords(obj, &area);
+    const int8_t (*strokes)[4] = kind == WARN_TEMP ? thermometer :
+        kind == WARN_DRIVE ? motor : battery;
+    int count = kind == WARN_TEMP ? sizeof(thermometer) / sizeof(thermometer[0]) :
+        kind == WARN_DRIVE ? sizeof(motor) / sizeof(motor[0]) :
+        sizeof(battery) / sizeof(battery[0]);
+    lv_draw_line_dsc_t line;
+    lv_draw_line_dsc_init(&line);
+    line.color = lv_obj_get_style_text_color(obj, 0);
+    line.opa = lv_obj_get_style_text_opa(obj, 0);
+    line.width = 3;
+    line.round_start = line.round_end = true;
+    for (int i = 0; i < count; ++i) {
+        line.p1 = (lv_point_precise_t){area.x1 + 31 + strokes[i][0], area.y1 + strokes[i][1]};
+        line.p2 = (lv_point_precise_t){area.x1 + 31 + strokes[i][2], area.y1 + strokes[i][3]};
+        lv_draw_line(layer, &line);
+    }
+    if (kind == WARN_TEMP) {
+        lv_draw_rect_dsc_t bulb;
+        lv_draw_rect_dsc_init(&bulb);
+        bulb.bg_color = line.color;
+        bulb.bg_opa = line.opa;
+        bulb.radius = LV_RADIUS_CIRCLE;
+        lv_area_t bounds = {area.x1 + 46, area.y1 + 26, area.x1 + 58, area.y1 + 38};
+        lv_draw_rect(layer, &bulb, &bounds);
+    }
+    if (kind == WARN_LV) {
+        const lv_point_precise_t arrow[] = {
+            {area.x1 + 52, area.y1 + 1}, {area.x1 + 52, area.y1 + 9},
+            {area.x1 + 48, area.y1 + 5}, {area.x1 + 52, area.y1 + 9},
+            {area.x1 + 56, area.y1 + 5}
+        };
+        for (int i = 0; i < 4; ++i) {
+            line.p1 = arrow[i];
+            line.p2 = arrow[i + 1];
+            lv_draw_line(layer, &line);
+        }
+    }
+}
 
 static lv_obj_t *panel(lv_obj_t *parent, int x, int y, int w, int h,
                        uint32_t color, int radius) {
@@ -56,6 +136,106 @@ static lv_obj_t *card(lv_obj_t *parent, bool right, int y,
     text(obj, x, 80, 160, title, &ui_font_orbitron_bold_15, 0xffffff);
     text(obj, right ? 198 : 8, 8, 36, unit, &ui_font_orbitron_bold_20, AMBER);
     return text(obj, x, 17, 160, "0", &ui_font_orbitron_bold_40, AMBER);
+}
+
+static lv_obj_t *warning(lv_obj_t *screen, int x, int kind, const char *label) {
+    lv_obj_t *obj = lv_obj_create(screen);
+    lv_obj_remove_style_all(obj);
+    lv_obj_set_pos(obj, x, 4);
+    lv_obj_set_size(obj, 104, 62);
+    lv_obj_remove_flag(obj, LV_OBJ_FLAG_SCROLLABLE | LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_set_style_text_color(obj, lv_color_hex(WARNING_OFF), 0);
+    lv_obj_set_style_text_opa(obj, LV_OPA_20, 0);
+    lv_obj_add_event_cb(obj, draw_warning_icon, LV_EVENT_DRAW_MAIN, (void *)(intptr_t)kind);
+    lv_obj_t *caption = text(obj, 0, 43, 104, label, &ui_font_orbitron_bold_15, WARNING_OFF);
+    lv_obj_remove_local_style_prop(caption, LV_STYLE_TEXT_COLOR, 0);
+    return obj;
+}
+
+static void warning_style(lv_obj_t *obj, bool active, bool fault) {
+    lv_obj_set_style_text_color(obj,
+        lv_color_hex(active ? (fault ? WARNING_RED : WARNING_ON) : WARNING_OFF), 0);
+    lv_obj_set_style_text_opa(obj, active && fault ? LV_OPA_COVER : LV_OPA_20, 0);
+}
+
+static const char *inverter_fault_description(float code) {
+    // HV-500 / DTI CAN manual V2.5 fault codes. Keep unknown codes explicit
+    // rather than guessing the meaning of firmware-specific extensions.
+    static const char *const descriptions[] = {
+        "NO FAULT", "HV INPUT VOLTAGE TOO HIGH", "HV INPUT VOLTAGE TOO LOW",
+        "GATE DRIVER FAULT", "MOTOR PHASE OVERCURRENT", "INVERTER OVERHEAT",
+        "MOTOR OVERHEAT", "POSITION SENSOR WIRING FAULT",
+        "POSITION SENSOR READ ERROR", "CAN COMMAND OUT OF RANGE"
+    };
+    if (code >= 0 && code < (float)(sizeof(descriptions) / sizeof(descriptions[0])) &&
+        code == floorf(code)) return descriptions[(int)code];
+    return "UNKNOWN INVERTER FAULT";
+}
+
+static bool low_warning(float value, bool active, float on, float clear) {
+    return isfinite(value) && value >= 0 && value <= (active ? clear : on);
+}
+
+static bool hot_warning(float value, bool active, float on) {
+    return isfinite(value) && value >= (active ? on - TEMP_HYSTERESIS_C : on);
+}
+
+static void update_warnings(void) {
+    motor_hot = hot_warning(fmaxf(dbc_api.inv1_temperatures.inv1_actual_tempmotor,
+        dbc_api.inv2_temperatures.inv2_actual_tempmotor), motor_hot, MOTOR_WARN_C);
+    inverter_hot = hot_warning(fmaxf(dbc_api.inv1_temperatures.inv1_actual_tempcontroller,
+        dbc_api.inv2_temperatures.inv2_actual_tempcontroller), inverter_hot, INVERTER_WARN_C);
+    battery_hot = hot_warning(dbc_api.master_msc_id_3.overall_maximum_temperature,
+        battery_hot, BATTERY_WARN_C);
+    bool thermal_limit = dbc_api.inv1_misc.inv1_motor_temp_limit == 1 ||
+        dbc_api.inv1_misc.inv1_igbt_temp_limit == 1 ||
+        dbc_api.inv1_misc.inv1_capacitor_temp_limit == 1 ||
+        dbc_api.inv1_misc.inv1_motor_accel_limit == 1 ||
+        dbc_api.inv1_misc.inv1_igbt_accel_limit == 1 ||
+        dbc_api.inv2_misc.inv2_motor_temp_limit == 1 ||
+        dbc_api.inv2_misc.inv2_igbt_temp_limit == 1 ||
+        dbc_api.inv2_misc.inv2_capacitor_temp_limit == 1 ||
+        dbc_api.inv2_misc.inv2_motor_accel_limit == 1 ||
+        dbc_api.inv2_misc.inv2_igbt_accel_limit == 1;
+    bool temp = motor_hot || inverter_hot || battery_hot || thermal_limit;
+    float code1 = dbc_api.inv1_temperatures.inv1_actual_faultcode;
+    float code2 = dbc_api.inv2_temperatures.inv2_actual_faultcode;
+    bool fault1 = isfinite(code1) && code1 > 0;
+    bool fault2 = isfinite(code2) && code2 > 0;
+    bool drive = fault1 || fault2;
+    float soc = dbc_api.master_soc_accumulator.soc_float;
+    soc_low = soc <= 100 && low_warning(soc, soc_low, LOW_SOC_ON_PERCENT, LOW_SOC_CLEAR_PERCENT);
+    lv_low = low_warning(ui_get_lv_voltage(), lv_low, LOW_LV_ON_V, LOW_LV_CLEAR_V);
+    warning_style(objects.gauge_temp_warning, temp, false);
+    warning_style(objects.gauge_drive_warning, drive, true);
+    warning_style(objects.gauge_soc_warning, soc_low, false);
+    warning_style(objects.gauge_lv_warning, lv_low, false);
+
+    char fault_message[192];
+    if (fault1 && fault2) {
+        snprintf(fault_message, sizeof(fault_message), "INV1 ERROR %.0f: %s | INV2 ERROR %.0f: %s",
+            (double)code1, inverter_fault_description(code1),
+            (double)code2, inverter_fault_description(code2));
+    } else if (drive) {
+        float code = fault1 ? code1 : code2;
+        snprintf(fault_message, sizeof(fault_message), "INV%d ERROR %.0f: %s",
+            fault1 ? 1 : 2, (double)code, inverter_fault_description(code));
+    }
+    const char *message = drive ? fault_message : battery_hot ? "BATTERY TEMPERATURE HIGH" :
+        motor_hot ? "MOTOR TEMPERATURE HIGH" :
+        inverter_hot ? "INVERTER TEMPERATURE HIGH" :
+        thermal_limit ? "DRIVE TEMPERATURE LIMIT" :
+        lv_low ? "LOW LV BATTERY VOLTAGE" : soc_low ? "LOW ACCUMULATOR SOC" : "";
+    lv_label_set_text(objects.gauge_warning_message, message);
+    uint32_t color = drive ? WARNING_RED : WARNING_ON;
+    lv_opa_t opacity = drive ? LV_OPA_COVER : LV_OPA_20;
+    lv_obj_set_style_border_color(warning_banner, lv_color_hex(color), 0);
+    lv_obj_set_style_border_opa(warning_banner, opacity, 0);
+    lv_obj_set_style_bg_opa(warning_banner, opacity, 0);
+    lv_obj_set_style_text_color(objects.gauge_warning_message, lv_color_hex(color), 0);
+    lv_obj_set_style_text_opa(objects.gauge_warning_message, opacity, 0);
+    if (*message) lv_obj_remove_flag(warning_banner, LV_OBJ_FLAG_HIDDEN);
+    else lv_obj_add_flag(warning_banner, LV_OBJ_FLAG_HIDDEN);
 }
 
 static lv_obj_t *pedal_bar(lv_obj_t *parent, int y) {
@@ -161,6 +341,18 @@ void create_screen_driver_gauge() {
     text(inset, 0, 67, 208, "km/h", &ui_font_orbitron_bold_15, 0xffffff);
     text(dial, 173, 423, 126, "RPM x 1000", &ui_font_orbitron_15, 0xaaaaaa);
     ready = text(dial, 116, 326, 240, "NOT READY", &ui_font_orbitron_bold_20, AMBER);
+    motor_hot = inverter_hot = battery_hot = soc_low = lv_low = false;
+    objects.gauge_temp_warning = warning(screen, 8, WARN_TEMP, "TEMP");
+    objects.gauge_drive_warning = warning(screen, 124, WARN_DRIVE, "DRIVE");
+    objects.gauge_soc_warning = warning(screen, 572, WARN_SOC, "LOW SOC");
+    objects.gauge_lv_warning = warning(screen, 688, WARN_LV, "LOW LV");
+    warning_banner = panel(screen, 6, 452, 788, 28, 0x050505, 2);
+    objects.gauge_warning_message = text(warning_banner, 0, 2, 784, "",
+        &ui_font_orbitron_bold_15, WARNING_ON);
+    lv_obj_set_height(objects.gauge_warning_message, 22);
+    lv_obj_set_style_transform_scale_x(objects.gauge_warning_message, 256, 0);
+    lv_obj_set_style_transform_scale_y(objects.gauge_warning_message, 256, 0);
+    lv_label_set_long_mode(objects.gauge_warning_message, LV_LABEL_LONG_SCROLL_CIRCULAR);
     tick_screen_driver_gauge();
 }
 
@@ -195,4 +387,5 @@ void tick_screen_driver_gauge() {
     bool is_ready = dbc_api.vcu_states.vcu_state == 6 || dbc_api.vcu_states.vcu_state == 7;
     lv_label_set_text(ready, is_ready ? "READY" : "NOT READY");
     lv_obj_set_style_text_color(ready, lv_color_hex(is_ready ? 0x3fff00 : AMBER), 0);
+    update_warnings();
 }

@@ -121,6 +121,11 @@ typedef struct _objects_t {
     lv_obj_t *gauge_brake_bar;
     lv_obj_t *gauge_apps_label;
     lv_obj_t *gauge_brake_label;
+    lv_obj_t *gauge_temp_warning;
+    lv_obj_t *gauge_drive_warning;
+    lv_obj_t *gauge_soc_warning;
+    lv_obj_t *gauge_lv_warning;
+    lv_obj_t *gauge_warning_message;
 } objects_t;
 
 extern objects_t objects;

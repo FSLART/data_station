@@ -25,6 +25,7 @@ void ui_update_network_status();
 bool ui_is_ethernet_connected();
 const char *ui_get_mission_str();
 const char *ui_get_lv_str();
+float ui_get_lv_voltage(); // Selected LV source, or NaN when no valid source exists.
 const char *ui_get_lv_current_str();
 const char *ui_get_hv_current_str();
 const char *ui_get_mission_name(int mission_id);
