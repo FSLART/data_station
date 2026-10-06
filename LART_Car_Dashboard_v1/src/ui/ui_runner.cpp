@@ -433,6 +433,161 @@ int main(int argc, char **argv) {
             }
         };
         save_preview("");
+        // Exercise the actual screen and selected telemetry sources, not a copy
+        // of the threshold logic. Run with LART_TEST_DRIVER_GAUGE=1.
+        const auto warning_color = [](lv_obj_t *obj) {
+            return lv_color_to_u32(lv_obj_get_style_text_color(obj, LV_PART_MAIN)) & 0xffffff;
+        };
+        const auto active = [&](lv_obj_t *obj) {
+            return warning_color(obj) != 0x626262;
+        };
+        for (lv_obj_t *obj : {objects.gauge_temp_warning, objects.gauge_drive_warning,
+                             objects.gauge_soc_warning, objects.gauge_lv_warning}) {
+            assert(!active(obj));
+            assert(lv_obj_get_style_text_opa(obj, LV_PART_MAIN) == LV_OPA_20);
+            assert(lv_obj_get_y(obj) == 4);
+            assert(lv_obj_get_height(obj) == 62);
+        }
+        assert(lv_obj_get_x(objects.gauge_temp_warning) == 8);
+        assert(lv_obj_get_x(objects.gauge_drive_warning) == 124);
+        assert(lv_obj_get_x(objects.gauge_soc_warning) == 572);
+        assert(lv_obj_get_x(objects.gauge_lv_warning) == 688);
+        assert(lv_obj_has_flag(lv_obj_get_parent(objects.gauge_warning_message), LV_OBJ_FLAG_HIDDEN));
+
+        dbc_api.pdm_lv.lv_voltage_mv = 24.5f;
+        dbc_api.master_soc_accumulator.soc_float = 15.0f;
+        ui_tick();
+        assert(active(objects.gauge_lv_warning) && active(objects.gauge_soc_warning));
+        assert(std::strcmp(lv_label_get_text(objects.gauge_warning_message), "LOW LV BATTERY VOLTAGE") == 0);
+        assert(std::strcmp(lv_label_get_text(objects.gauge_lv), "24.5 V") == 0);
+        save_preview(".low-battery.bmp");
+        dbc_api.pdm_lv.lv_voltage_mv = 24.8f;
+        dbc_api.master_soc_accumulator.soc_float = 17.0f;
+        ui_tick();
+        assert(active(objects.gauge_lv_warning) && active(objects.gauge_soc_warning));
+        dbc_api.pdm_lv.lv_voltage_mv = 24.81f;
+        dbc_api.master_soc_accumulator.soc_float = 17.01f;
+        ui_tick();
+        assert(!active(objects.gauge_lv_warning) && !active(objects.gauge_soc_warning));
+
+        // LV warnings use the same fallback selection as the voltage display.
+        dbc_api.pdm_lv.lv_voltage_mv = NAN;
+        dbc_api.ivt_msg_result_u3.ivt_result_u3 = 24400.0f;
+        ui_tick();
+        assert(active(objects.gauge_lv_warning));
+        assert(std::strcmp(lv_label_get_text(objects.gauge_lv), "24.4 V") == 0);
+        dbc_api.ivt_msg_result_u3.ivt_result_u3 = NAN;
+        dbc_api.master_msc_id_1.mcu_vref = 24.3f;
+        ui_tick();
+        assert(active(objects.gauge_lv_warning));
+        assert(std::strcmp(lv_label_get_text(objects.gauge_lv), "24.3 V") == 0);
+        dbc_api.master_msc_id_1.mcu_vref = NAN;
+        ui_tick();
+        assert(std::isnan(ui_get_lv_voltage()));
+        assert(!active(objects.gauge_lv_warning)); // Display placeholder is not a measurement.
+        dbc_api.pdm_lv.lv_voltage_mv = 25.2f;
+        dbc_api.ivt_msg_result_u3.ivt_result_u3 = 0;
+        dbc_api.master_msc_id_1.mcu_vref = 0;
+        for (float soc : {0.0f, -1.0f, 101.0f}) {
+            dbc_api.master_soc_accumulator.soc_float = soc;
+            tick_screen_driver_gauge();
+            assert(active(objects.gauge_soc_warning) == (soc == 0));
+        }
+        dbc_api.master_soc_accumulator.soc_float = 78.0f;
+
+        // Either inverter/motor must trigger a warning, even though the original
+        // numeric cards display INV1. Each boundary also exercises the clear band.
+        for (float *temp : {&dbc_api.inv1_temperatures.inv1_actual_tempmotor,
+                            &dbc_api.inv2_temperatures.inv2_actual_tempmotor,
+                            &dbc_api.inv1_temperatures.inv1_actual_tempcontroller,
+                            &dbc_api.inv2_temperatures.inv2_actual_tempcontroller,
+                            &dbc_api.master_msc_id_3.overall_maximum_temperature}) {
+            const float original = *temp;
+            const bool motor = temp == &dbc_api.inv1_temperatures.inv1_actual_tempmotor ||
+                               temp == &dbc_api.inv2_temperatures.inv2_actual_tempmotor;
+            const bool battery = temp == &dbc_api.master_msc_id_3.overall_maximum_temperature;
+            const float threshold = motor ? 100.0f : battery ? 55.0f : 80.0f;
+            *temp = threshold - 0.1f;
+            ui_tick();
+            assert(!active(objects.gauge_temp_warning));
+            *temp = threshold;
+            ui_tick();
+            assert(active(objects.gauge_temp_warning));
+            *temp = threshold - 5.0f;
+            ui_tick();
+            assert(active(objects.gauge_temp_warning));
+            *temp = threshold - 5.1f;
+            ui_tick();
+            assert(!active(objects.gauge_temp_warning));
+            *temp = original;
+        }
+        dbc_api.inv2_misc.inv2_motor_temp_limit = 1;
+        ui_tick();
+        assert(active(objects.gauge_temp_warning));
+        assert(std::strcmp(lv_label_get_text(objects.gauge_warning_message), "DRIVE TEMPERATURE LIMIT") == 0);
+        dbc_api.inv2_misc.inv2_motor_temp_limit = 0;
+        const char *const descriptions[] = {
+            "NO FAULT", "HV INPUT VOLTAGE TOO HIGH", "HV INPUT VOLTAGE TOO LOW",
+            "GATE DRIVER FAULT", "MOTOR PHASE OVERCURRENT", "INVERTER OVERHEAT",
+            "MOTOR OVERHEAT", "POSITION SENSOR WIRING FAULT",
+            "POSITION SENSOR READ ERROR", "CAN COMMAND OUT OF RANGE"
+        };
+        for (float *fault : {&dbc_api.inv1_temperatures.inv1_actual_faultcode,
+                             &dbc_api.inv2_temperatures.inv2_actual_faultcode}) {
+            const int inverter = fault == &dbc_api.inv1_temperatures.inv1_actual_faultcode ? 1 : 2;
+            for (int code = 1; code <= 9; ++code) {
+                *fault = code;
+                ui_tick();
+                assert(warning_color(objects.gauge_drive_warning) == 0xff272e);
+                assert(lv_obj_get_style_text_opa(objects.gauge_drive_warning, LV_PART_MAIN) == LV_OPA_COVER);
+                const std::string expected = "INV" + std::to_string(inverter) + " ERROR " +
+                    std::to_string(code) + ": " + descriptions[code];
+                assert(expected == lv_label_get_text(objects.gauge_warning_message));
+            }
+            *fault = 255;
+            ui_tick();
+            assert(std::strstr(lv_label_get_text(objects.gauge_warning_message),
+                "ERROR 255: UNKNOWN INVERTER FAULT"));
+            *fault = 0;
+            ui_tick();
+            assert(!active(objects.gauge_drive_warning));
+        }
+        dbc_api.inv1_temperatures.inv1_actual_faultcode = 7;
+        dbc_api.inv2_temperatures.inv2_actual_faultcode = 8;
+        ui_tick();
+        assert(std::strcmp(lv_label_get_text(objects.gauge_warning_message),
+            "INV1 ERROR 7: POSITION SENSOR WIRING FAULT | INV2 ERROR 8: POSITION SENSOR READ ERROR") == 0);
+        assert(lv_label_get_long_mode(objects.gauge_warning_message) == LV_LABEL_LONG_SCROLL_CIRCULAR);
+        lv_obj_update_layout(objects.driver_gauge);
+        assert(lv_obj_get_height(lv_obj_get_parent(objects.gauge_warning_message)) == 28);
+        assert(lv_obj_get_height(objects.gauge_warning_message) == 22);
+        save_preview(".both-inverters.bmp");
+        dbc_api.inv1_temperatures.inv1_actual_faultcode = 0;
+        dbc_api.inv1_temperatures.inv1_actual_tempmotor = 100;
+        dbc_api.inv2_temperatures.inv2_actual_faultcode = 3;
+        dbc_api.master_soc_accumulator.soc_float = 15;
+        dbc_api.pdm_lv.lv_voltage_mv = 24.5f;
+        ui_tick();
+        for (lv_obj_t *obj : {objects.gauge_temp_warning, objects.gauge_drive_warning,
+                             objects.gauge_soc_warning, objects.gauge_lv_warning}) {
+            const bool fault = obj == objects.gauge_drive_warning;
+            assert(warning_color(obj) == (fault ? 0xff272e : 0xb0b0b0));
+            assert(lv_obj_get_style_text_opa(obj, LV_PART_MAIN) == (fault ? LV_OPA_COVER : LV_OPA_20));
+        }
+        assert(std::strcmp(lv_label_get_text(objects.gauge_warning_message), "INV2 ERROR 3: GATE DRIVER FAULT") == 0);
+        assert(warning_color(objects.gauge_warning_message) == 0xff272e);
+        assert(lv_obj_get_style_text_opa(objects.gauge_warning_message, LV_PART_MAIN) == LV_OPA_COVER);
+        save_preview(".warnings.bmp");
+        dbc_api.inv2_temperatures.inv2_actual_faultcode = 0;
+        ui_tick();
+        assert(std::strcmp(lv_label_get_text(objects.gauge_warning_message), "MOTOR TEMPERATURE HIGH") == 0);
+        assert(lv_obj_get_style_text_opa(objects.gauge_warning_message, LV_PART_MAIN) == LV_OPA_20);
+        save_preview(".temperature.bmp");
+        dbc_api.inv1_temperatures.inv1_actual_tempmotor = 67;
+        dbc_api.master_soc_accumulator.soc_float = 78;
+        dbc_api.pdm_lv.lv_voltage_mv = 25.2f;
+        ui_tick();
+        assert(lv_obj_has_flag(lv_obj_get_parent(objects.gauge_warning_message), LV_OBJ_FLAG_HIDDEN));
         dbc_api.aqt1.throtle_percentage = 150.0f;
         dbc_api.vcu_hv.brake_pressure_front = 145.0f;
         ui_tick();
