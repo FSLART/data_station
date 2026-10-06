@@ -184,6 +184,16 @@ void init_dbc_api_subscribers_chunk_2(std::shared_ptr<rclcpp::Node> node, std::v
             }
         }));
     subs.push_back(node->create_subscription<lart_msgs::msg::MasterMscId3>(
+        "/data/master_msc_id_3", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::MasterMscId3> msg) {
+            if (msg) {
+                std::lock_guard<std::mutex> lock(dbc_api_mutex);
+                dbc_api.master_msc_id_3.overall_maximum_temperature = msg->overall_maximum_temperature;
+                dbc_api.master_msc_id_3.overall_maximum_voltage = msg->overall_maximum_voltage;
+                dbc_api.master_msc_id_3.overall_minimum_temperature = msg->overall_minimum_temperature;
+                dbc_api.master_msc_id_3.overall_minimum_voltage = msg->overall_minimum_voltage;
+            }
+        }));
+    subs.push_back(node->create_subscription<lart_msgs::msg::MasterMscId3>(
         "/pwt/master_msc_id_3", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::MasterMscId3> msg) {
             if (msg) {
                 std::lock_guard<std::mutex> lock(dbc_api_mutex);

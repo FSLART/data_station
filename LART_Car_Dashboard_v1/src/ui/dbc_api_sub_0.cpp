@@ -91,14 +91,6 @@ void init_dbc_api_subscribers_chunk_0(std::shared_ptr<rclcpp::Node> node, std::v
             }
         }));
     subs.push_back(node->create_subscription<lart_msgs::msg::Aqt2>(
-        "/can/aqt2", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::Aqt2> msg) {
-            if (msg) {
-                std::lock_guard<std::mutex> lock(dbc_api_mutex);
-                dbc_api.aqt2.front_left_wheel_rpm = msg->front_left_wheel_rpm;
-                dbc_api.aqt2.front_right_wheel_rpm = msg->front_right_wheel_rpm;
-            }
-        }));
-    subs.push_back(node->create_subscription<lart_msgs::msg::Aqt2>(
         "/data/aqt2", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::Aqt2> msg) {
             if (msg) {
                 std::lock_guard<std::mutex> lock(dbc_api_mutex);
@@ -121,6 +113,7 @@ void init_dbc_api_subscribers_chunk_0(std::shared_ptr<rclcpp::Node> node, std::v
         "/can/aqt7", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::Aqt7> msg) {
             if (msg) {
                 std::lock_guard<std::mutex> lock(dbc_api_mutex);
+                dbc_api.aqt7.ntc_1 = msg->ntc_1;
                 dbc_api.aqt7.susp_l = msg->susp_l;
                 dbc_api.aqt7.susp_r = msg->susp_r;
             }
@@ -129,6 +122,7 @@ void init_dbc_api_subscribers_chunk_0(std::shared_ptr<rclcpp::Node> node, std::v
         "/data/aqt7", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::Aqt7> msg) {
             if (msg) {
                 std::lock_guard<std::mutex> lock(dbc_api_mutex);
+                dbc_api.aqt7.ntc_1 = msg->ntc_1;
                 dbc_api.aqt7.susp_l = msg->susp_l;
                 dbc_api.aqt7.susp_r = msg->susp_r;
             }

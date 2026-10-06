@@ -40,7 +40,7 @@ separately; shared IDs between different buses are expected.
 Generate C files for each changed DBC (example: data):
 
 ```bash
-python3 -m cantools generate_c_source \
+python3 -m cantools generate_c_source --encoding utf-8 \
   -o LART_Car_Dashboard_v1/src/ui/generated dbc_signals/data_t26.dbc
 python3 LART_Car_Dashboard_v1/src/ui/generate_dbc_api.py
 python3 LART_Car_Dashboard_v1/src/ui/generated/generate_can_bridge.py
@@ -72,7 +72,7 @@ submodule files.
 Run these build commands in Bash (`setup.bash` is Bash-specific):
 
 ```bash
-python3 -m pytest -q tests/test_dbc_generation.py tests/test_dbc_api_abi.py
+python3 -m pytest -q tests/test_dbc_generation.py tests/test_dbc_api_abi.py tests/test_dbc_decoding.py
 source /opt/ros/jazzy/setup.bash
 colcon build --packages-select lart_msgs --parallel-workers 2
 source install/setup.bash
@@ -86,14 +86,24 @@ Use `ros2 interface show lart_msgs/msg/Aqt7` and `ros2 topic echo /data/aqt7` to
 confirm the new fields. Compare a known raw frame against decoded physical
 values; then verify the dashboard labels and values using simulation or the car.
 
-## Pending data DBC update (1 October 2026)
+## Current DBC update (6 October 2026)
 
-The incoming AQT7 definition places `NTC_1` at bits 16–23, overlapping
-`SUSP_R` at bits 16–31. `SUSP_L` uses bits 0–15; the frame is four bytes.
-The user requires keeping `SUSP_R`, so regeneration is blocked until the
-firmware layout specifies a separate position/frame length or multiplexing.
-The current generated decoder, ROS interface and dashboard retain `SUSP_R`.
-Do not run regeneration against this invalid DBC or use `--no-strict`.
+The AQT7 overlap has been resolved in the source DBC. The frame is eight bytes:
+signed `SUSP_L` uses bits 0–15, signed `SUSP_R` uses bits 16–31, and unsigned
+`NTC_1` uses bits 32–39. Both suspension fields remain in the ROS interface and
+dashboard; `ntc_1` is added to the ROS interface, API and bridge. Rebuild all
+AQT7 publishers/subscribers together. The decoder now requires the full
+eight-byte frame and rejects the old four-byte payload.
+
+The data DBC also adds `Master_MSC_ID_3` at CAN ID `0x750`, exposed as
+`/data/master_msc_id_3` alongside the existing powertrain topic. These frames
+retain their own bus-specific decoding, including the powertrain `VCU_states`
+frame that shares CAN ID `0x750`.
+
+The autonomous DBC removes the old AQT2/AQT3 wheel-speed frames and makes AQT4
+`SUSP_L`/`SUSP_R` signed. Regenerate the data and autonomous C decoders, then
+the API and bridge. The powertrain decoder is already current. Use UTF-8 when
+generating C sources to preserve the source DBC's comments and units.
 
 The generator has been repaired to preserve existing ROS package configuration,
 field types, headers, constants and dashboard helpers during future updates.

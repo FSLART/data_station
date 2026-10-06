@@ -363,6 +363,23 @@ bool CanBridgeImpl::handle_frame_chunk_5(uint32_t can_id, const uint8_t* data, s
         }
         case 1872u: {
             {
+                lart_msgs::msg::MasterMscId3 out;
+                bool decoded_any = false;
+                if (database_ == "data_t26") {
+                    struct data_t26_master_msc_id_3_t decoded = {};
+                    if (data_t26_master_msc_id_3_unpack(&decoded, data, dlc) == 0) {
+                        out.overall_maximum_voltage = data_t26_master_msc_id_3_overall_maximum_voltage_decode(decoded.overall_maximum_voltage);
+                        out.overall_maximum_temperature = data_t26_master_msc_id_3_overall_maximum_temperature_decode(decoded.overall_maximum_temperature);
+                        out.overall_minimum_voltage = data_t26_master_msc_id_3_overall_minimum_voltage_decode(decoded.overall_minimum_voltage);
+                        out.overall_minimum_temperature = data_t26_master_msc_id_3_overall_minimum_temperature_decode(decoded.overall_minimum_temperature);
+                        decoded_any = true;
+                    }
+                }
+                if (decoded_any) {
+                    pub_master_msc_id_3->publish(out);
+                }
+            }
+            {
                 lart_msgs::msg::VcuStates out;
                 bool decoded_any = false;
                 if (database_ == "powertrain_t26") {
@@ -387,6 +404,7 @@ bool CanBridgeImpl::handle_frame_chunk_5(uint32_t can_id, const uint8_t* data, s
                     if (data_t26_aqt7_unpack(&decoded, data, dlc) == 0) {
                         out.susp_l = data_t26_aqt7_susp_l_decode(decoded.susp_l);
                         out.susp_r = data_t26_aqt7_susp_r_decode(decoded.susp_r);
+                        out.ntc_1 = data_t26_aqt7_ntc_1_decode(decoded.ntc_1);
                         decoded_any = true;
                     }
                 }

@@ -44,6 +44,7 @@ typedef struct {
         float susp_r;
     } aqt4;
     struct {
+        float ntc_1;
         float susp_l;
         float susp_r;
     } aqt7;

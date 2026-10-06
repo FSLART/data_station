@@ -36,7 +36,7 @@ void CanBridgeImpl::init_publishers_chunk_2(rclcpp::Node* node) {
     if (database_ == "powertrain_t26") {
         pub_master_msc_id_2 = node->create_publisher<lart_msgs::msg::MasterMscId2>(database_ == "data_t26" ? "/data/master_msc_id_2" : database_ == "powertrain_t26" ? "/pwt/master_msc_id_2" : "/can/master_msc_id_2", sensor_qos);
     }
-    if (database_ == "powertrain_t26") {
+    if (database_ == "data_t26" || database_ == "powertrain_t26") {
         pub_master_msc_id_3 = node->create_publisher<lart_msgs::msg::MasterMscId3>(database_ == "data_t26" ? "/data/master_msc_id_3" : database_ == "powertrain_t26" ? "/pwt/master_msc_id_3" : "/can/master_msc_id_3", sensor_qos);
     }
     if (database_ == "powertrain_t26") {
