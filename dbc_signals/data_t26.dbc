@@ -57,6 +57,246 @@ BO_ 1824 AQT2: 4 Acquisition_Board2
  SG_ FRONT_LEFT_WHEEL_RPM : 0|16@1+ (1,0) [0|0] "RPM"  Data_Station
  SG_ FRONT_RIGHT_WHEEL_RPM : 16|16@1+ (1,0) [0|0] "RPM"  Data_Station
 
+BO_ 1921 AQT2_Temperatures_1: 8 Acquisition_Board2
+ SG_ Temperature_001 : 0|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_002 : 8|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_003 : 16|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_004 : 24|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_005 : 32|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_006 : 40|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_007 : 48|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_008 : 56|8@1+ (1,30) [30|285] "degC"  Data_Station
+
+BO_ 1922 AQT2_Temperatures_2: 8 Acquisition_Board2
+ SG_ Temperature_009 : 0|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_010 : 8|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_011 : 16|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_012 : 24|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_013 : 32|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_014 : 40|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_015 : 48|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_016 : 56|8@1+ (1,30) [30|285] "degC"  Data_Station
+
+BO_ 1923 AQT2_Temperatures_3: 8 Acquisition_Board2
+ SG_ Temperature_017 : 0|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_018 : 8|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_019 : 16|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_020 : 24|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_021 : 32|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_022 : 40|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_023 : 48|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_024 : 56|8@1+ (1,30) [30|285] "degC"  Data_Station
+
+BO_ 1924 AQT2_Temperatures_4: 8 Acquisition_Board2
+ SG_ Temperature_025 : 0|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_026 : 8|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_027 : 16|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_028 : 24|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_029 : 32|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_030 : 40|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_031 : 48|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_032 : 56|8@1+ (1,30) [30|285] "degC"  Data_Station
+
+BO_ 1925 AQT2_Temperatures_5: 8 Acquisition_Board2
+ SG_ Temperature_033 : 0|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_034 : 8|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_035 : 16|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_036 : 24|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_037 : 32|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_038 : 40|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_039 : 48|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_040 : 56|8@1+ (1,30) [30|285] "degC"  Data_Station
+
+BO_ 1926 AQT2_Temperatures_6: 8 Acquisition_Board2
+ SG_ Temperature_041 : 0|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_042 : 8|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_043 : 16|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_044 : 24|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_045 : 32|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_046 : 40|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_047 : 48|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_048 : 56|8@1+ (1,30) [30|285] "degC"  Data_Station
+
+BO_ 1927 AQT2_Temperatures_7: 8 Acquisition_Board2
+ SG_ Temperature_049 : 0|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_050 : 8|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_051 : 16|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_052 : 24|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_053 : 32|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_054 : 40|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_055 : 48|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_056 : 56|8@1+ (1,30) [30|285] "degC"  Data_Station
+
+BO_ 1928 AQT2_Temperatures_8: 8 Acquisition_Board2
+ SG_ Temperature_057 : 0|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_058 : 8|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_059 : 16|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_060 : 24|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_061 : 32|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_062 : 40|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_063 : 48|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_064 : 56|8@1+ (1,30) [30|285] "degC"  Data_Station
+
+BO_ 1929 AQT2_Temperatures_9: 8 Acquisition_Board2
+ SG_ Temperature_065 : 0|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_066 : 8|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_067 : 16|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_068 : 24|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_069 : 32|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_070 : 40|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_071 : 48|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_072 : 56|8@1+ (1,30) [30|285] "degC"  Data_Station
+
+BO_ 1930 AQT2_Temperatures_10: 8 Acquisition_Board2
+ SG_ Temperature_073 : 0|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_074 : 8|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_075 : 16|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_076 : 24|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_077 : 32|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_078 : 40|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_079 : 48|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_080 : 56|8@1+ (1,30) [30|285] "degC"  Data_Station
+
+BO_ 1931 AQT2_Temperatures_11: 8 Acquisition_Board2
+ SG_ Temperature_081 : 0|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_082 : 8|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_083 : 16|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_084 : 24|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_085 : 32|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_086 : 40|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_087 : 48|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_088 : 56|8@1+ (1,30) [30|285] "degC"  Data_Station
+
+BO_ 1932 AQT2_Temperatures_12: 8 Acquisition_Board2
+ SG_ Temperature_089 : 0|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_090 : 8|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_091 : 16|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_092 : 24|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_093 : 32|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_094 : 40|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_095 : 48|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_096 : 56|8@1+ (1,30) [30|285] "degC"  Data_Station
+
+BO_ 1933 AQT2_Temperatures_13: 8 Acquisition_Board2
+ SG_ Temperature_097 : 0|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_098 : 8|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_099 : 16|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_100 : 24|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_101 : 32|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_102 : 40|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_103 : 48|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_104 : 56|8@1+ (1,30) [30|285] "degC"  Data_Station
+
+BO_ 1934 AQT2_Temperatures_14: 8 Acquisition_Board2
+ SG_ Temperature_105 : 0|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_106 : 8|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_107 : 16|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_108 : 24|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_109 : 32|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_110 : 40|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_111 : 48|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_112 : 56|8@1+ (1,30) [30|285] "degC"  Data_Station
+
+BO_ 1935 AQT2_Temperatures_15: 8 Acquisition_Board2
+ SG_ Temperature_113 : 0|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_114 : 8|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_115 : 16|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_116 : 24|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_117 : 32|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_118 : 40|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_119 : 48|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_120 : 56|8@1+ (1,30) [30|285] "degC"  Data_Station
+
+BO_ 1936 AQT2_Temperatures_16: 8 Acquisition_Board2
+ SG_ Temperature_121 : 0|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_122 : 8|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_123 : 16|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_124 : 24|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_125 : 32|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_126 : 40|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_127 : 48|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_128 : 56|8@1+ (1,30) [30|285] "degC"  Data_Station
+
+BO_ 1937 AQT2_Temperatures_17: 8 Acquisition_Board2
+ SG_ Temperature_129 : 0|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_130 : 8|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_131 : 16|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_132 : 24|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_133 : 32|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_134 : 40|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_135 : 48|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_136 : 56|8@1+ (1,30) [30|285] "degC"  Data_Station
+
+BO_ 1938 AQT2_Temperatures_18: 8 Acquisition_Board2
+ SG_ Temperature_137 : 0|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_138 : 8|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_139 : 16|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_140 : 24|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_141 : 32|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_142 : 40|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_143 : 48|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_144 : 56|8@1+ (1,30) [30|285] "degC"  Data_Station
+
+BO_ 1939 AQT2_Temperatures_19: 8 Acquisition_Board2
+ SG_ Temperature_145 : 0|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_146 : 8|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_147 : 16|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_148 : 24|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_149 : 32|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_150 : 40|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_151 : 48|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_152 : 56|8@1+ (1,30) [30|285] "degC"  Data_Station
+
+BO_ 1940 AQT2_Temperatures_20: 8 Acquisition_Board2
+ SG_ Temperature_153 : 0|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_154 : 8|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_155 : 16|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_156 : 24|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_157 : 32|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_158 : 40|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_159 : 48|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_160 : 56|8@1+ (1,30) [30|285] "degC"  Data_Station
+
+BO_ 1941 AQT2_Temperatures_21: 8 Acquisition_Board2
+ SG_ Temperature_161 : 0|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_162 : 8|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_163 : 16|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_164 : 24|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_165 : 32|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_166 : 40|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_167 : 48|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_168 : 56|8@1+ (1,30) [30|285] "degC"  Data_Station
+
+BO_ 1942 AQT2_Temperatures_22: 8 Acquisition_Board2
+ SG_ Temperature_169 : 0|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_170 : 8|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_171 : 16|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_172 : 24|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_173 : 32|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_174 : 40|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_175 : 48|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_176 : 56|8@1+ (1,30) [30|285] "degC"  Data_Station
+
+BO_ 1943 AQT2_Temperatures_23: 8 Acquisition_Board2
+ SG_ Temperature_177 : 0|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_178 : 8|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_179 : 16|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_180 : 24|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_181 : 32|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_182 : 40|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_183 : 48|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_184 : 56|8@1+ (1,30) [30|285] "degC"  Data_Station
+
+BO_ 1944 AQT2_Temperatures_24: 8 Acquisition_Board2
+ SG_ Temperature_185 : 0|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_186 : 8|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_187 : 16|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_188 : 24|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_189 : 32|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_190 : 40|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_191 : 48|8@1+ (1,30) [30|285] "degC"  Data_Station
+ SG_ Temperature_192 : 56|8@1+ (1,30) [30|285] "degC"  Data_Station
+
 BO_ 1904 AQT7: 8 Acquisition_Board7
  SG_ SUSP_L : 0|16@1- (0.1,0) [0|0] "mm"  Data_Station
  SG_ SUSP_R : 16|16@1- (0.1,0) [0|0] "mm"  Data_Station
@@ -228,6 +468,30 @@ BO_ 1872 Master_MSC_ID_3: 8 BMS
 
 CM_ BU_ ICD "Isabellenhuette ISAscale ICD shunt current sensor (datasheet v1.3)";
 CM_ BU_ Data_Station "RPi 5 CAN Shield";
+CM_ BO_ 1921 "16x12 thermal matrix, block 1/24. Row-major: 16 columns x 12 rows, zero-based row 0, columns 0..7. T_degC = raw + 30. Send all blocks from one frozen acquisition in ascending order; no acquisition counter in payload.";
+CM_ BO_ 1922 "16x12 thermal matrix, block 2/24. Row-major: 16 columns x 12 rows, zero-based row 0, columns 8..15. T_degC = raw + 30. Send all blocks from one frozen acquisition in ascending order; no acquisition counter in payload.";
+CM_ BO_ 1923 "16x12 thermal matrix, block 3/24. Row-major: 16 columns x 12 rows, zero-based row 1, columns 0..7. T_degC = raw + 30. Send all blocks from one frozen acquisition in ascending order; no acquisition counter in payload.";
+CM_ BO_ 1924 "16x12 thermal matrix, block 4/24. Row-major: 16 columns x 12 rows, zero-based row 1, columns 8..15. T_degC = raw + 30. Send all blocks from one frozen acquisition in ascending order; no acquisition counter in payload.";
+CM_ BO_ 1925 "16x12 thermal matrix, block 5/24. Row-major: 16 columns x 12 rows, zero-based row 2, columns 0..7. T_degC = raw + 30. Send all blocks from one frozen acquisition in ascending order; no acquisition counter in payload.";
+CM_ BO_ 1926 "16x12 thermal matrix, block 6/24. Row-major: 16 columns x 12 rows, zero-based row 2, columns 8..15. T_degC = raw + 30. Send all blocks from one frozen acquisition in ascending order; no acquisition counter in payload.";
+CM_ BO_ 1927 "16x12 thermal matrix, block 7/24. Row-major: 16 columns x 12 rows, zero-based row 3, columns 0..7. T_degC = raw + 30. Send all blocks from one frozen acquisition in ascending order; no acquisition counter in payload.";
+CM_ BO_ 1928 "16x12 thermal matrix, block 8/24. Row-major: 16 columns x 12 rows, zero-based row 3, columns 8..15. T_degC = raw + 30. Send all blocks from one frozen acquisition in ascending order; no acquisition counter in payload.";
+CM_ BO_ 1929 "16x12 thermal matrix, block 9/24. Row-major: 16 columns x 12 rows, zero-based row 4, columns 0..7. T_degC = raw + 30. Send all blocks from one frozen acquisition in ascending order; no acquisition counter in payload.";
+CM_ BO_ 1930 "16x12 thermal matrix, block 10/24. Row-major: 16 columns x 12 rows, zero-based row 4, columns 8..15. T_degC = raw + 30. Send all blocks from one frozen acquisition in ascending order; no acquisition counter in payload.";
+CM_ BO_ 1931 "16x12 thermal matrix, block 11/24. Row-major: 16 columns x 12 rows, zero-based row 5, columns 0..7. T_degC = raw + 30. Send all blocks from one frozen acquisition in ascending order; no acquisition counter in payload.";
+CM_ BO_ 1932 "16x12 thermal matrix, block 12/24. Row-major: 16 columns x 12 rows, zero-based row 5, columns 8..15. T_degC = raw + 30. Send all blocks from one frozen acquisition in ascending order; no acquisition counter in payload.";
+CM_ BO_ 1933 "16x12 thermal matrix, block 13/24. Row-major: 16 columns x 12 rows, zero-based row 6, columns 0..7. T_degC = raw + 30. Send all blocks from one frozen acquisition in ascending order; no acquisition counter in payload.";
+CM_ BO_ 1934 "16x12 thermal matrix, block 14/24. Row-major: 16 columns x 12 rows, zero-based row 6, columns 8..15. T_degC = raw + 30. Send all blocks from one frozen acquisition in ascending order; no acquisition counter in payload.";
+CM_ BO_ 1935 "16x12 thermal matrix, block 15/24. Row-major: 16 columns x 12 rows, zero-based row 7, columns 0..7. T_degC = raw + 30. Send all blocks from one frozen acquisition in ascending order; no acquisition counter in payload.";
+CM_ BO_ 1936 "16x12 thermal matrix, block 16/24. Row-major: 16 columns x 12 rows, zero-based row 7, columns 8..15. T_degC = raw + 30. Send all blocks from one frozen acquisition in ascending order; no acquisition counter in payload.";
+CM_ BO_ 1937 "16x12 thermal matrix, block 17/24. Row-major: 16 columns x 12 rows, zero-based row 8, columns 0..7. T_degC = raw + 30. Send all blocks from one frozen acquisition in ascending order; no acquisition counter in payload.";
+CM_ BO_ 1938 "16x12 thermal matrix, block 18/24. Row-major: 16 columns x 12 rows, zero-based row 8, columns 8..15. T_degC = raw + 30. Send all blocks from one frozen acquisition in ascending order; no acquisition counter in payload.";
+CM_ BO_ 1939 "16x12 thermal matrix, block 19/24. Row-major: 16 columns x 12 rows, zero-based row 9, columns 0..7. T_degC = raw + 30. Send all blocks from one frozen acquisition in ascending order; no acquisition counter in payload.";
+CM_ BO_ 1940 "16x12 thermal matrix, block 20/24. Row-major: 16 columns x 12 rows, zero-based row 9, columns 8..15. T_degC = raw + 30. Send all blocks from one frozen acquisition in ascending order; no acquisition counter in payload.";
+CM_ BO_ 1941 "16x12 thermal matrix, block 21/24. Row-major: 16 columns x 12 rows, zero-based row 10, columns 0..7. T_degC = raw + 30. Send all blocks from one frozen acquisition in ascending order; no acquisition counter in payload.";
+CM_ BO_ 1942 "16x12 thermal matrix, block 22/24. Row-major: 16 columns x 12 rows, zero-based row 10, columns 8..15. T_degC = raw + 30. Send all blocks from one frozen acquisition in ascending order; no acquisition counter in payload.";
+CM_ BO_ 1943 "16x12 thermal matrix, block 23/24. Row-major: 16 columns x 12 rows, zero-based row 11, columns 0..7. T_degC = raw + 30. Send all blocks from one frozen acquisition in ascending order; no acquisition counter in payload.";
+CM_ BO_ 1944 "16x12 thermal matrix, block 24/24. Row-major: 16 columns x 12 rows, zero-based row 11, columns 8..15. T_degC = raw + 30. Send all blocks from one frozen acquisition in ascending order; no acquisition counter in payload.";
 CM_ BO_ 1092 "0x444 - INV1 (left) temperatures from HV500 inverter";
 CM_ SG_ 1092 INV1_TempInverter "Inverter semiconductor temperature";
 CM_ SG_ 1092 INV1_TempMotor "Motor temperature measured by the inverter";
