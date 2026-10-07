@@ -101,7 +101,7 @@ jobs:
       - name: Build ROS2 workspace
         run: |
           source /opt/ros/jazzy/setup.bash
-          source install/lart_msgs/local_setup.bash
+          source install/lart_msgs/share/lart_msgs/package.bash
           export CCACHE_DIR="$HOME/.cache/ccache"
           ccache --max-size=500M
           ccache --zero-stats
