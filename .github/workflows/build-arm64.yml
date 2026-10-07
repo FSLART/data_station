@@ -46,32 +46,90 @@ jobs:
             python3-colcon-common-extensions \
             build-essential \
             cmake \
+            ccache \
             pkg-config \
             libsdl2-dev
           sudo chown -R "$(id -u):$(id -g)" /var/cache/apt/archives
 
-      - name: Cache colcon build
+      - name: Compute build cache keys
+        id: cache-keys
+        run: |
+          toolchain=$(dpkg-query -W -f='${binary:Package}=${Version}\n' | sort | sha256sum | cut -d ' ' -f1)
+          echo "prefix=arm64-jazzy-v2-${{ hashFiles('.github/workflows/build-arm64.yml') }}-${toolchain}" >> "$GITHUB_OUTPUT"
+          echo "messages=$(git -C src/lart_msgs rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      # Never restore a cache from different message definitions.
+      - name: Cache lart_msgs
+        id: messages-cache
         uses: actions/cache@v4
         with:
           path: |
-            build
-            install
-            log
-          key: colcon-arm64-${{ hashFiles('src/**/CMakeLists.txt', 'src/**/package.xml', 'src/**/*.cpp', 'src/**/*.hpp', 'src/**/*.h', 'src/**/*.py') }}
+            build/lart_msgs
+            install/lart_msgs
+          key: msgs-${{ steps.cache-keys.outputs.prefix }}-${{ steps.cache-keys.outputs.messages }}
+
+      - name: Build lart_msgs from scratch
+        if: steps.messages-cache.outputs.cache-hit != 'true'
+        run: |
+          source /opt/ros/jazzy/setup.bash
+          rm -rf build/lart_msgs install/lart_msgs
+          colcon build --base-paths src --packages-select lart_msgs --parallel-workers "$(nproc)"
+
+      # Content-based compiler caching keeps unchanged LVGL code reusable even
+      # when a message change requires fresh consumer build directories.
+      - name: Cache dashboard compiler output
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ccache
+          key: ccache-${{ steps.cache-keys.outputs.prefix }}-${{ github.sha }}
           restore-keys: |
-            colcon-arm64-
+            ccache-${{ steps.cache-keys.outputs.prefix }}-
+
+      # Keep the message package separate; all consumers share its cache boundary.
+      - name: Cache other ROS2 packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            build/*
+            !build/lart_msgs/**
+            install/*
+            !install/lart_msgs/**
+          key: colcon-${{ steps.cache-keys.outputs.prefix }}-${{ steps.cache-keys.outputs.messages }}-${{ hashFiles('src/**', 'LART_Car_Dashboard_v1/src/ui/**', '!src/lart_msgs/**') }}
+          restore-keys: |
+            colcon-${{ steps.cache-keys.outputs.prefix }}-${{ steps.cache-keys.outputs.messages }}-
 
       - name: Build ROS2 workspace
         run: |
           source /opt/ros/jazzy/setup.bash
-          colcon build --parallel-workers $(nproc)
+          source install/lart_msgs/local_setup.bash
+          export CCACHE_DIR="$HOME/.cache/ccache"
+          ccache --max-size=500M
+          ccache --zero-stats
+          colcon build --packages-skip lart_msgs --parallel-workers "$(nproc)" \
+            --cmake-args -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          ccache --show-stats
+
+      - name: Cache dashboard build
+        uses: actions/cache@v4
+        with:
+          path: LART_Car_Dashboard_v1/build/ui-build
+          key: ui-${{ steps.cache-keys.outputs.prefix }}-${{ steps.cache-keys.outputs.messages }}-${{ hashFiles('LART_Car_Dashboard_v1/src/ui/**') }}
+          restore-keys: |
+            ui-${{ steps.cache-keys.outputs.prefix }}-${{ steps.cache-keys.outputs.messages }}-
 
       - name: Build dashboard UI
         run: |
           source /opt/ros/jazzy/setup.bash
           source install/setup.bash
-          cmake -S LART_Car_Dashboard_v1/src/ui -B LART_Car_Dashboard_v1/build/ui-build -DCMAKE_BUILD_TYPE=Release
-          cmake --build LART_Car_Dashboard_v1/build/ui-build --parallel $(nproc)
+          export CCACHE_DIR="$HOME/.cache/ccache"
+          ccache --max-size=500M
+          ccache --zero-stats
+          cmake -S LART_Car_Dashboard_v1/src/ui -B LART_Car_Dashboard_v1/build/ui-build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_COMPILER_LAUNCHER=ccache \
+            -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          cmake --build LART_Car_Dashboard_v1/build/ui-build --parallel "$(nproc)"
+          ccache --show-stats
 
       - name: Package artifact
         run: tar czf lart-dashboard-arm64.tar.gz install LART_Car_Dashboard_v1/build/ui-build
