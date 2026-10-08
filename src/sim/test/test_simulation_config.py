@@ -49,6 +49,17 @@ class SimulationConfigTest(unittest.TestCase):
             value = _make_signal_value(sig, seconds, config=self.config)
             self.assertTrue(50 <= value <= 60)
 
+    def test_inverter_limit_flags_stay_off_during_normal_driving(self):
+        for name in ('INV1_MISC', 'INV2_MISC'):
+            msg = self.db.get_message_by_name(name)
+            flags = [sig.name for sig in msg.signals if sig.name.lower().endswith('_limit')]
+            self.assertTrue(flags)
+            for seconds in (0, 10, 20, 50, 65, 79):
+                values = {sig.name: _make_signal_value(sig, seconds, config=self.config) for sig in msg.signals}
+                decoded = msg.decode(msg.encode(values), decode_choices=False)
+                for flag in flags:
+                    self.assertEqual(decoded[flag], 0, f'{name}/{flag} at {seconds}s')
+
     def test_failed_save_keeps_previous_file(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / 'settings.cfg'

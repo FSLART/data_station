@@ -13,6 +13,7 @@ import time
 from .admin_controls import (ControlConfig, control_value, discrete_values,
                              encodable_range, scenario_values, speed_to_erpm)
 from .simulation_config import config_path, load_config, save_config
+from .fault_tests import FAULT_PRESETS, FAULT_BUSES
 
 
 def ros_name(raw):
@@ -355,14 +356,49 @@ class Backend:
         self.set(name, publish_hz=1000 / default_ms, message_intervals_ms=json.dumps(intervals))
         self.save_settings(name)
 
-    def find_signal(self, message, signal_name, required=True):
+    def find_signal(self, message, signal_name, required=True, dbc_stem=None):
         matches = [name for name, p in self.profiles.items() if message in p['validator'].messages
+                   and (dbc_stem is None or Path(p['params']['dbc_path']).stem == dbc_stem)
                    and any(s.name == signal_name for s in p['validator'].messages[message].signals)]
         if len(matches) == 1:
             return matches[0]
         if required:
             raise ValueError(f'Need exactly one simulator for {message}/{signal_name}; found {len(matches)}')
         return None
+
+    def fault(self, presets, transport):
+        self.idle_required()
+        if not presets:
+            raise ValueError('Select at least one error preset')
+        targets = {}
+        for preset in presets:
+            if preset not in FAULT_PRESETS:
+                raise ValueError(f'Unknown error preset: {preset}')
+            for message, sig, value in FAULT_PRESETS[preset][1]:
+                name = self.find_signal(message, sig, dbc_stem=FAULT_BUSES[message])
+                key = (name, message, sig)
+                if key in targets and targets[key]['value'] != value:
+                    raise ValueError(f'Conflicting presets for {message}/{sig}; select one condition')
+                targets[key] = {'mode': 'fixed', 'value': value}
+        prior, updates = {}, {}
+        for (name, message, sig), control in targets.items():
+            if name not in prior:
+                prior[name] = self.read(name, ['enabled', 'signal_controls'])
+                updates[name] = json.loads(prior[name]['signal_controls'])
+            updates[name].setdefault(message, {})[sig] = control
+        for name, controls in updates.items():
+            self.profiles[name]['validator'].validate(json.dumps(controls), '{}', 10)
+        if transport == 'Direct ROS':
+            self.begin_direct([(*key, control) for key, control in targets.items()])
+        else:
+            self.session = {'kind': 'can', 'restore': prior, 'started': time.monotonic()}
+            try:
+                for name, controls in updates.items():
+                    self.set(name, enabled=True, signal_controls=json.dumps(controls))
+            except Exception:
+                self.end_test()
+                raise
+        self.event('status', 'Error test active: ' + ', '.join(presets) + '; Clear errors restores prior settings')
 
     def mission(self, signal_name, value):
         self.idle_required()
@@ -562,12 +598,18 @@ class Panel:
         self.edit_widgets.append(self.transport_combo)
         self.button(scenario, 'Run', 'scenario', lambda: (self.scenario_name.get(), float(self.speed.get()), float(self.step.get()), self.transport.get()))
         self.button(scenario, 'Cancel / end test', 'end_test', editable=False)
-        filters = ttk.Frame(root, padding=8)
+        self.tabs = ttk.Notebook(root)
+        self.tabs.pack(fill='both', expand=True, padx=8)
+        signals = ttk.Frame(self.tabs)
+        errors = ttk.Frame(self.tabs)
+        self.tabs.add(signals, text='Signals')
+        self.tabs.add(errors, text='Error tests')
+        filters = ttk.Frame(signals, padding=8)
         filters.pack(fill='x')
         ttk.Label(filters, text='Search signals').pack(side='left')
         ttk.Entry(filters, textvariable=self.search).pack(side='left', fill='x', expand=True, padx=8)
         self.search.trace_add('write', lambda *_: self.populate())
-        listing = ttk.Frame(root)
+        listing = ttk.Frame(signals)
         listing.pack(fill='both', expand=True, padx=8)
         columns = ('bus', 'message', 'signal', 'value', 'unit', 'range', 'mode')
         self.tree = ttk.Treeview(listing, columns=columns, show='headings', selectmode='browse')
@@ -580,8 +622,8 @@ class Panel:
         scroll.pack(side='right', fill='y')
         self.tree.bind('<<TreeviewSelect>>', self.selected)
         self.details = tk.StringVar(value='Select a signal to edit. Values use DBC physical units.')
-        ttk.Label(root, textvariable=self.details, wraplength=1080, padding=8).pack(anchor='w')
-        editor = ttk.Frame(root, padding=8)
+        ttk.Label(signals, textvariable=self.details, wraplength=1080, padding=8).pack(anchor='w')
+        editor = ttk.Frame(signals, padding=8)
         editor.pack(fill='x')
         mode_box = ttk.Combobox(editor, textvariable=self.mode, values=['auto', 'fixed', 'sweep', 'random'], state='readonly', width=8)
         mode_box.pack(side='left')
@@ -592,23 +634,66 @@ class Panel:
         self.period = self.entry(editor, 'Cycle seconds', '5', 7)
         self.button(editor, 'Apply signal', 'apply', self.apply_args)
         self.button(editor, 'Reset Auto', 'apply', lambda: (*self.selection(), {'mode': 'auto'}, 'CAN simulation'))
-        timing = ttk.Frame(root, padding=8)
+        timing = ttk.Frame(signals, padding=8)
         timing.pack(fill='x')
         self.default_ms = self.entry(timing, 'Bus default ms', '100', 8)
         self.message_ms = self.entry(timing, 'Message ms (blank = default)', '', 8)
         self.button(timing, 'Apply timing', 'timing', self.timing_args)
         self.button(timing, 'Save cfg', 'save_settings')
         self.button(timing, 'Load cfg', 'load_settings')
+        ttk.Label(errors, text='Select one or several conditions with Ctrl/Shift-click. Uses the transport selector above. '
+                  'Apply holds the faults until Clear errors; conflicting conditions are rejected. '
+                  'Tests do not change the saved cfg file.', wraplength=1080, padding=8).pack(anchor='w')
+        listing = ttk.Frame(errors)
+        listing.pack(fill='both', expand=True, padx=8)
+        self.fault_tree = ttk.Treeview(listing, columns=('preset', 'effect'), show='headings', selectmode='extended')
+        self.fault_tree.heading('preset', text='Error preset')
+        self.fault_tree.heading('effect', text='Test values / expected effect')
+        self.fault_tree.column('preset', width=240, minwidth=180)
+        self.fault_tree.column('effect', width=820, minwidth=400)
+        scroll = ttk.Scrollbar(listing, orient='vertical', command=self.fault_tree.yview)
+        self.fault_tree.configure(yscrollcommand=scroll.set)
+        self.fault_tree.pack(side='left', fill='both', expand=True)
+        scroll.pack(side='right', fill='y')
+        for label, (description, _) in FAULT_PRESETS.items():
+            self.fault_tree.insert('', 'end', iid=label, values=(label, description))
+        self.fault_preview = tk.Text(errors, height=6, wrap='word', state='disabled')
+        self.fault_preview.pack(fill='x', padx=8, pady=5)
+        self.fault_tree.bind('<<TreeviewSelect>>', self.selected_faults)
+        actions = ttk.Frame(errors, padding=8)
+        actions.pack(fill='x')
+        self.button(actions, 'Apply selected errors', 'fault', self.fault_args)
+        self.button(actions, 'Clear errors / restore previous', 'end_test', editable=False)
+        self.fault_tree.selection_set('Motor overtemperature')
         ttk.Label(root, textvariable=self.status, padding=8, wraplength=1080).pack(fill='x')
         root.protocol('WM_DELETE_WINDOW', self.close)
         root.after(100, self.poll)
+
+    def fault_args(self):
+        selected = list(self.fault_tree.selection())
+        if not selected:
+            raise ValueError('Select at least one error preset')
+        return selected, self.transport.get()
+
+    def selected_faults(self, _=None):
+        lines = []
+        for label in self.fault_tree.selection():
+            description, edits = FAULT_PRESETS[label]
+            lines.append(f'{label}: {description}')
+            lines.extend(f'  {FAULT_BUSES[message]} / {message} / {sig} = {value:g}'
+                         for message, sig, value in edits)
+        self.fault_preview.configure(state='normal')
+        self.fault_preview.delete('1.0', 'end')
+        self.fault_preview.insert('1.0', '\n'.join(lines))
+        self.fault_preview.configure(state='disabled')
 
     def help(self):
         from tkinter.messagebox import showinfo
         showinfo('CAN admin help',
                  'Start / attach connects to the existing DBC simulation stack.\n'
                  'Select a signal to edit its physical value or generated range.\n'
-                 'Timing uses milliseconds; blank message timing uses the bus default.\n\n'
+                 'Timing uses milliseconds; blank message timing uses the bus default.\n'
+                 'Error tests holds selected fault presets until Clear errors restores prior settings.\n\n'
                  'CAN simulation exercises the full CAN → ROS path.\n'
                  'Direct ROS preserves other message fields and pauses affected buses.\n'
                  'Cancel / end test restores temporary settings.\n\n'

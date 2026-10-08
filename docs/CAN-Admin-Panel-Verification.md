@@ -1,9 +1,15 @@
 # CAN admin panel verification
 
-The Python panel and simulator controls passed 30 focused unittest checks,
+The Python panel and simulator controls passed 37 focused unittest checks,
 including persistent ranges/timing, rejected invalid saved ranges, atomic saves,
 temporary scenario isolation, drive cycle phases, speed/ERPM agreement, IVT
 mV/mA units, and configured temperature bands.
+The Error tests checks validate all 15 presets against the current DBCs,
+combined faults, conflicting/missing targets, rollback on update failure,
+restoration of prior controls and pause state, and direct ROS delegation.
+Virtual CAN checks decoded injected inverter fault code 1 and SOC 10% and
+confirmed restoration. A virtual-display Tk test exercised the separate tab,
+multi-selection, signal preview, Apply, and Clear commands.
 The local launcher check also passed. The dashboard `ui_runner` CMake target
 rebuilt successfully with the minimized-window startup change. The full repository run reported
 92 passed and four failures in unchanged code:

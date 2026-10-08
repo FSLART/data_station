@@ -213,7 +213,8 @@ def _make_signal_value(signal: cantools.db.Signal, t: float, mission_override: f
         val = mission_override if mission_override is not None else enc_min
         return _clamp(val, enc_min, enc_max)
 
-    if 'fault' in name_lower or 'error' in name_lower:
+    # Limit flags report derating/fault conditions, not a healthy enabled state.
+    if 'fault' in name_lower or 'error' in name_lower or (signal.length == 1 and name_lower.endswith('_limit')):
         return _clamp(0, enc_min, enc_max)
 
     if name_lower in ('soc_integer', 'soc_float'):

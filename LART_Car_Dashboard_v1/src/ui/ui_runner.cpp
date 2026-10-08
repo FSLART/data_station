@@ -448,10 +448,12 @@ int main(int argc, char **argv) {
             lv_refr_now(g_display);
             lv_area_t area;
             lv_obj_get_coords(obj, &area);
-            // Even overlapping strokes must blend only once at 20% opacity
+            // Active warnings light up; inactive icons blend only once at 20%
             // against the screen's 0x050505 background (allow rounding).
-            const unsigned max_channel = ((warning_color(obj) & 0xff) * LV_OPA_20 +
-                5 * (255 - LV_OPA_20)) / 255 + 2;
+            const unsigned opacity = active(obj) ? LV_OPA_COVER : LV_OPA_20;
+            assert(lv_obj_get_style_opa_layered(obj, LV_PART_MAIN) == opacity);
+            const unsigned max_channel = ((warning_color(obj) & 0xff) * opacity +
+                5 * (255 - opacity)) / 255 + 2;
             unsigned brightest = 0;
             for (int y = area.y1; y < area.y1 + 40; ++y) {
                 for (int x = area.x1 + 31; x < area.x1 + 74; ++x) {
@@ -475,6 +477,22 @@ int main(int argc, char **argv) {
         assert(lv_obj_get_x(objects.gauge_soc_warning) == 572);
         assert(lv_obj_get_x(objects.gauge_lv_warning) == 688);
         assert(lv_obj_has_flag(lv_obj_get_parent(objects.gauge_warning_message), LV_OBJ_FLAG_HIDDEN));
+
+        // Reproduce the admin panel's Low SOC preset with thermal derating.
+        dbc_api.master_soc_accumulator.soc_float = 10;
+        dbc_api.inv1_misc.inv1_motor_temp_limit = 1;
+        ui_tick();
+        assert(active(objects.gauge_soc_warning) && active(objects.gauge_temp_warning));
+        assert(!active(objects.gauge_lv_warning) && !active(objects.gauge_drive_warning));
+        check_uniform_icon_opacity(objects.gauge_soc_warning);
+        check_uniform_icon_opacity(objects.gauge_temp_warning);
+        save_preview(".simulator-errors.bmp");
+        dbc_api.master_soc_accumulator.soc_float = 78;
+        dbc_api.inv1_misc.inv1_motor_temp_limit = 0;
+        ui_tick();
+        assert(!active(objects.gauge_soc_warning) && !active(objects.gauge_temp_warning));
+        check_uniform_icon_opacity(objects.gauge_soc_warning);
+        check_uniform_icon_opacity(objects.gauge_temp_warning);
 
         dbc_api.pdm_lv.lv_voltage_mv = 24.5f;
         dbc_api.master_soc_accumulator.soc_float = 15.0f;
@@ -595,8 +613,8 @@ int main(int argc, char **argv) {
         for (lv_obj_t *obj : {objects.gauge_temp_warning, objects.gauge_drive_warning,
                              objects.gauge_soc_warning, objects.gauge_lv_warning}) {
             const bool fault = obj == objects.gauge_drive_warning;
-            assert(warning_color(obj) == (fault ? 0xff272e : 0xb0b0b0));
-            assert(lv_obj_get_style_opa_layered(obj, LV_PART_MAIN) == (fault ? LV_OPA_COVER : LV_OPA_20));
+            assert(warning_color(obj) == (fault ? 0xff272e : 0xffd32a));
+            assert(lv_obj_get_style_opa_layered(obj, LV_PART_MAIN) == LV_OPA_COVER);
         }
         assert(std::strcmp(lv_label_get_text(objects.gauge_warning_message), "INV2 ERROR 3: GATE DRIVER FAULT") == 0);
         assert(warning_color(objects.gauge_warning_message) == 0xff272e);
@@ -605,7 +623,7 @@ int main(int argc, char **argv) {
         dbc_api.inv2_temperatures.inv2_actual_faultcode = 0;
         ui_tick();
         assert(std::strcmp(lv_label_get_text(objects.gauge_warning_message), "MOTOR TEMPERATURE HIGH") == 0);
-        assert(lv_obj_get_style_text_opa(objects.gauge_warning_message, LV_PART_MAIN) == LV_OPA_20);
+        assert(lv_obj_get_style_text_opa(objects.gauge_warning_message, LV_PART_MAIN) == LV_OPA_COVER);
         save_preview(".temperature.bmp");
         dbc_api.inv1_temperatures.inv1_actual_tempmotor = 67;
         dbc_api.master_soc_accumulator.soc_float = 78;

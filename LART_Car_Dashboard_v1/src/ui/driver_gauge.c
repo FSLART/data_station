@@ -10,7 +10,7 @@
 #define DIAL_MAX_RPM 20000.0f
 #define AMBER 0xffd32a
 #define WARNING_OFF 0x626262
-#define WARNING_ON 0xb0b0b0
+#define WARNING_ON AMBER
 #define WARNING_RED 0xff272e
 
 // Dashboard advisories, not protection limits; tune to the installed hardware.
@@ -155,7 +155,7 @@ static lv_obj_t *warning(lv_obj_t *screen, int x, int kind, const char *label) {
 static void warning_style(lv_obj_t *obj, bool active, bool fault) {
     lv_obj_set_style_text_color(obj,
         lv_color_hex(active ? (fault ? WARNING_RED : WARNING_ON) : WARNING_OFF), 0);
-    lv_obj_set_style_opa_layered(obj, active && fault ? LV_OPA_COVER : LV_OPA_20, 0);
+    lv_obj_set_style_opa_layered(obj, active ? LV_OPA_COVER : LV_OPA_20, 0);
 }
 
 static const char *inverter_fault_description(float code) {
@@ -233,7 +233,7 @@ static void update_warnings(void) {
     lv_obj_set_style_border_opa(warning_banner, opacity, 0);
     lv_obj_set_style_bg_opa(warning_banner, opacity, 0);
     lv_obj_set_style_text_color(objects.gauge_warning_message, lv_color_hex(color), 0);
-    lv_obj_set_style_text_opa(objects.gauge_warning_message, opacity, 0);
+    lv_obj_set_style_text_opa(objects.gauge_warning_message, LV_OPA_COVER, 0);
     if (*message) lv_obj_remove_flag(warning_banner, LV_OBJ_FLAG_HIDDEN);
     else lv_obj_add_flag(warning_banner, LV_OBJ_FLAG_HIDDEN);
 }

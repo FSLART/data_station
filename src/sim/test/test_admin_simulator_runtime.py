@@ -64,6 +64,50 @@ class SimulatorRuntimeTest(unittest.TestCase):
         self.assertTrue(self.set_params(message_intervals_ms='{}').successful)
         self.assertEqual(self.node._timer.timer_period_ns, 100_000_000)
 
+    def test_error_presets_encode_inverter_fault_and_soc_then_restore(self):
+        import queue
+        from sim.admin_panel import Backend
+        from sim.admin_controls import ControlConfig, MessageSchedule
+        db = cantools.database.load_file(ROOT / 'dbc_signals/powertrain_t26.dbc')
+        self.node._db = db
+        self.node._messages = [db.get_message_by_name(name) for name in
+                               ('INV1_Temperatures', 'Master_SOC_Accumulator', 'INV1_MISC', 'INV2_MISC')]
+        self.node._controls = ControlConfig(self.node._messages)
+        self.node._schedule = MessageSchedule([m.name for m in self.node._messages], 100, {})
+        b = Backend.__new__(Backend)
+        b.session, b.events = None, queue.Queue()
+        b.profiles = {'powertrain': {'db': db, 'validator': ControlConfig(db.messages),
+                                    'params': {'dbc_path': 'powertrain_t26.dbc'}}}
+        b.read = lambda name, fields: {field: self.node.get_parameter(field).value for field in fields}
+        def set_values(name, **values):
+            result = self.set_params(**values)
+            if not result.successful:
+                raise ValueError(result.reason)
+        b.set = set_values
+        b.fault(['INV1 drivetrain fault', 'Low SOC', 'Thermal derating'], 'CAN simulation')
+        self.node._tick()
+        values = {}
+        for _ in self.node._messages:
+            frame = self.receiver.recv(.1)
+            self.assertIsNotNone(frame)
+            values.update(db.get_message_by_frame_id(frame.arbitration_id).decode(frame.data, decode_choices=False))
+        self.assertEqual(values['INV1_Actual_FaultCode'], 1)
+        self.assertEqual(values['SOC_Float'], 10)
+        for prefix in ('Motor', 'IGBT', 'Capacitor'):
+            self.assertEqual(values[f'INV1_{prefix}_temp_limit'], 1)
+            self.assertEqual(values[f'INV2_{prefix}_temp_limit'], 0)
+        b.end_test()
+        self.assertEqual(self.node.get_parameter('signal_controls').value, '{}')
+        with patch('sim.can_simulator.time.monotonic', return_value=self.node._schedule.previous + .1):
+            self.node._tick()
+        for _ in self.node._messages:
+            frame = self.receiver.recv(.1)
+            self.assertIsNotNone(frame)
+            decoded = db.get_message_by_frame_id(frame.arbitration_id).decode(frame.data, decode_choices=False)
+            for name, value in decoded.items():
+                if name.lower().endswith('_limit'):
+                    self.assertEqual(value, 0, name)
+
     def test_extended_frame_with_low_id_keeps_dbc_frame_type(self):
         from sim.admin_controls import ControlConfig, MessageSchedule
         message = self.node._db.get_message_by_name('CubeMars_position_loop')

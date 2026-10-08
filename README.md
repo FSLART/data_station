@@ -203,6 +203,21 @@ attaches to the simulation stack automatically.
   an editable step interval (500 ms by default). Speed is converted into inverter
   ERPM using the dashboard's existing gearing and tire dimensions; it does not
   publish the unused `/vehicle/speed_kph` topic.
+- **Error tests** provides 15 temporary presets: motor/inverter/battery over-
+  and undertemperature, either inverter's drivetrain fault, thermal derating,
+  low LV voltage, low SOC, low cell voltage, overcurrent, steering actuator
+  fault, and emergency/shutdown. Ctrl/Shift-click to combine conditions, review
+  their exact DBC values, then **Apply selected errors**. The transport selector
+  above chooses CAN simulation or Direct ROS. Conflicting presets and missing
+  target buses are rejected before updates. **Clear errors / restore previous**
+  restores prior signal controls and bus pause states; closing also restores
+  them. Fault tests never save to the cfg file.
+  Motor/controller cold tests inject −20 °C telemetry; Driver Gauge currently
+  has no cold advisory. Battery cold uses 0 °C and BMS undertemperature code 3
+  because the battery temperature fields are unsigned. Low LV/SOC presets
+  inject 22 V/10%, below the gauge's 24.5 V/15% advisory thresholds. Inverter
+  presets inject nonzero code 1; the preview describes the condition without
+  assuming an undocumented DBC fault-code label.
 - **CAN simulation** tests the full simulator → CAN bridge → current ROS topics
   path. **Direct ROS** edits current aggregated `/data/*`, `/pwt/*`, `/can/*`
   messages, preserving other fields. An initial message is required. Affected
