@@ -12,6 +12,7 @@ import time
 
 from .admin_controls import (ControlConfig, control_value, discrete_values,
                              encodable_range, scenario_values, speed_to_erpm)
+from .simulation_config import config_path, load_config, save_config
 
 
 def ros_name(raw):
@@ -48,6 +49,7 @@ class Backend:
         self.record_path = ''
         self.session = None
         self.closing = False
+        self.config_file = config_path()
         self.thread = threading.Thread(target=self.run, daemon=True)
         self.thread.start()
 
@@ -201,6 +203,7 @@ class Backend:
         names = simulator_names(self.node.get_node_names_and_namespaces())
         fields = ['dbc_path', 'can_interface', 'enabled', 'publish_hz', 'signal_controls', 'message_intervals_ms']
         changed = False
+        restore_errors = []
         for removed in set(self.profiles) - set(names):
             profile = self.profiles.pop(removed)
             if profile.get('bus'):
@@ -238,16 +241,55 @@ class Backend:
                 except (ImportError, AttributeError, ModuleNotFoundError):
                     pass
             self.profiles[name] = profile
+            try:
+                self.load_settings(name)
+            except (ValueError, OSError, KeyError) as exc:
+                restore_errors.append(f'{name}: {exc}')
             changed = True
         if changed:
             self.event('catalog', {n: {'db': p['db'], 'params': dict(p['params']),
                                      'topics': dict(p['topics'])} for n, p in self.profiles.items()})
             self.event('status', f'Connected to {len(self.profiles)} simulator(s), ROS domain {os.environ["ROS_DOMAIN_ID"]}')
+            if restore_errors:
+                self.event('status', 'Saved settings were not restored: ' + '; '.join(restore_errors))
         self.event('params', {n: dict(p['params']) for n, p in self.profiles.items()})
 
     def idle_required(self):
         if self.session:
             raise ValueError('End or cancel the active test before editing simulation controls')
+
+    def save_settings(self, name=None):
+        self.idle_required()
+        data = load_config(self.config_file)
+        for target in ([name] if name else list(self.profiles)):
+            params = self.read(target, ['signal_controls', 'message_intervals_ms', 'publish_hz'])
+            self.profiles[target]['validator'].validate(params['signal_controls'], params['message_intervals_ms'], params['publish_hz'])
+            data.setdefault('simulators', {})[target] = {
+                'dbc_file': Path(self.profiles[target]['params']['dbc_path']).name,
+                'signal_controls': json.loads(params['signal_controls']),
+                'message_intervals_ms': json.loads(params['message_intervals_ms']),
+                'publish_hz': params['publish_hz'],
+            }
+        save_config(data, self.config_file)
+        self.event('status', f'Settings saved to {self.config_file}')
+
+    def load_settings(self, name=None):
+        self.idle_required()
+        data = load_config(self.config_file)
+        updates = {}
+        for target in ([name] if name else list(self.profiles)):
+            saved = data.get('simulators', {}).get(target)
+            if saved is None:
+                continue
+            if saved['dbc_file'] != Path(self.profiles[target]['params']['dbc_path']).name:
+                raise ValueError(f'{target}: saved DBC does not match the current simulator')
+            controls, intervals = json.dumps(saved['signal_controls']), json.dumps(saved['message_intervals_ms'])
+            self.profiles[target]['validator'].validate(controls, intervals, saved['publish_hz'])
+            updates[target] = dict(signal_controls=controls, message_intervals_ms=intervals, publish_hz=float(saved['publish_hz']))
+        for target, values in updates.items():
+            self.set(target, **values)
+        if name is None:
+            self.event('status', f'Loaded saved controls from {self.config_file}; restart simulators for edited driving defaults')
 
     def start_stack(self):
         self.idle_required()
@@ -299,7 +341,7 @@ class Backend:
             entries = json.loads(values['signal_controls'])
             entries.setdefault(message, {})[signal_name] = control
             self.set(name, signal_controls=json.dumps(entries))
-            self.event('status', f'Applied {control["mode"]}: {message}/{signal_name}')
+            self.save_settings(name)
 
     def timing(self, name, message, default_ms, message_ms):
         self.idle_required()
@@ -311,7 +353,7 @@ class Backend:
         else:
             intervals[message] = message_ms
         self.set(name, publish_hz=1000 / default_ms, message_intervals_ms=json.dumps(intervals))
-        self.event('status', 'Message timing updated')
+        self.save_settings(name)
 
     def find_signal(self, message, signal_name, required=True):
         matches = [name for name, p in self.profiles.items() if message in p['validator'].messages
@@ -555,6 +597,8 @@ class Panel:
         self.default_ms = self.entry(timing, 'Bus default ms', '100', 8)
         self.message_ms = self.entry(timing, 'Message ms (blank = default)', '', 8)
         self.button(timing, 'Apply timing', 'timing', self.timing_args)
+        self.button(timing, 'Save cfg', 'save_settings')
+        self.button(timing, 'Load cfg', 'load_settings')
         ttk.Label(root, textvariable=self.status, padding=8, wraplength=1080).pack(fill='x')
         root.protocol('WM_DELETE_WINDOW', self.close)
         root.after(100, self.poll)

@@ -160,6 +160,19 @@ For DBC changes, follow the [DBC update guide](docs/DBC-Update-Guide.md) to vali
 
 ## Python CAN admin panel
 
+Once the workspace is built, start from any directory with:
+
+```bash
+python3 /home/sintra/dev/data_station/start_admin_panel.py
+```
+
+The launcher sources ROS Jazzy and this workspace automatically, preserving
+`ROS_DOMAIN_ID` or defaulting to `42`. It checks the virtual CAN interfaces first
+and runs the existing setup script if they are missing or down. Run it in a
+terminal so you can enter your sudo password when prompted. Setup failure stops
+the launcher before any ROS nodes start. Interfaces may need setup again after
+a reboot.
+
 Build once after updating the workspace, then open the desktop panel:
 
 ```bash
@@ -211,6 +224,28 @@ Live simulator parameters are `enabled`, `publish_hz`, `signal_controls`, and
 {"INV1_ERPM_DUTY_VOLTAGE": 50}
 ```
 
-Controls remain in memory for the simulator session. Existing simulators must
+Applied CAN signal controls (including ranges, modes, and sweep periods) and
+message timings are saved automatically in `config/can_simulator.cfg`, a JSON
+file. The panel restores them when it discovers the same simulator and DBC on
+the next run. **Save cfg** also captures current controls; **Load cfg** reapplies
+them. Temporary scenarios, direct ROS tests, pause state, and precharge shortcuts
+are not saved. Saves replace the file atomically.
+
+The file's `ranges` section sets normal Auto telemetry bands: speed 0–80 km/h,
+pack voltage 500–600 V, cell voltage 3.5–4.2 V, LV voltage 24–28 V, battery
+temperature 25–40 °C, inverter temperature 35–55 °C, motor temperature 40–70 °C,
+current −40–180 A, brake pressure 0–60 bar, and SOC 70–95%.
+These are editable dashboard test defaults. DBC encoding limits still apply.
+`drive_cycle` points are `[seconds, fraction_of_maximum_speed]`: the default
+80-second cycle stops, accelerates to 40 km/h, cruises, accelerates to 80 km/h,
+cruises, brakes to a stop, and waits before repeating. Speed and inverter ERPM
+share the dashboard's conversion; pedals/current follow the driving phase and
+normal fault codes remain zero. IVT voltage/current values use their DBC mV/mA
+units. Other unclassified signals keep their existing generators.
+
+Restart the simulators after editing normal ranges or the drive cycle. Explicit
+Fixed/Sweep/Random controls take precedence over Auto defaults; reset a signal
+to Auto to use the configured normal sequence. `LART_SIM_CONFIG` selects an
+alternative configuration file. Existing simulators must
 be restarted after rebuilding to expose the new parameters. If a single DBC
 launch is used, set up its `vcan0` interface instead.

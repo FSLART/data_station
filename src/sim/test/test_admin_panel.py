@@ -71,6 +71,55 @@ class TemporaryControlsTest(unittest.TestCase):
         self.assertEqual(params['precharge_state_value'], 19.0)
         self.assertNotIn('precharge_state', json.loads(params['signal_controls'])['Master_PreCharge_ID_1'])
 
+    def test_ranges_and_intervals_reload_without_saving_temporary_scenarios(self):
+        import json
+        import tempfile
+        import time
+        from pathlib import Path
+        from sim.simulation_config import load_config, save_config
+        name = '/can_simulator_powertrain'
+        backend = self.backend
+        params = backend.profiles[name]['params']
+        params.update(dbc_path='powertrain_t26.dbc', message_intervals_ms='{}', publish_hz=10.0)
+        with tempfile.TemporaryDirectory() as directory:
+            backend.config_file = Path(directory) / 'test.cfg'
+            save_config(load_config(), backend.config_file)
+            control = {'mode': 'sweep', 'min': 40, 'max': 65, 'period': 60}
+            backend.apply(name, 'INV1_Temperatures', 'INV1_Actual_TempMotor', control, 'CAN simulation')
+            backend.timing(name, 'INV1_Temperatures', 100, 250)
+            saved = backend.config_file.read_text()
+            params.update(signal_controls='{}', message_intervals_ms='{}', publish_hz=20.0)
+            backend.load_settings(name)
+            self.assertEqual(json.loads(params['signal_controls'])['INV1_Temperatures']['INV1_Actual_TempMotor'], control)
+            self.assertEqual(json.loads(params['message_intervals_ms'])['INV1_Temperatures'], 250)
+            self.assertEqual(params['publish_hz'], 10)
+            backend.scenario('Custom', 30, 500, 'CAN simulation')
+            backend.tick_session(time.monotonic())
+            with self.assertRaises(ValueError):
+                backend.save_settings()
+            backend.end_test()
+            self.assertEqual(backend.config_file.read_text(), saved)
+
+    def test_invalid_saved_range_is_rejected_before_runtime_changes(self):
+        import tempfile
+        from pathlib import Path
+        from sim.simulation_config import load_config, save_config
+        name = '/can_simulator_powertrain'
+        backend = self.backend
+        params = backend.profiles[name]['params']
+        params.update(dbc_path='powertrain_t26.dbc', message_intervals_ms='{}', publish_hz=10.0)
+        prior = dict(params)
+        with tempfile.TemporaryDirectory() as directory:
+            backend.config_file = Path(directory) / 'test.cfg'
+            data = load_config()
+            data['simulators'] = {name: {'dbc_file': 'powertrain_t26.dbc', 'publish_hz': 10,
+                'message_intervals_ms': {}, 'signal_controls': {'INV1_Temperatures': {
+                    'INV1_Actual_TempMotor': {'mode': 'random', 'min': 60, 'max': 20}}}}}
+            save_config(data, backend.config_file)
+            with self.assertRaises(ValueError):
+                backend.load_settings(name)
+            self.assertEqual(params, prior)
+
 
 if __name__ == '__main__':
     unittest.main()
