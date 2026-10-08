@@ -157,3 +157,110 @@ ros2 launch lart_bringup car.launch.py
 ```
 
 For DBC changes, follow the [DBC update guide](docs/DBC-Update-Guide.md) to validate, regenerate, rebuild, and update consumers.
+
+## Python CAN admin panel
+
+Once the workspace is built, start from any directory with:
+
+```bash
+python3 /home/sintra/dev/data_station/start_admin_panel.py
+```
+
+The launcher sources ROS Jazzy and this workspace automatically, preserving
+`ROS_DOMAIN_ID` or defaulting to `42`. It checks the virtual CAN interfaces first
+and runs the existing setup script if they are missing or down. Run it in a
+terminal so you can enter your sudo password when prompted. Setup failure stops
+the launcher before any ROS nodes start. Interfaces may need setup again after
+a reboot.
+
+Build once after updating the workspace, then open the desktop panel:
+
+```bash
+source /opt/ros/jazzy/setup.bash
+colcon build --symlink-install --packages-select sim lart_bringup
+source install/setup.bash
+export ROS_DOMAIN_ID="${ROS_DOMAIN_ID:-42}"
+ros2 run sim admin_panel
+```
+
+Tkinter is required (`sudo apt install python3-tk` if missing). The panel uses
+existing virtual CAN interfaces; set them up once with
+`sudo ./scripts/setup_vcan_interfaces.sh vcan_data vcan_pwt vcan_auto`.
+Start the dashboard separately with the same ROS domain.
+`LART_Car_Dashboard_v1/start_local.sh` opens it minimized in a normal window
+and leaves simulation startup to the Python panel. Opening the panel starts or
+attaches to the simulation stack automatically.
+
+- **Start / attach** starts `dbc_sim.launch.py` or connects to its existing nodes.
+  **Pause/Resume** controls one bus or all buses. **Stop owned stack** only stops
+  a launch started by this panel.
+- Select a signal, choose **Auto**, **Fixed**, **Sweep**, or **Random**, and apply.
+  Values and min/max use DBC physical units. Sweep duration is a complete
+  minimum → maximum → minimum cycle. Discrete choices and multiplexer branches
+  support fixed/random valid values. Inactive branch values appear when selected
+  by the multiplexer. Blank message timing restores the bus default.
+- The scenario controls reproduce the shell test menu's speed sequences, with
+  an editable step interval (500 ms by default). Speed is converted into inverter
+  ERPM using the dashboard's existing gearing and tire dimensions; it does not
+  publish the unused `/vehicle/speed_kph` topic.
+- **Error tests** provides 15 temporary presets: motor/inverter/battery over-
+  and undertemperature, either inverter's drivetrain fault, thermal derating,
+  low LV voltage, low SOC, low cell voltage, overcurrent, steering actuator
+  fault, and emergency/shutdown. Ctrl/Shift-click to combine conditions, review
+  their exact DBC values, then **Apply selected errors**. The transport selector
+  above chooses CAN simulation or Direct ROS. Conflicting presets and missing
+  target buses are rejected before updates. **Clear errors / restore previous**
+  restores prior signal controls and bus pause states; closing also restores
+  them. Fault tests never save to the cfg file.
+  Motor/controller cold tests inject −20 °C telemetry; Driver Gauge currently
+  has no cold advisory. Battery cold uses 0 °C and BMS undertemperature code 3
+  because the battery temperature fields are unsigned. Low LV/SOC presets
+  inject 22 V/10%, below the gauge's 24.5 V/15% advisory thresholds. Inverter
+  presets inject nonzero code 1; the preview describes the condition without
+  assuming an undocumented DBC fault-code label.
+- **CAN simulation** tests the full simulator → CAN bridge → current ROS topics
+  path. **Direct ROS** edits current aggregated `/data/*`, `/pwt/*`, `/can/*`
+  messages, preserving other fields. An initial message is required. Affected
+  simulator buses pause during direct tests; **Cancel / end test** restores
+  their prior state. CAN scenarios restore prior controls on completion/cancel.
+- Mission selectors and **HV ON sequence** use the existing simulator parameters.
+  Screen buttons select the three production screens. **Record / stop bag** uses
+  `BAG_DIR` (default `~/bags`) and `BAG_RECORD_REGEX` from the shell test menu.
+  Closing the panel ends temporary tests and finalizes recordings it started.
+
+Live simulator parameters are `enabled`, `publish_hz`, `signal_controls`, and
+`message_intervals_ms`. The latter two are JSON strings, for example:
+
+```json
+{"INV1_ERPM_DUTY_VOLTAGE": {"INV1_Actual_ERPM": {"mode": "fixed", "value": 20000}}}
+```
+
+```json
+{"INV1_ERPM_DUTY_VOLTAGE": 50}
+```
+
+Applied CAN signal controls (including ranges, modes, and sweep periods) and
+message timings are saved automatically in `config/can_simulator.cfg`, a JSON
+file. The panel restores them when it discovers the same simulator and DBC on
+the next run. **Save cfg** also captures current controls; **Load cfg** reapplies
+them. Temporary scenarios, direct ROS tests, pause state, and precharge shortcuts
+are not saved. Saves replace the file atomically.
+
+The file's `ranges` section sets normal Auto telemetry bands: speed 0–80 km/h,
+pack voltage 500–600 V, cell voltage 3.5–4.2 V, LV voltage 24–28 V, battery
+temperature 25–40 °C, inverter temperature 35–55 °C, motor temperature 40–70 °C,
+current −40–180 A, brake pressure 0–60 bar, and SOC 70–95%.
+These are editable dashboard test defaults. DBC encoding limits still apply.
+`drive_cycle` points are `[seconds, fraction_of_maximum_speed]`: the default
+80-second cycle stops, accelerates to 40 km/h, cruises, accelerates to 80 km/h,
+cruises, brakes to a stop, and waits before repeating. Speed and inverter ERPM
+share the dashboard's conversion; pedals/current follow the driving phase and
+normal fault codes remain zero. IVT voltage/current values use their DBC mV/mA
+units. Other unclassified signals keep their existing generators.
+
+Restart the simulators after editing normal ranges or the drive cycle. Explicit
+Fixed/Sweep/Random controls take precedence over Auto defaults; reset a signal
+to Auto to use the configured normal sequence. `LART_SIM_CONFIG` selects an
+alternative configuration file. Existing simulators must
+be restarted after rebuilding to expose the new parameters. If a single DBC
+launch is used, set up its `vcan0` interface instead.

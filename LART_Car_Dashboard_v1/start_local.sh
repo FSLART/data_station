@@ -1,12 +1,12 @@
 #!/bin/bash
 # LART Dashboard Local Start Sequence (dev machine, non-Pi)
 # Local equivalent of autostart_dashboard.sh — same stages, local paths,
-# plus vcan0 setup + DBC simulator (no real CAN hardware on a dev box).
+# Simulation is owned by the Python admin panel, started separately.
 
 set -e
 
-WS_DIR="/home/sintra/dev/data_station"
-PROJECT_DIR="$WS_DIR/LART_Car_Dashboard_v1"
+PROJECT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+WS_DIR="$(dirname -- "$PROJECT_DIR")"
 
 echo "Starting LART Dashboard (local) at $(date)"
 
@@ -17,22 +17,11 @@ source "$WS_DIR/install/setup.bash" 2>/dev/null || true
 # 2. Export necessary environment variables
 export ROS_DOMAIN_ID="${ROS_DOMAIN_ID:-42}"
 
-# 3. Setup isolated virtual CAN buses — needs sudo once; idempotent if up
-"$WS_DIR/scripts/setup_vcan_interfaces.sh" vcan_data vcan_pwt vcan_auto
+# 3. Open a normal desktop window minimized; production launches stay fullscreen.
+export LART_UI_START_MINIMIZED=1
+echo "CAN simulation starts when you open: ros2 run sim admin_panel"
 
-# 4. Start the DBC simulation stack in the background
-#    (isolated simulators/bridges → /data/*, /pwt/*, /can/*)
-echo "Starting DBC simulation stack (can_simulator + can_bridge + dashboard_state_bridge)..."
-SIM_NODES="$(ros2 node list)"
-if printf '%s\n' "$SIM_NODES" | grep -Eq '^/can_simulator(_(data|powertrain|autonomous))?$'; then
-    echo "ERROR: A CAN simulation stack is already running. Stop it before starting another local stack."
-    exit 1
-fi
-setsid ros2 launch lart_bringup dbc_sim.launch.py &
-SIM_STACK_PID=$!
-echo "DBC simulation stack PID: $SIM_STACK_PID"
-
-# 5. Start the precharge-triggered bag recorder (records /can/* topics
+# 4. Start the precharge-triggered bag recorder (records /can/* topics
 # to ~/bags while precharge_request is active; see lart_bringup/bag_recorder.py)
 BAG_RECORDER_BIN="$WS_DIR/install/lart_bringup/lib/lart_bringup/bag_recorder"
 if [ -x "$BAG_RECORDER_BIN" ]; then
@@ -44,24 +33,23 @@ else
     echo "WARNING: bag_recorder not found at $BAG_RECORDER_BIN – CAN data will not be recorded."
 fi
 
-# Stop the background stack when this script exits (Ctrl+C, or UI exit below)
+# Stop the background recorder when this script exits (Ctrl+C, or UI exit below)
 cleanup() {
     echo "Shutting down local stack..."
-    if [ -n "$SIM_STACK_PID" ]; then
-        kill -TERM -- "-$SIM_STACK_PID" 2>/dev/null || true
-        wait "$SIM_STACK_PID" 2>/dev/null || true
-    fi
     if [ -n "$BAG_RECORDER_PID" ]; then
         kill -INT "$BAG_RECORDER_PID" 2>/dev/null || true
     fi
 }
 trap cleanup EXIT
 
-# 6. Build (if needed) and launch the dashboard UI in the foreground
+# 5. Build (if needed) and launch the dashboard UI in the foreground
 UI_BIN="$PROJECT_DIR/build/ui-build/ui_runner"
 if [ ! -x "$UI_BIN" ]; then
     echo "ui_runner not found – building for the first time (this will take a while)..."
     make -C "$PROJECT_DIR" display-local
+elif [ "$PROJECT_DIR/src/ui/ui_runner.cpp" -nt "$UI_BIN" ]; then
+    echo "Dashboard window settings changed – rebuilding UI..."
+    make -C "$PROJECT_DIR" run-ui-local
 else
     echo "ui_runner already built – launching directly."
     "$UI_BIN"
