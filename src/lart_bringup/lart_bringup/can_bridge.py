@@ -91,12 +91,13 @@ class CanBridgeNode(Node):
         # Restrict RX to IDs we actually care about (RPM ID + every DBC message
         # ID) so the kernel/hardware drops everything else instead of us
         # decoding-and-discarding it in Python at bus rate.
-        filter_ids = set(self._dbc_pubs.keys())
-        filter_ids.add(self._rpm_id)
         try:
-            self._bus.set_filters([
-                {'can_id': fid, 'can_mask': 0x7FF, 'extended': False} for fid in filter_ids
-            ])
+            filters = [{'can_id': self._rpm_id, 'can_mask': 0x7FF, 'extended': False}]
+            for fid in self._dbc_pubs:
+                extended = self._db.get_message_by_name(self._dbc_pubs[fid]['name']).is_extended_frame
+                filters.append({'can_id': fid, 'can_mask': 0x1FFFFFFF if extended else 0x7FF,
+                                'extended': extended})
+            self._bus.set_filters(filters)
         except Exception as exc:
             self.get_logger().warn(f'Failed to set CAN filters, receiving all IDs: {exc}')
 
@@ -216,7 +217,7 @@ class CanBridgeNode(Node):
 
         try:
             decoded: dict = self._db.decode_message(
-                msg.arbitration_id,
+                self._dbc_pubs[msg.arbitration_id]['name'],
                 msg.data,
                 decode_choices=False,   # return raw numeric, not string label
             )

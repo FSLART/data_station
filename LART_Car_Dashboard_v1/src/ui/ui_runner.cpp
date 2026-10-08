@@ -127,7 +127,10 @@ void pointer_read_cb(lv_indev_drv_t *, lv_indev_data_t *data) {
 }
 
 bool create_window() {
-    const uint32_t window_flags = SDL_WINDOW_SHOWN | SDL_WINDOW_FULLSCREEN_DESKTOP;
+    const char *minimized = std::getenv("LART_UI_START_MINIMIZED");
+    const bool start_minimized = minimized && std::strcmp(minimized, "1") == 0;
+    const uint32_t window_flags = SDL_WINDOW_SHOWN |
+        (start_minimized ? SDL_WINDOW_MINIMIZED : SDL_WINDOW_FULLSCREEN_DESKTOP);
 
     g_window = SDL_CreateWindow(
         "LART UI Runner",
@@ -441,12 +444,33 @@ int main(int argc, char **argv) {
         const auto active = [&](lv_obj_t *obj) {
             return warning_color(obj) != 0x626262;
         };
+        const auto check_uniform_icon_opacity = [&](lv_obj_t *obj) {
+            lv_refr_now(g_display);
+            lv_area_t area;
+            lv_obj_get_coords(obj, &area);
+            // Active warnings light up; inactive icons blend only once at 20%
+            // against the screen's 0x050505 background (allow rounding).
+            const unsigned opacity = active(obj) ? LV_OPA_COVER : LV_OPA_20;
+            assert(lv_obj_get_style_opa_layered(obj, LV_PART_MAIN) == opacity);
+            const unsigned max_channel = ((warning_color(obj) & 0xff) * opacity +
+                5 * (255 - opacity)) / 255 + 2;
+            unsigned brightest = 0;
+            for (int y = area.y1; y < area.y1 + 40; ++y) {
+                for (int x = area.x1 + 31; x < area.x1 + 74; ++x) {
+                    const unsigned channel = g_framebuffer[y * kUiWidth + x] & 0xff;
+                    assert(channel <= max_channel);
+                    brightest = std::max(brightest, channel);
+                }
+            }
+            assert(brightest >= max_channel - 3);
+        };
         for (lv_obj_t *obj : {objects.gauge_temp_warning, objects.gauge_drive_warning,
                              objects.gauge_soc_warning, objects.gauge_lv_warning}) {
             assert(!active(obj));
-            assert(lv_obj_get_style_text_opa(obj, LV_PART_MAIN) == LV_OPA_20);
+            assert(lv_obj_get_style_opa_layered(obj, LV_PART_MAIN) == LV_OPA_20);
             assert(lv_obj_get_y(obj) == 4);
             assert(lv_obj_get_height(obj) == 62);
+            check_uniform_icon_opacity(obj);
         }
         assert(lv_obj_get_x(objects.gauge_temp_warning) == 8);
         assert(lv_obj_get_x(objects.gauge_drive_warning) == 124);
@@ -454,10 +478,28 @@ int main(int argc, char **argv) {
         assert(lv_obj_get_x(objects.gauge_lv_warning) == 688);
         assert(lv_obj_has_flag(lv_obj_get_parent(objects.gauge_warning_message), LV_OBJ_FLAG_HIDDEN));
 
+        // Reproduce the admin panel's Low SOC preset with thermal derating.
+        dbc_api.master_soc_accumulator.soc_float = 10;
+        dbc_api.inv1_misc.inv1_motor_temp_limit = 1;
+        ui_tick();
+        assert(active(objects.gauge_soc_warning) && active(objects.gauge_temp_warning));
+        assert(!active(objects.gauge_lv_warning) && !active(objects.gauge_drive_warning));
+        check_uniform_icon_opacity(objects.gauge_soc_warning);
+        check_uniform_icon_opacity(objects.gauge_temp_warning);
+        save_preview(".simulator-errors.bmp");
+        dbc_api.master_soc_accumulator.soc_float = 78;
+        dbc_api.inv1_misc.inv1_motor_temp_limit = 0;
+        ui_tick();
+        assert(!active(objects.gauge_soc_warning) && !active(objects.gauge_temp_warning));
+        check_uniform_icon_opacity(objects.gauge_soc_warning);
+        check_uniform_icon_opacity(objects.gauge_temp_warning);
+
         dbc_api.pdm_lv.lv_voltage_mv = 24.5f;
         dbc_api.master_soc_accumulator.soc_float = 15.0f;
         ui_tick();
         assert(active(objects.gauge_lv_warning) && active(objects.gauge_soc_warning));
+        check_uniform_icon_opacity(objects.gauge_lv_warning);
+        check_uniform_icon_opacity(objects.gauge_soc_warning);
         assert(std::strcmp(lv_label_get_text(objects.gauge_warning_message), "LOW LV BATTERY VOLTAGE") == 0);
         assert(std::strcmp(lv_label_get_text(objects.gauge_lv), "24.5 V") == 0);
         save_preview(".low-battery.bmp");
@@ -539,7 +581,7 @@ int main(int argc, char **argv) {
                 *fault = code;
                 ui_tick();
                 assert(warning_color(objects.gauge_drive_warning) == 0xff272e);
-                assert(lv_obj_get_style_text_opa(objects.gauge_drive_warning, LV_PART_MAIN) == LV_OPA_COVER);
+                assert(lv_obj_get_style_opa_layered(objects.gauge_drive_warning, LV_PART_MAIN) == LV_OPA_COVER);
                 const std::string expected = "INV" + std::to_string(inverter) + " ERROR " +
                     std::to_string(code) + ": " + descriptions[code];
                 assert(expected == lv_label_get_text(objects.gauge_warning_message));
@@ -571,8 +613,8 @@ int main(int argc, char **argv) {
         for (lv_obj_t *obj : {objects.gauge_temp_warning, objects.gauge_drive_warning,
                              objects.gauge_soc_warning, objects.gauge_lv_warning}) {
             const bool fault = obj == objects.gauge_drive_warning;
-            assert(warning_color(obj) == (fault ? 0xff272e : 0xb0b0b0));
-            assert(lv_obj_get_style_text_opa(obj, LV_PART_MAIN) == (fault ? LV_OPA_COVER : LV_OPA_20));
+            assert(warning_color(obj) == (fault ? 0xff272e : 0xffd32a));
+            assert(lv_obj_get_style_opa_layered(obj, LV_PART_MAIN) == LV_OPA_COVER);
         }
         assert(std::strcmp(lv_label_get_text(objects.gauge_warning_message), "INV2 ERROR 3: GATE DRIVER FAULT") == 0);
         assert(warning_color(objects.gauge_warning_message) == 0xff272e);
@@ -581,7 +623,7 @@ int main(int argc, char **argv) {
         dbc_api.inv2_temperatures.inv2_actual_faultcode = 0;
         ui_tick();
         assert(std::strcmp(lv_label_get_text(objects.gauge_warning_message), "MOTOR TEMPERATURE HIGH") == 0);
-        assert(lv_obj_get_style_text_opa(objects.gauge_warning_message, LV_PART_MAIN) == LV_OPA_20);
+        assert(lv_obj_get_style_text_opa(objects.gauge_warning_message, LV_PART_MAIN) == LV_OPA_COVER);
         save_preview(".temperature.bmp");
         dbc_api.inv1_temperatures.inv1_actual_tempmotor = 67;
         dbc_api.master_soc_accumulator.soc_float = 78;

@@ -25,6 +25,10 @@ import can
 import cantools
 import rclpy
 from rclpy.node import Node
+from rcl_interfaces.msg import SetParametersResult
+
+from .admin_controls import ControlConfig, MessageSchedule, control_value, tick_period, speed_to_erpm
+from .simulation_config import load_config, driving_state
 
 # ---------------------------------------------------------------------------
 # Real-world FS-EV magnitudes.
@@ -34,16 +38,7 @@ from rclpy.node import Node
 # the raw bit-width range — e.g. a 16-bit cell voltage (scale 0.001) would
 # swing up to 65V instead of a real Li-ion cell's ~3.0-4.2V.
 # ---------------------------------------------------------------------------
-TOP_SPEED_KPH = 120.0
-MOTOR_RPM_MAX = 12000.0        # mechanical RPM redline (matches dashboard_ui config)
-MOTOR_ERPM_MAX = 20000.0       # electrical RPM (mechanical * pole pairs)
-PEAK_CURRENT_A = 250.0         # realistic peak pack/phase current under hard accel
-PACK_VOLTAGE_MIN = 500.0       # accumulator nominal-to-full range
-PACK_VOLTAGE_MAX = 600.0
-CELL_VOLTAGE_MIN = 3.0         # single Li-ion cell, empty-to-full
-CELL_VOLTAGE_MAX = 4.2
-LV_VOLTAGE_MIN = 24.0          # 24V LV rail
-LV_VOLTAGE_MAX = 28.0
+# Physical bands and the drive cycle live in config/can_simulator.cfg.
 PRECHARGE_SEQUENCE_STEP_SECONDS = 0.5
 PRECHARGE_TEST_SEQUENCE = (19, *range(17))
 
@@ -193,7 +188,7 @@ def _encodable_range(signal: cantools.db.Signal) -> tuple[float, float]:
     return enc_min, enc_max
 
 
-def _make_signal_value(signal: cantools.db.Signal, t: float, mission_override: float | None = None) -> float:
+def _make_signal_value(signal: cantools.db.Signal, t: float, mission_override: float | None = None, config=None) -> float:
     """Generate a realistic, time-varying value for a DBC signal.
 
     Values are guaranteed to lie within the encodable physical range so that
@@ -201,6 +196,13 @@ def _make_signal_value(signal: cantools.db.Signal, t: float, mission_override: f
     """
     enc_min, enc_max = _encodable_range(signal)
     name_lower = signal.name.lower()
+    config = config if config is not None else load_config()
+    speed_factor, accel_pct, brake_pct = driving_state(config, t)
+
+    def band(name):
+        low, high = config['ranges'][name]
+        return _clamp(low, enc_min, enc_max), _clamp(high, enc_min, enc_max)
+
 
     if signal.name in ('Mission_select', 'AS_MISSION'):
         # Held constant (not auto-cycled) — the dashboard's mission display
@@ -211,11 +213,32 @@ def _make_signal_value(signal: cantools.db.Signal, t: float, mission_override: f
         val = mission_override if mission_override is not None else enc_min
         return _clamp(val, enc_min, enc_max)
 
-    if name_lower == 'ivt_result_u3':
-        # Simulate 20V to 28.8V LV battery in mV (20000 to 28800 mV)
-        soc_lv = max(20.0, 78.0 - 0.06 * t)
-        val = 20000.0 + (soc_lv / 100.0) * (28800.0 - 20000.0)
+    # Limit flags report derating/fault conditions, not a healthy enabled state.
+    if 'fault' in name_lower or 'error' in name_lower or (signal.length == 1 and name_lower.endswith('_limit')):
+        return _clamp(0, enc_min, enc_max)
+
+    if name_lower in ('soc_integer', 'soc_float'):
+        low, high = band('soc_percent')
+        return max(low, high - t * .01)
+
+    if name_lower == 'lv_voltage_mv':
+        low, high = band('lv_voltage')
+        return high - (high - low) * .15
+
+    if name_lower in ('ivt_result_u1', 'ivt_result_u2', 'ivt_result_u3'):
+        low, high = config['ranges']['lv_voltage' if name_lower.endswith('u3') else 'pack_voltage']
+        val = (high - (high - low) * (.1 + .1 * accel_pct / 100)) * 1000
         return _clamp(val, enc_min, enc_max)
+
+    if name_lower in ('ivt_result_i', 'ivt_result_w'):
+        low, high = config['ranges']['current']
+        current = low * brake_pct / 100 if brake_pct else high * accel_pct / 100
+        factor = 1000 if name_lower.endswith('_i') else sum(config['ranges']['pack_voltage']) / 2
+        return _clamp(current * factor, enc_min, enc_max)
+
+    if name_lower == 'ivt_result_t':
+        low, high = config['ranges']['other_temperature']
+        return _clamp((low + high) / 2, enc_min, enc_max)
 
     # Trigger/command signals (e.g. precharge_request) are driven by an
     # external actor (VCU/operator), not the simulated vehicle bus — hold
@@ -244,37 +267,10 @@ def _make_signal_value(signal: cantools.db.Signal, t: float, mission_override: f
         elif enc_max - enc_min <= 10:
             return float(int(enc_min))
 
-    # 3. Synchronized Driving Simulation (Lap Profile)
-    # A single lap is simulated as 40 seconds long
-    cycle_t = t % 40.0
-    
-    if cycle_t < 22.0:
-        # Straight line: Acceleration phase
-        # Accelerator goes up to 100%, brakes are 0%, speed & RPM rise
-        accel_pct = min(100.0, cycle_t * 8.0)
-        brake_pct = 0.0
-        speed_factor = min(1.0, 0.15 + (cycle_t / 22.0) * 0.85)
-        steer_factor = 0.0
-    elif cycle_t < 32.0:
-        # Heavy braking and cornering entry
-        # Accelerator drops to 0%, brakes spike then taper, speed drops
-        brake_time = cycle_t - 22.0
-        accel_pct = 0.0
-        if brake_time < 2.0:
-            brake_pct = brake_time * 40.0 # Spikes to 80%
-        else:
-            brake_pct = max(10.0, 80.0 - (brake_time - 2.0) * 8.0)
-        speed_factor = max(0.2, 1.0 - (brake_time / 10.0) * 0.75)
-        # Turn steering wheel
-        steer_factor = math.sin((brake_time / 10.0) * math.pi)
-    else:
-        # Exiting corner: partial throttle, zero brake, recovery
-        exit_time = cycle_t - 32.0
-        accel_pct = 15.0 + exit_time * 10.0 # rises to 95%
-        brake_pct = 0.0
-        speed_factor = 0.25 + (exit_time / 8.0) * 0.4
-        # Straighten wheel
-        steer_factor = max(0.0, 0.5 * (1.0 - exit_time / 8.0))
+    # Shared stop/accelerate/cruise/brake sequence across all simulated buses.
+    speed_low, speed_high = config['ranges']['speed_kmh']
+    speed_kmh = speed_low + (speed_high - speed_low) * speed_factor
+    steer_factor = math.sin(t * .15) if 0 < speed_factor < .5 else 0.0
 
     # Identify the quantity category and scale to its physical bounds
 
@@ -297,8 +293,8 @@ def _make_signal_value(signal: cantools.db.Signal, t: float, mission_override: f
     # motor each get their own realistic range instead of sharing one band.
     is_temp = any(x in name_lower for x in ['temp', 'temperature', 'ntc'])
     is_temp_batt = is_temp and any(x in name_lower for x in ['batt', 'bms', 'acc', 'cell', 'pack'])
-    is_temp_inv = is_temp and (not is_temp_batt) and any(x in name_lower for x in ['inv', 'inverter'])
-    is_temp_motor = is_temp and (not is_temp_batt) and (not is_temp_inv) and any(x in name_lower for x in ['mot', 'motor'])
+    is_temp_motor = is_temp and (not is_temp_batt) and any(x in name_lower for x in ['mot', 'motor'])
+    is_temp_inv = is_temp and (not is_temp_batt) and (not is_temp_motor) and any(x in name_lower for x in ['inv', 'inverter'])
     is_temp_other = is_temp and not (is_temp_batt or is_temp_inv or is_temp_motor)
 
     # Category D2: Lap counter — bounded to a realistic 1-4 lap race distance
@@ -332,106 +328,71 @@ def _make_signal_value(signal: cantools.db.Signal, t: float, mission_override: f
             val = min_val + (max_val - min_val) * (accel_pct / 100.0)
 
     elif is_kph_speed:
-        min_val = max(0.0, enc_min)
-        max_val = min(TOP_SPEED_KPH, enc_max)
-        val = min_val + (max_val - min_val) * speed_factor
-        val += random.uniform(-0.01, 0.01) * (max_val - min_val)
+        val = speed_kmh
 
     elif is_rpm:
-        min_val = max(0.0, enc_min)
-        max_val = min(MOTOR_RPM_MAX, enc_max)
-        val = min_val + (max_val - min_val) * speed_factor
-        val += random.uniform(-0.01, 0.01) * (max_val - min_val)
+        val = speed_to_erpm(speed_kmh) / 4
 
     elif is_erpm:
-        # eRPM can be negative during regen — keep it capped to a realistic
-        # magnitude rather than the DBC's full ±100000 configuration ceiling.
-        min_val = max(-MOTOR_ERPM_MAX, enc_min)
-        max_val = min(MOTOR_ERPM_MAX, enc_max)
-        val = min_val + (max_val - min_val) * speed_factor
-        val += random.uniform(-0.01, 0.01) * (max_val - min_val)
+        val = speed_to_erpm(speed_kmh)
 
     elif is_pressure:
-        if 'brake' in name_lower or 'brk' in name_lower:
-            # Brake pressure correlates with brake pedal
-            min_val = max(0.0, enc_min)
-            max_val = enc_max
-            val = min_val + (max_val - min_val) * (brake_pct / 100.0)
-        else:
-            # Tank / accumulator pressure is high and stable
-            min_val = max(0.0, enc_min)
-            max_val = enc_max
-            val = max_val - (max_val - min_val) * 0.15 * (0.5 + 0.5 * math.sin(t * 0.05))
+        min_val, max_val = band('brake_pressure' if 'brake' in name_lower or 'brk' in name_lower else 'tank_pressure')
+        val = min_val + (max_val - min_val) * (brake_pct / 100 if 'brake' in name_lower or 'brk' in name_lower else .9)
 
     elif is_temp_batt or is_temp_inv or is_temp_motor or is_temp_other:
         # Temperature rises slowly with speed/RPM. Battery, inverter and motor
         # each run at a different realistic band.
-        if is_temp_batt:
-            temp_min, temp_max = 30.0, 45.0
-        elif is_temp_inv:
-            temp_min, temp_max = 35.0, 55.0
-        elif is_temp_motor:
-            temp_min, temp_max = 40.0, 70.0
-        else:
-            temp_min, temp_max = 30.0, 45.0
-        min_val = max(temp_min, enc_min)
-        max_val = min(temp_max, enc_max)
-        if max_val <= min_val:
-            min_val, max_val = enc_min, enc_max
+        category = ('battery_temperature' if is_temp_batt else 'motor_temperature' if is_temp_motor
+                    else 'inverter_temperature' if is_temp_inv else 'other_temperature')
+        min_val, max_val = band(category)
         val = min_val + (max_val - min_val) * (0.35 + 0.45 * speed_factor + 0.1 * math.sin(t * 0.02))
 
     elif is_lap:
-        # Lap counter — cycles 1 through 4, incrementing once per lap (40s)
+        # Lap counter — cycles 1 through 4, incrementing once per drive cycle.
         lap_min = max(1.0, enc_min)
         lap_max = min(4.0, enc_max)
         if lap_max <= lap_min:
             lap_min, lap_max = enc_min, enc_max
         num_laps = int(lap_max - lap_min) + 1
-        val = lap_min + (int(t // 40.0) % num_laps)
+        val = lap_min + (int(t // config['drive_cycle'][-1][0]) % num_laps)
 
     elif is_current:
-        # Current is positive and correlates with accelerator pedal
-        min_val = max(0.0, enc_min)
-        max_val = min(PEAK_CURRENT_A, enc_max)
-        val = min_val + (max_val - min_val) * (accel_pct / 100.0)
-        val += random.uniform(-0.02, 0.02) * (max_val - min_val)
+        min_val, max_val = band('current')
+        val = min_val * brake_pct / 100 if brake_pct else max_val * accel_pct / 100
 
     elif is_cell_volt:
         # Single Li-ion cell (or per-cell module stat) — small per-cell
         # spread via a name-hashed phase so the 12+ cells in a module don't
         # all report the identical value, sagging slightly under load.
         phase = (hash(signal.name) % 100) / 100.0
-        min_val = max(CELL_VOLTAGE_MIN, enc_min)
-        max_val = min(CELL_VOLTAGE_MAX, enc_max)
+        min_val, max_val = band('cell_voltage')
         base = max_val - (max_val - min_val) * (0.05 + 0.1 * (accel_pct / 100.0))
         val = base - (max_val - min_val) * 0.05 * phase
         val += random.uniform(-0.01, 0.01) * (max_val - min_val)
 
     elif is_module_volt_sum:
         # Sum of a 12s cell module
-        min_val = max(CELL_VOLTAGE_MIN * 12, enc_min)
-        max_val = min(CELL_VOLTAGE_MAX * 12, enc_max)
+        cell_min, cell_max = config['ranges']['cell_voltage']
+        min_val, max_val = _clamp(cell_min * 12, enc_min, enc_max), _clamp(cell_max * 12, enc_min, enc_max)
         val = max_val - (max_val - min_val) * (0.1 + 0.1 * (accel_pct / 100.0))
         val += random.uniform(-0.005, 0.005) * (max_val - min_val)
 
     elif is_lv_volt:
-        min_val = max(LV_VOLTAGE_MIN, enc_min)
-        max_val = min(LV_VOLTAGE_MAX, enc_max)
+        min_val, max_val = band('lv_voltage')
         val = max_val - (max_val - min_val) * (0.1 + 0.1 * (accel_pct / 100.0))
         val += random.uniform(-0.005, 0.005) * (max_val - min_val)
 
     elif is_pack_volt:
         # HV accumulator / DC bus — sags slightly under high acceleration
-        min_val = max(PACK_VOLTAGE_MIN, enc_min)
-        max_val = min(PACK_VOLTAGE_MAX, enc_max)
-        if max_val <= min_val:
-            min_val, max_val = enc_min, enc_max
+        min_val, max_val = band('pack_voltage')
         val = max_val - (max_val - min_val) * (0.1 + 0.1 * (accel_pct / 100.0))
         val += random.uniform(-0.005, 0.005) * (max_val - min_val)
 
     elif is_steering:
         # Steering is centered at 0 or mid-point, and turns positive/negative
-        val = enc_min + (enc_max - enc_min) * (0.5 + 0.45 * steer_factor)
+        min_val, max_val = band('steering_rad')
+        val = (min_val + max_val) / 2 + (max_val - min_val) / 2 * steer_factor
         
     else:
         # Default fallback: slow sine wave matching the signal's range
@@ -451,10 +412,14 @@ def _make_signal_value(signal: cantools.db.Signal, t: float, mission_override: f
 class CanSimulatorNode(Node):
     def __init__(self):
         super().__init__('can_simulator')
+        self._config = load_config()
 
         self.declare_parameter('can_interface', 'vcan0')
         self.declare_parameter('dbc_path', '')
         self.declare_parameter('publish_hz', 10.0)
+        self.declare_parameter('enabled', True)
+        self.declare_parameter('signal_controls', '{}')
+        self.declare_parameter('message_intervals_ms', '{}')
         self.declare_parameter('message_ids', rclpy.parameter.Parameter.Type.INTEGER_ARRAY)
         # Manual override for Mission_select (see test_data_ros2.sh) — raw
         # 3-bit value, 0-7, no DBC-defined labels. Change live with:
@@ -557,28 +522,66 @@ class CanSimulatorNode(Node):
             if mux_valid_ids:
                 self._msg_mux_valid_ids[m.name] = mux_valid_ids
 
+        self._controls = ControlConfig(self._messages)
+        self._signal_controls, intervals = self._controls.validate(
+            self.get_parameter('signal_controls').value,
+            self.get_parameter('message_intervals_ms').value, hz)
+        self._schedule = MessageSchedule([m.name for m in self._messages], 1000 / hz, intervals)
         self._t = 0.0
-        self._dt = 1.0 / hz
+        self.add_on_set_parameters_callback(self._validate_parameters)
         self._precharge_sequence = _PrechargeSequence()
         self.add_post_set_parameters_callback(self._on_parameters_set)
 
-        self.create_timer(self._dt, self._tick)
+        self._timer = self.create_timer(tick_period(1000 / hz, intervals), self._tick)
         self.get_logger().info('CAN simulator running — sending frames to ' + iface)
 
     # -----------------------------------------------------------------------
 
+    def _validate_parameters(self, parameters):
+        values = {p.name: p.value for p in parameters}
+        try:
+            if any(name in values for name in ('can_interface', 'dbc_path', 'message_ids')):
+                raise ValueError('Interface, DBC and message filter require restarting the simulator')
+            if 'enabled' in values and not isinstance(values['enabled'], bool):
+                raise ValueError('enabled must be boolean')
+            self._controls.validate(
+                values.get('signal_controls', self.get_parameter('signal_controls').value),
+                values.get('message_intervals_ms', self.get_parameter('message_intervals_ms').value),
+                values.get('publish_hz', self.get_parameter('publish_hz').value))
+        except (ValueError, TypeError) as exc:
+            return SetParametersResult(successful=False, reason=str(exc))
+        return SetParametersResult(successful=True)
+
     def _on_parameters_set(self, parameters) -> None:
+        names = {p.name for p in parameters}
+        if names & {'publish_hz', 'signal_controls', 'message_intervals_ms'}:
+            hz = self.get_parameter('publish_hz').value
+            self._signal_controls, intervals = self._controls.validate(
+                self.get_parameter('signal_controls').value,
+                self.get_parameter('message_intervals_ms').value, hz)
+            self._schedule.default_ms = 1000 / hz
+            self._schedule.intervals = intervals
+            if names & {'publish_hz', 'message_intervals_ms'}:
+                self._schedule.deadlines = dict.fromkeys(self._schedule.names, self._schedule.elapsed)
+                self.destroy_timer(self._timer)
+                self._timer = self.create_timer(tick_period(1000 / hz, intervals), self._tick)
+        if 'enabled' in names:
+            self._schedule.previous = time.monotonic()
+            self._schedule.was_enabled = self.get_parameter('enabled').value
         # Rearm immediately after an accepted request, even when -1 -> 19
         # happens between CAN ticks or 19 is requested again directly.
         if any(parameter.name == 'precharge_state_value' for parameter in parameters):
             self._precharge_sequence.reset()
 
     def _tick(self) -> None:
-        self._t += self._dt
-        if not self._messages:
+        due = set(self._schedule.advance(time.monotonic(), self.get_parameter('enabled').value))
+        self._t = self._schedule.elapsed
+        if not due:
             return
 
         for dbc_msg in self._messages:
+            if dbc_msg.name not in due:
+                continue
             # Build signal values dict
             signals: dict[str, float] = {}
 
@@ -586,17 +589,20 @@ class CanSimulatorNode(Node):
             mux_valid_ids = self._msg_mux_valid_ids.get(dbc_msg.name, {})
 
             for sig in dbc_msg.signals:
-                if sig.name in mux_valid_ids:
+                override = control_value(sig, self._signal_controls.get(dbc_msg.name, {}).get(sig.name, {}), self._t)
+                if override is not None:
+                    signals[sig.name] = override
+                elif sig.name in mux_valid_ids:
                     # Cycle through the valid multiplexer IDs based on t
                     valid_list = mux_valid_ids[sig.name]
                     idx = int(self._t * 0.5) % len(valid_list)
                     signals[sig.name] = float(valid_list[idx])
                 elif sig.name == 'Mission_select':
                     mission_val = self.get_parameter('mission_select_value').value
-                    signals[sig.name] = _make_signal_value(sig, self._t, mission_override=mission_val)
+                    signals[sig.name] = _make_signal_value(sig, self._t, mission_override=mission_val, config=self._config)
                 elif sig.name == 'AS_MISSION':
                     as_mission_val = self.get_parameter('as_mission_value').value
-                    signals[sig.name] = _make_signal_value(sig, self._t, mission_override=as_mission_val)
+                    signals[sig.name] = _make_signal_value(sig, self._t, mission_override=as_mission_val, config=self._config)
                 elif sig.name == 'precharge_state':
                     precharge_val = self.get_parameter('precharge_state_value').value
                     precharge_val = self._precharge_sequence.value(precharge_val, self._t)
@@ -605,16 +611,16 @@ class CanSimulatorNode(Node):
                         enc_min, enc_max = _encodable_range(sig)
                         signals[sig.name] = _clamp(precharge_val, enc_min, enc_max)
                     else:
-                        signals[sig.name] = _make_signal_value(sig, self._t)
+                        signals[sig.name] = _make_signal_value(sig, self._t, config=self._config)
                 else:
-                    signals[sig.name] = _make_signal_value(sig, self._t)
+                    signals[sig.name] = _make_signal_value(sig, self._t, config=self._config)
 
             # Encode to bytes using cantools.
             # scaling=True  → values are physical (scale+offset applied automatically).
             # padding=True  → zero-pad frames whose signals don't fill all bytes.
             try:
                 data = dbc_msg.encode(
-                    signals, scaling=True, padding=True
+                    signals, scaling=True, padding=True, strict=False
                 )
             except Exception as exc:
                 self.get_logger().warn(
@@ -622,8 +628,8 @@ class CanSimulatorNode(Node):
                 )
                 continue
 
-            # Determine if this is an extended frame (ID > 0x7FF)
-            is_extended = dbc_msg.frame_id > 0x7FF
+            # Extended DBC frames may also have IDs below 0x7FF.
+            is_extended = dbc_msg.is_extended_frame
 
             frame = can.Message(
                 arbitration_id=dbc_msg.frame_id,
