@@ -10,7 +10,7 @@ def workflow(name):
 
 
 def test_sync_builds_before_publishing_and_pins_interface_commit():
-    config = workflow('fetch-dbcs.yml')
+    config = workflow('regenerate-dbcs.yml')
     steps = config['jobs']['sync-dbc']['steps']
     names = [step['name'] for step in steps]
     assert names.index('Build dashboard UI') < names.index('Publish interface PR')
@@ -30,10 +30,10 @@ def test_sync_builds_before_publishing_and_pins_interface_commit():
 
 
 def test_pull_requests_build_but_cannot_publish_releases():
-    config = workflow('build-arm64.yml')
+    config = workflow('validate-dbc-arm64.yml')
     assert 'pull_request' in config['on']
     steps = config['jobs']['build-arm64']['steps']
     assert any('regenerate_dbcs.py' in s.get('run', '') for s in steps)
     releases = [s for s in steps if 'softprops/action-gh-release@' in s.get('uses', '')]
-    assert len(releases) == 2
-    assert all(s.get('if') == "github.event_name == 'push'" for s in releases)
+    assert not releases
+    assert config['permissions']['contents'] == 'read'

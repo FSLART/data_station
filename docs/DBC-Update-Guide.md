@@ -53,7 +53,7 @@ input hashes change. Never attribute edited DBC files to an upstream revision.
 
 ## Scheduled automation
 
-The **Regenerate T26 DBC outputs** workflow checks upstream `main` every 30
+The new **Regenerate T26 DBC outputs** workflow (`regenerate-dbcs.yml`) checks upstream `main` every 30
 minutes. Manual dispatch accepts a branch, tag or exact commit through `dbc_ref`.
 It checks out the three DBCs together and regenerates against current
 `lart_msgs/main`. When nothing changes, it skips tests, builds and publication.
@@ -77,8 +77,16 @@ you also update the dashboard submodule pointer to the resulting merged commit.
 Review application consumers when fields or semantics change; generation does
 not rewrite hand-maintained screens, simulator overrides or Foxglove layouts.
 
-Dashboard PRs run regeneration, tests and the ARM64 build. Only master pushes
-publish release artifacts. No App credentials are used by PR validation.
+The separate **Validate DBC ARM64 build** workflow (`validate-dbc-arm64.yml`)
+runs regeneration, tests and the ARM64 build on dashboard PRs, master pushes,
+and pushes to `automate-dbc-regeneration`. It also supports manual dispatch,
+uses no App credentials and publishes no releases.
+
+The existing `fetch-dbcs.yml`, `build-arm64.yml` and shared ARM64 setup action
+are preserved exactly. The original DBC sync still updates inputs on master
+independently; the new workflow proposes the complete generated update through
+linked PRs. Existing build/release behavior continues through its original
+workflow. These schedules run only after the new workflow reaches master.
 
 The API generator updates `dbc_api.h`, `dbc_api.cpp`, `dbc_api_sub_*.cpp`,
 `src/lart_msgs/dbc_msgs/*.msg` and the generated CMake interface entries.
