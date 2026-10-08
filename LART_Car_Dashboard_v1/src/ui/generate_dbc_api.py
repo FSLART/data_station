@@ -35,11 +35,17 @@ def main():
     message_databases = {}
     dbc_files = [os.path.join(dbc_dir, fn) for fn in dbc_filenames]
     for df in dbc_files:
-        source_db = cantools.database.load_file(df)
+        try:
+            with open(df, encoding="utf-8") as f:
+                f.read()
+            encoding = "utf-8"
+        except UnicodeDecodeError:
+            encoding = "cp1252"
+        source_db = cantools.database.load_file(df, encoding=encoding)
         db_name = os.path.splitext(os.path.basename(df))[0]
         for msg in source_db.messages:
             message_databases.setdefault(_ros_name(msg.name), set()).add(db_name)
-        db.add_dbc_file(df)
+        db.add_dbc_file(df, encoding=encoding)
         
     # Group signals by sanitized message name slug to deduplicate messages
     message_signals = {}

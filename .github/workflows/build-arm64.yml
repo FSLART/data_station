@@ -1,6 +1,8 @@
 name: Build ARM64
 
 on:
+  pull_request:
+    branches: [master]
   push:
     branches: [master]
 
@@ -8,7 +10,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: build-arm64-normal
+  group: build-arm64-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -20,35 +22,15 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Add ROS2 apt repository
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y curl gnupg lsb-release
-          sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg
-          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" | sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null
-          sudo apt-get update
+      - name: Set up ROS2 build
+        uses: ./.github/actions/setup-arm64
 
-      - name: Cache apt archives
-        uses: actions/cache@v4
-        with:
-          path: /var/cache/apt/archives
-          key: apt-arm64-jazzy-${{ hashFiles('.github/workflows/build-arm64.yml') }}
-
-      - name: Install ROS2 and build tooling
+      - name: Regenerate and test DBC outputs
         run: |
-          sudo apt-get install -y \
-            ros-jazzy-ros-base \
-            ros-jazzy-rclcpp \
-            ros-jazzy-rclpy \
-            ros-jazzy-std-msgs \
-            ros-jazzy-rosidl-default-generators \
-            ros-jazzy-rosidl-default-runtime \
-            python3-colcon-common-extensions \
-            build-essential \
-            cmake \
-            pkg-config \
-            libsdl2-dev
-          sudo chown -R "$(id -u):$(id -g)" /var/cache/apt/archives
+          python3 -m venv "$RUNNER_TEMP/dbc-venv"
+          "$RUNNER_TEMP/dbc-venv/bin/pip" install -r scripts/requirements-dbc.txt
+          "$RUNNER_TEMP/dbc-venv/bin/python" scripts/regenerate_dbcs.py
+          "$RUNNER_TEMP/dbc-venv/bin/python" -m pytest -q tests/test_regenerate_dbcs.py tests/test_dbc_generation.py tests/test_dbc_api_abi.py tests/test_dbc_decoding.py tests/test_dbc_sync_workflow.py
 
       - name: Cache colcon build
         uses: actions/cache@v4
@@ -57,7 +39,7 @@ jobs:
             build
             install
             log
-          key: colcon-arm64-${{ hashFiles('src/**/CMakeLists.txt', 'src/**/package.xml', 'src/**/*.cpp', 'src/**/*.hpp', 'src/**/*.h', 'src/**/*.py') }}
+          key: colcon-arm64-${{ hashFiles('src/**/CMakeLists.txt', 'src/**/package.xml', 'src/**/*.cpp', 'src/**/*.hpp', 'src/**/*.h', 'src/**/*.py', 'src/**/*.msg', 'src/**/*.srv') }}
           restore-keys: |
             colcon-arm64-
 
@@ -81,6 +63,7 @@ jobs:
         run: echo "short_sha=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
 
       - name: Publish versioned release
+        if: github.event_name == 'push'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: arm64-${{ github.sha }}
@@ -88,6 +71,7 @@ jobs:
           files: lart-dashboard-arm64.tar.gz
 
       - name: Update latest release
+        if: github.event_name == 'push'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: latest-arm64
