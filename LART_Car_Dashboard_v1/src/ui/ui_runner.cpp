@@ -444,12 +444,31 @@ int main(int argc, char **argv) {
         const auto active = [&](lv_obj_t *obj) {
             return warning_color(obj) != 0x626262;
         };
+        const auto check_uniform_icon_opacity = [&](lv_obj_t *obj) {
+            lv_refr_now(g_display);
+            lv_area_t area;
+            lv_obj_get_coords(obj, &area);
+            // Even overlapping strokes must blend only once at 20% opacity
+            // against the screen's 0x050505 background (allow rounding).
+            const unsigned max_channel = ((warning_color(obj) & 0xff) * LV_OPA_20 +
+                5 * (255 - LV_OPA_20)) / 255 + 2;
+            unsigned brightest = 0;
+            for (int y = area.y1; y < area.y1 + 40; ++y) {
+                for (int x = area.x1 + 31; x < area.x1 + 74; ++x) {
+                    const unsigned channel = g_framebuffer[y * kUiWidth + x] & 0xff;
+                    assert(channel <= max_channel);
+                    brightest = std::max(brightest, channel);
+                }
+            }
+            assert(brightest >= max_channel - 3);
+        };
         for (lv_obj_t *obj : {objects.gauge_temp_warning, objects.gauge_drive_warning,
                              objects.gauge_soc_warning, objects.gauge_lv_warning}) {
             assert(!active(obj));
-            assert(lv_obj_get_style_text_opa(obj, LV_PART_MAIN) == LV_OPA_20);
+            assert(lv_obj_get_style_opa_layered(obj, LV_PART_MAIN) == LV_OPA_20);
             assert(lv_obj_get_y(obj) == 4);
             assert(lv_obj_get_height(obj) == 62);
+            check_uniform_icon_opacity(obj);
         }
         assert(lv_obj_get_x(objects.gauge_temp_warning) == 8);
         assert(lv_obj_get_x(objects.gauge_drive_warning) == 124);
@@ -461,6 +480,8 @@ int main(int argc, char **argv) {
         dbc_api.master_soc_accumulator.soc_float = 15.0f;
         ui_tick();
         assert(active(objects.gauge_lv_warning) && active(objects.gauge_soc_warning));
+        check_uniform_icon_opacity(objects.gauge_lv_warning);
+        check_uniform_icon_opacity(objects.gauge_soc_warning);
         assert(std::strcmp(lv_label_get_text(objects.gauge_warning_message), "LOW LV BATTERY VOLTAGE") == 0);
         assert(std::strcmp(lv_label_get_text(objects.gauge_lv), "24.5 V") == 0);
         save_preview(".low-battery.bmp");
@@ -542,7 +563,7 @@ int main(int argc, char **argv) {
                 *fault = code;
                 ui_tick();
                 assert(warning_color(objects.gauge_drive_warning) == 0xff272e);
-                assert(lv_obj_get_style_text_opa(objects.gauge_drive_warning, LV_PART_MAIN) == LV_OPA_COVER);
+                assert(lv_obj_get_style_opa_layered(objects.gauge_drive_warning, LV_PART_MAIN) == LV_OPA_COVER);
                 const std::string expected = "INV" + std::to_string(inverter) + " ERROR " +
                     std::to_string(code) + ": " + descriptions[code];
                 assert(expected == lv_label_get_text(objects.gauge_warning_message));
@@ -575,7 +596,7 @@ int main(int argc, char **argv) {
                              objects.gauge_soc_warning, objects.gauge_lv_warning}) {
             const bool fault = obj == objects.gauge_drive_warning;
             assert(warning_color(obj) == (fault ? 0xff272e : 0xb0b0b0));
-            assert(lv_obj_get_style_text_opa(obj, LV_PART_MAIN) == (fault ? LV_OPA_COVER : LV_OPA_20));
+            assert(lv_obj_get_style_opa_layered(obj, LV_PART_MAIN) == (fault ? LV_OPA_COVER : LV_OPA_20));
         }
         assert(std::strcmp(lv_label_get_text(objects.gauge_warning_message), "INV2 ERROR 3: GATE DRIVER FAULT") == 0);
         assert(warning_color(objects.gauge_warning_message) == 0xff272e);

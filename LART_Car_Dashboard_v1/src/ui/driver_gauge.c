@@ -64,7 +64,6 @@ static void draw_warning_icon(lv_event_t *event) {
     lv_draw_line_dsc_t line;
     lv_draw_line_dsc_init(&line);
     line.color = lv_obj_get_style_text_color(obj, 0);
-    line.opa = lv_obj_get_style_text_opa(obj, 0);
     line.width = 3;
     line.round_start = line.round_end = true;
     for (int i = 0; i < count; ++i) {
@@ -145,7 +144,8 @@ static lv_obj_t *warning(lv_obj_t *screen, int x, int kind, const char *label) {
     lv_obj_set_size(obj, 104, 62);
     lv_obj_remove_flag(obj, LV_OBJ_FLAG_SCROLLABLE | LV_OBJ_FLAG_CLICKABLE);
     lv_obj_set_style_text_color(obj, lv_color_hex(WARNING_OFF), 0);
-    lv_obj_set_style_text_opa(obj, LV_OPA_20, 0);
+    // Fade the composed icon and caption once so stroke joins stay uniform.
+    lv_obj_set_style_opa_layered(obj, LV_OPA_20, 0);
     lv_obj_add_event_cb(obj, draw_warning_icon, LV_EVENT_DRAW_MAIN, (void *)(intptr_t)kind);
     lv_obj_t *caption = text(obj, 0, 43, 104, label, &ui_font_orbitron_bold_15, WARNING_OFF);
     lv_obj_remove_local_style_prop(caption, LV_STYLE_TEXT_COLOR, 0);
@@ -155,7 +155,7 @@ static lv_obj_t *warning(lv_obj_t *screen, int x, int kind, const char *label) {
 static void warning_style(lv_obj_t *obj, bool active, bool fault) {
     lv_obj_set_style_text_color(obj,
         lv_color_hex(active ? (fault ? WARNING_RED : WARNING_ON) : WARNING_OFF), 0);
-    lv_obj_set_style_text_opa(obj, active && fault ? LV_OPA_COVER : LV_OPA_20, 0);
+    lv_obj_set_style_opa_layered(obj, active && fault ? LV_OPA_COVER : LV_OPA_20, 0);
 }
 
 static const char *inverter_fault_description(float code) {
