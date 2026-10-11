@@ -99,6 +99,40 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
     (void)data;
     (void)dlc;
     switch (can_id) {
+        case 356u: {
+            {
+                lart_msgs::msg::Inv1Setmaxdcbrakecurrent out;
+                bool decoded_any = false;
+                if (database_ == "powertrain_t26") {
+                    struct powertrain_t26_inv1_set_max_dc_brake_current_t decoded = {};
+                    if (powertrain_t26_inv1_set_max_dc_brake_current_unpack(&decoded, data, dlc) == 0) {
+                        out.inv1_cmd_maxdcbrakecurrent = powertrain_t26_inv1_set_max_dc_brake_current_inv1_cmd_max_dc_brake_current_decode(decoded.inv1_cmd_max_dc_brake_current);
+                        decoded_any = true;
+                    }
+                }
+                if (decoded_any) {
+                    pub_inv1_setmaxdcbrakecurrent->publish(out);
+                }
+            }
+            return true;
+        }
+        case 357u: {
+            {
+                lart_msgs::msg::Inv2Setmaxdcbrakecurrent out;
+                bool decoded_any = false;
+                if (database_ == "powertrain_t26") {
+                    struct powertrain_t26_inv2_set_max_dc_brake_current_t decoded = {};
+                    if (powertrain_t26_inv2_set_max_dc_brake_current_unpack(&decoded, data, dlc) == 0) {
+                        out.inv2_cmd_maxdcbrakecurrent = powertrain_t26_inv2_set_max_dc_brake_current_inv2_cmd_max_dc_brake_current_decode(decoded.inv2_cmd_max_dc_brake_current);
+                        decoded_any = true;
+                    }
+                }
+                if (decoded_any) {
+                    pub_inv2_setmaxdcbrakecurrent->publish(out);
+                }
+            }
+            return true;
+        }
         case 388u: {
             {
                 lart_msgs::msg::Inv1Setdriveenable out;
@@ -963,45 +997,6 @@ bool CanBridgeImpl::handle_frame_chunk_1(uint32_t can_id, const uint8_t* data, s
                 }
                 if (decoded_any) {
                     pub_dv_status->publish(out);
-                }
-            }
-            return true;
-        }
-        case 1285u: {
-            {
-                lart_msgs::msg::SlamStatsCan out;
-                bool decoded_any = false;
-                if (database_ == "autonomous_t26") {
-                    struct autonomous_t26_slam_stats_can_t decoded = {};
-                    if (autonomous_t26_slam_stats_can_unpack(&decoded, data, dlc) == 0) {
-                        out.lap_counter = autonomous_t26_slam_stats_can_lap_counter_decode(decoded.lap_counter);
-                        out.cones_count_actual = autonomous_t26_slam_stats_can_cones_count_actual_decode(decoded.cones_count_actual);
-                        out.cones_count_all = autonomous_t26_slam_stats_can_cones_count_all_decode(decoded.cones_count_all);
-                        decoded_any = true;
-                    }
-                }
-                if (decoded_any) {
-                    pub_slam_stats_can->publish(out);
-                }
-            }
-            return true;
-        }
-        case 1289u: {
-            {
-                lart_msgs::msg::VcuRpm out;
-                bool decoded_any = false;
-                if (database_ == "autonomous_t26") {
-                    struct autonomous_t26_vcu_rpm_t decoded = {};
-                    if (autonomous_t26_vcu_rpm_unpack(&decoded, data, dlc) == 0) {
-                        out.motor_rpm_left = autonomous_t26_vcu_rpm_motor_rpm_left_decode(decoded.motor_rpm_left);
-                        out.motor_rpm_right = autonomous_t26_vcu_rpm_motor_rpm_right_decode(decoded.motor_rpm_right);
-                        out.motor_current_left = autonomous_t26_vcu_rpm_motor_current_left_decode(decoded.motor_current_left);
-                        out.motor_current_right = autonomous_t26_vcu_rpm_motor_current_right_decode(decoded.motor_current_right);
-                        decoded_any = true;
-                    }
-                }
-                if (decoded_any) {
-                    pub_vcu_rpm->publish(out);
                 }
             }
             return true;

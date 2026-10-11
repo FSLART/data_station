@@ -99,6 +99,46 @@ bool CanBridgeImpl::handle_frame_chunk_4(uint32_t can_id, const uint8_t* data, s
     (void)data;
     (void)dlc;
     switch (can_id) {
+        case 1585u: {
+            {
+                lart_msgs::msg::Slave08VoltageId1 out;
+                bool decoded_any = false;
+                if (database_ == "powertrain_t26") {
+                    struct powertrain_t26_slave_08_voltage_id_1_t decoded = {};
+                    if (powertrain_t26_slave_08_voltage_id_1_unpack(&decoded, data, dlc) == 0) {
+                        out.cell_voltage_1 = powertrain_t26_slave_08_voltage_id_1_cell_voltage_1_decode(decoded.cell_voltage_1);
+                        out.cell_voltage_2 = powertrain_t26_slave_08_voltage_id_1_cell_voltage_2_decode(decoded.cell_voltage_2);
+                        out.cell_voltage_3 = powertrain_t26_slave_08_voltage_id_1_cell_voltage_3_decode(decoded.cell_voltage_3);
+                        out.cell_voltage_4 = powertrain_t26_slave_08_voltage_id_1_cell_voltage_4_decode(decoded.cell_voltage_4);
+                        decoded_any = true;
+                    }
+                }
+                if (decoded_any) {
+                    pub_slave_08_voltage_id_1->publish(out);
+                }
+            }
+            return true;
+        }
+        case 1586u: {
+            {
+                lart_msgs::msg::Slave08VoltageId2 out;
+                bool decoded_any = false;
+                if (database_ == "powertrain_t26") {
+                    struct powertrain_t26_slave_08_voltage_id_2_t decoded = {};
+                    if (powertrain_t26_slave_08_voltage_id_2_unpack(&decoded, data, dlc) == 0) {
+                        out.cell_voltage_5 = powertrain_t26_slave_08_voltage_id_2_cell_voltage_5_decode(decoded.cell_voltage_5);
+                        out.cell_voltage_6 = powertrain_t26_slave_08_voltage_id_2_cell_voltage_6_decode(decoded.cell_voltage_6);
+                        out.cell_voltage_7 = powertrain_t26_slave_08_voltage_id_2_cell_voltage_7_decode(decoded.cell_voltage_7);
+                        out.cell_voltage_8 = powertrain_t26_slave_08_voltage_id_2_cell_voltage_8_decode(decoded.cell_voltage_8);
+                        decoded_any = true;
+                    }
+                }
+                if (decoded_any) {
+                    pub_slave_08_voltage_id_2->publish(out);
+                }
+            }
+            return true;
+        }
         case 1587u: {
             {
                 lart_msgs::msg::Slave08VoltageId3 out;
@@ -655,46 +695,6 @@ bool CanBridgeImpl::handle_frame_chunk_4(uint32_t can_id, const uint8_t* data, s
                 }
                 if (decoded_any) {
                     pub_slave_12_voltage_id_2->publish(out);
-                }
-            }
-            return true;
-        }
-        case 1615u: {
-            {
-                lart_msgs::msg::Slave12VoltageId3 out;
-                bool decoded_any = false;
-                if (database_ == "powertrain_t26") {
-                    struct powertrain_t26_slave_12_voltage_id_3_t decoded = {};
-                    if (powertrain_t26_slave_12_voltage_id_3_unpack(&decoded, data, dlc) == 0) {
-                        out.cell_voltage_9 = powertrain_t26_slave_12_voltage_id_3_cell_voltage_9_decode(decoded.cell_voltage_9);
-                        out.cell_voltage_10 = powertrain_t26_slave_12_voltage_id_3_cell_voltage_10_decode(decoded.cell_voltage_10);
-                        out.cell_voltage_11 = powertrain_t26_slave_12_voltage_id_3_cell_voltage_11_decode(decoded.cell_voltage_11);
-                        out.cell_voltage_12 = powertrain_t26_slave_12_voltage_id_3_cell_voltage_12_decode(decoded.cell_voltage_12);
-                        decoded_any = true;
-                    }
-                }
-                if (decoded_any) {
-                    pub_slave_12_voltage_id_3->publish(out);
-                }
-            }
-            return true;
-        }
-        case 1616u: {
-            {
-                lart_msgs::msg::Slave12TemperatureId1 out;
-                bool decoded_any = false;
-                if (database_ == "powertrain_t26") {
-                    struct powertrain_t26_slave_12_temperature_id_1_t decoded = {};
-                    if (powertrain_t26_slave_12_temperature_id_1_unpack(&decoded, data, dlc) == 0) {
-                        out.temperature_value_1 = powertrain_t26_slave_12_temperature_id_1_temperature_value_1_decode(decoded.temperature_value_1);
-                        out.temperature_value_2 = powertrain_t26_slave_12_temperature_id_1_temperature_value_2_decode(decoded.temperature_value_2);
-                        out.temperature_value_3 = powertrain_t26_slave_12_temperature_id_1_temperature_value_3_decode(decoded.temperature_value_3);
-                        out.temperature_value_4 = powertrain_t26_slave_12_temperature_id_1_temperature_value_4_decode(decoded.temperature_value_4);
-                        decoded_any = true;
-                    }
-                }
-                if (decoded_any) {
-                    pub_slave_12_temperature_id_1->publish(out);
                 }
             }
             return true;

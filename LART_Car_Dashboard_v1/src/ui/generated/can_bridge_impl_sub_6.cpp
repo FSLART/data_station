@@ -66,6 +66,30 @@ bool CanBridgeImpl::handle_frame_chunk_6(uint32_t can_id, const uint8_t* data, s
     (void)data;
     (void)dlc;
     switch (can_id) {
+        case 1933u: {
+            {
+                lart_msgs::msg::Aqt2Temperatures13 out;
+                bool decoded_any = false;
+                if (database_ == "data_t26") {
+                    struct data_t26_aqt2_temperatures_13_t decoded = {};
+                    if (data_t26_aqt2_temperatures_13_unpack(&decoded, data, dlc) == 0) {
+                        out.temperature_097 = data_t26_aqt2_temperatures_13_temperature_097_decode(decoded.temperature_097);
+                        out.temperature_098 = data_t26_aqt2_temperatures_13_temperature_098_decode(decoded.temperature_098);
+                        out.temperature_099 = data_t26_aqt2_temperatures_13_temperature_099_decode(decoded.temperature_099);
+                        out.temperature_100 = data_t26_aqt2_temperatures_13_temperature_100_decode(decoded.temperature_100);
+                        out.temperature_101 = data_t26_aqt2_temperatures_13_temperature_101_decode(decoded.temperature_101);
+                        out.temperature_102 = data_t26_aqt2_temperatures_13_temperature_102_decode(decoded.temperature_102);
+                        out.temperature_103 = data_t26_aqt2_temperatures_13_temperature_103_decode(decoded.temperature_103);
+                        out.temperature_104 = data_t26_aqt2_temperatures_13_temperature_104_decode(decoded.temperature_104);
+                        decoded_any = true;
+                    }
+                }
+                if (decoded_any) {
+                    pub_aqt2_temperatures_13->publish(out);
+                }
+            }
+            return true;
+        }
         case 1934u: {
             {
                 lart_msgs::msg::Aqt2Temperatures14 out;

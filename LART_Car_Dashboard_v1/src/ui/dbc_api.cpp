@@ -688,6 +688,12 @@ extern "C" void check_dbc_errors(void (*on_error)(const char *id, const char *ms
         }
     }
     {
+        float val = dbc_api.aqt4.emergency;
+        if (val > 0.5f) {
+            on_error("aqt4.emergency", "AQT4", "EMERGENCY", val, "ERROR");
+        }
+    }
+    {
         float val = dbc_api.inv1_temperatures.inv1_actual_faultcode;
         if (val > 0.5f) {
             on_error("inv1_temperatures.inv1_actual_faultcode", "INV1_Temperatures", "INV1_Actual_FaultCode", val, "ERROR");

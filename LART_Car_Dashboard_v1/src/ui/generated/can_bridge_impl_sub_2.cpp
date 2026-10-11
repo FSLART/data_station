@@ -99,6 +99,45 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
     (void)data;
     (void)dlc;
     switch (can_id) {
+        case 1285u: {
+            {
+                lart_msgs::msg::SlamStatsCan out;
+                bool decoded_any = false;
+                if (database_ == "autonomous_t26") {
+                    struct autonomous_t26_slam_stats_can_t decoded = {};
+                    if (autonomous_t26_slam_stats_can_unpack(&decoded, data, dlc) == 0) {
+                        out.lap_counter = autonomous_t26_slam_stats_can_lap_counter_decode(decoded.lap_counter);
+                        out.cones_count_actual = autonomous_t26_slam_stats_can_cones_count_actual_decode(decoded.cones_count_actual);
+                        out.cones_count_all = autonomous_t26_slam_stats_can_cones_count_all_decode(decoded.cones_count_all);
+                        decoded_any = true;
+                    }
+                }
+                if (decoded_any) {
+                    pub_slam_stats_can->publish(out);
+                }
+            }
+            return true;
+        }
+        case 1289u: {
+            {
+                lart_msgs::msg::VcuRpm out;
+                bool decoded_any = false;
+                if (database_ == "autonomous_t26") {
+                    struct autonomous_t26_vcu_rpm_t decoded = {};
+                    if (autonomous_t26_vcu_rpm_unpack(&decoded, data, dlc) == 0) {
+                        out.motor_rpm_left = autonomous_t26_vcu_rpm_motor_rpm_left_decode(decoded.motor_rpm_left);
+                        out.motor_rpm_right = autonomous_t26_vcu_rpm_motor_rpm_right_decode(decoded.motor_rpm_right);
+                        out.motor_current_left = autonomous_t26_vcu_rpm_motor_current_left_decode(decoded.motor_current_left);
+                        out.motor_current_right = autonomous_t26_vcu_rpm_motor_current_right_decode(decoded.motor_current_right);
+                        decoded_any = true;
+                    }
+                }
+                if (decoded_any) {
+                    pub_vcu_rpm->publish(out);
+                }
+            }
+            return true;
+        }
         case 1297u: {
             {
                 lart_msgs::msg::IvtMsgResponse out;
@@ -819,46 +858,6 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
                 }
                 if (decoded_any) {
                     pub_slave_03_temperature_id_2->publish(out);
-                }
-            }
-            return true;
-        }
-        case 1555u: {
-            {
-                lart_msgs::msg::Slave03MscId1 out;
-                bool decoded_any = false;
-                if (database_ == "powertrain_t26") {
-                    struct powertrain_t26_slave_03_msc_id_1_t decoded = {};
-                    if (powertrain_t26_slave_03_msc_id_1_unpack(&decoded, data, dlc) == 0) {
-                        out.module_voltage_sum = powertrain_t26_slave_03_msc_id_1_module_voltage_sum_decode(decoded.module_voltage_sum);
-                        out.module_voltage_avg = powertrain_t26_slave_03_msc_id_1_module_voltage_avg_decode(decoded.module_voltage_avg);
-                        out.module_voltage_min = powertrain_t26_slave_03_msc_id_1_module_voltage_min_decode(decoded.module_voltage_min);
-                        out.module_voltage_max = powertrain_t26_slave_03_msc_id_1_module_voltage_max_decode(decoded.module_voltage_max);
-                        decoded_any = true;
-                    }
-                }
-                if (decoded_any) {
-                    pub_slave_03_msc_id_1->publish(out);
-                }
-            }
-            return true;
-        }
-        case 1556u: {
-            {
-                lart_msgs::msg::Slave03MscId2 out;
-                bool decoded_any = false;
-                if (database_ == "powertrain_t26") {
-                    struct powertrain_t26_slave_03_msc_id_2_t decoded = {};
-                    if (powertrain_t26_slave_03_msc_id_2_unpack(&decoded, data, dlc) == 0) {
-                        out.module_voltage_delta = powertrain_t26_slave_03_msc_id_2_module_voltage_delta_decode(decoded.module_voltage_delta);
-                        out.module_ic_voltage = powertrain_t26_slave_03_msc_id_2_module_ic_voltage_decode(decoded.module_ic_voltage);
-                        out.module_open_wire = powertrain_t26_slave_03_msc_id_2_module_open_wire_decode(decoded.module_open_wire);
-                        out.module_ic_temperature = powertrain_t26_slave_03_msc_id_2_module_ic_temperature_decode(decoded.module_ic_temperature);
-                        decoded_any = true;
-                    }
-                }
-                if (decoded_any) {
-                    pub_slave_03_msc_id_2->publish(out);
                 }
             }
             return true;

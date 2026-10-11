@@ -45,7 +45,7 @@ extern "C" {
 #endif
 
 /* Frame ids. */
-#define DATA_T26_AQT2_FRAME_ID (0x720u)
+#define DATA_T26_AQT2_FRAME_ID (0x30u)
 #define DATA_T26_AQT2_TEMPERATURES_1_FRAME_ID (0x781u)
 #define DATA_T26_AQT2_TEMPERATURES_2_FRAME_ID (0x782u)
 #define DATA_T26_AQT2_TEMPERATURES_3_FRAME_ID (0x783u)
@@ -545,6 +545,8 @@ extern "C" {
 
 /**
  * Signals in message AQT2.
+ *
+ * AQT2 Repeater
  *
  * All signal values are as on the CAN bus.
  */

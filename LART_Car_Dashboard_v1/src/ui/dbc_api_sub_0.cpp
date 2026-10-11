@@ -445,6 +445,17 @@ void init_dbc_api_subscribers_chunk_0(std::shared_ptr<rclcpp::Node> node, std::v
                 dbc_api.aqt4.susp_r = msg->susp_r;
             }
         }));
+    subs.push_back(node->create_subscription<lart_msgs::msg::Aqt4>(
+        "/pwt/aqt4", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::Aqt4> msg) {
+            if (msg) {
+                std::lock_guard<std::mutex> lock(dbc_api_mutex);
+                dbc_api.aqt4.emergency = msg->emergency;
+                dbc_api.aqt4.inertia = msg->inertia;
+                dbc_api.aqt4.st_angle = msg->st_angle;
+                dbc_api.aqt4.susp_l = msg->susp_l;
+                dbc_api.aqt4.susp_r = msg->susp_r;
+            }
+        }));
 }
 #endif
 #endif

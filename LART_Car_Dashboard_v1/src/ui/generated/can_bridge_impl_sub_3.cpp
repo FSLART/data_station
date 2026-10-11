@@ -99,6 +99,46 @@ bool CanBridgeImpl::handle_frame_chunk_3(uint32_t can_id, const uint8_t* data, s
     (void)data;
     (void)dlc;
     switch (can_id) {
+        case 1555u: {
+            {
+                lart_msgs::msg::Slave03MscId1 out;
+                bool decoded_any = false;
+                if (database_ == "powertrain_t26") {
+                    struct powertrain_t26_slave_03_msc_id_1_t decoded = {};
+                    if (powertrain_t26_slave_03_msc_id_1_unpack(&decoded, data, dlc) == 0) {
+                        out.module_voltage_sum = powertrain_t26_slave_03_msc_id_1_module_voltage_sum_decode(decoded.module_voltage_sum);
+                        out.module_voltage_avg = powertrain_t26_slave_03_msc_id_1_module_voltage_avg_decode(decoded.module_voltage_avg);
+                        out.module_voltage_min = powertrain_t26_slave_03_msc_id_1_module_voltage_min_decode(decoded.module_voltage_min);
+                        out.module_voltage_max = powertrain_t26_slave_03_msc_id_1_module_voltage_max_decode(decoded.module_voltage_max);
+                        decoded_any = true;
+                    }
+                }
+                if (decoded_any) {
+                    pub_slave_03_msc_id_1->publish(out);
+                }
+            }
+            return true;
+        }
+        case 1556u: {
+            {
+                lart_msgs::msg::Slave03MscId2 out;
+                bool decoded_any = false;
+                if (database_ == "powertrain_t26") {
+                    struct powertrain_t26_slave_03_msc_id_2_t decoded = {};
+                    if (powertrain_t26_slave_03_msc_id_2_unpack(&decoded, data, dlc) == 0) {
+                        out.module_voltage_delta = powertrain_t26_slave_03_msc_id_2_module_voltage_delta_decode(decoded.module_voltage_delta);
+                        out.module_ic_voltage = powertrain_t26_slave_03_msc_id_2_module_ic_voltage_decode(decoded.module_ic_voltage);
+                        out.module_open_wire = powertrain_t26_slave_03_msc_id_2_module_open_wire_decode(decoded.module_open_wire);
+                        out.module_ic_temperature = powertrain_t26_slave_03_msc_id_2_module_ic_temperature_decode(decoded.module_ic_temperature);
+                        decoded_any = true;
+                    }
+                }
+                if (decoded_any) {
+                    pub_slave_03_msc_id_2->publish(out);
+                }
+            }
+            return true;
+        }
         case 1557u: {
             {
                 lart_msgs::msg::Slave04VoltageId1 out;
@@ -655,46 +695,6 @@ bool CanBridgeImpl::handle_frame_chunk_3(uint32_t can_id, const uint8_t* data, s
                 }
                 if (decoded_any) {
                     pub_slave_07_msc_id_2->publish(out);
-                }
-            }
-            return true;
-        }
-        case 1585u: {
-            {
-                lart_msgs::msg::Slave08VoltageId1 out;
-                bool decoded_any = false;
-                if (database_ == "powertrain_t26") {
-                    struct powertrain_t26_slave_08_voltage_id_1_t decoded = {};
-                    if (powertrain_t26_slave_08_voltage_id_1_unpack(&decoded, data, dlc) == 0) {
-                        out.cell_voltage_1 = powertrain_t26_slave_08_voltage_id_1_cell_voltage_1_decode(decoded.cell_voltage_1);
-                        out.cell_voltage_2 = powertrain_t26_slave_08_voltage_id_1_cell_voltage_2_decode(decoded.cell_voltage_2);
-                        out.cell_voltage_3 = powertrain_t26_slave_08_voltage_id_1_cell_voltage_3_decode(decoded.cell_voltage_3);
-                        out.cell_voltage_4 = powertrain_t26_slave_08_voltage_id_1_cell_voltage_4_decode(decoded.cell_voltage_4);
-                        decoded_any = true;
-                    }
-                }
-                if (decoded_any) {
-                    pub_slave_08_voltage_id_1->publish(out);
-                }
-            }
-            return true;
-        }
-        case 1586u: {
-            {
-                lart_msgs::msg::Slave08VoltageId2 out;
-                bool decoded_any = false;
-                if (database_ == "powertrain_t26") {
-                    struct powertrain_t26_slave_08_voltage_id_2_t decoded = {};
-                    if (powertrain_t26_slave_08_voltage_id_2_unpack(&decoded, data, dlc) == 0) {
-                        out.cell_voltage_5 = powertrain_t26_slave_08_voltage_id_2_cell_voltage_5_decode(decoded.cell_voltage_5);
-                        out.cell_voltage_6 = powertrain_t26_slave_08_voltage_id_2_cell_voltage_6_decode(decoded.cell_voltage_6);
-                        out.cell_voltage_7 = powertrain_t26_slave_08_voltage_id_2_cell_voltage_7_decode(decoded.cell_voltage_7);
-                        out.cell_voltage_8 = powertrain_t26_slave_08_voltage_id_2_cell_voltage_8_decode(decoded.cell_voltage_8);
-                        decoded_any = true;
-                    }
-                }
-                if (decoded_any) {
-                    pub_slave_08_voltage_id_2->publish(out);
                 }
             }
             return true;
