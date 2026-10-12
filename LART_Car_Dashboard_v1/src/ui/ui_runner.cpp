@@ -387,6 +387,49 @@ void check_expired_notifications() {
 }  // namespace
 
 int main(int argc, char **argv) {
+    if (std::getenv("LART_TEST_AUTONOMOUS_TELEMETRY")) {
+        init_lvgl();
+        dbc_api.master_precharge_id_1.precharge_state = -1.0f;
+        ui_init();
+        ui_set_screen(SCREEN_ID_AUTONOMOUS - 1);
+        ui_tick();
+        const auto expect = [](bool condition, const char *field) {
+            if (!condition) {
+                std::fprintf(stderr, "[TEST] Autonomous telemetry failed: %s\n", field);
+                std::_Exit(1);
+            }
+        };
+        // Change subscribed CAN fields while staying on Autonomous. No manual
+        // telemetry refresh: the regular screen tick must propagate each update.
+        for (int sample = 0; sample < 2; ++sample) {
+            dbc_api.acu.mission_select = sample == 0 ? 3.0f : 4.0f;
+            dbc_api.acu.acu_state = sample == 0 ? 5.0f : 8.0f;
+            dbc_api.master_soc_accumulator.soc_float = sample == 0 ? 78.0f : 62.0f;
+            dbc_api.pdm_lv.lv_voltage_mv = sample == 0 ? 25.2f : 24.6f;
+            dbc_api.inv1_erpm_duty_voltage.inv1_actual_erpm = sample == 0 ? 18000.0f : 36000.0f;
+            dbc_api.asf_signals.brake_pressure_front = sample == 0 ? 12.0f : 24.0f;
+            dbc_api.asf_signals.brake_pressure_rear = sample == 0 ? 35.0f : 45.0f;
+            dbc_api.asf_signals.ebs_pressure_tank_front = sample == 0 ? 8.2f : 7.4f;
+            dbc_api.asf_signals.ebs_pressure_tank_rear = sample == 0 ? 9.1f : 8.3f;
+            ui_tick();
+            expect(lv_screen_active() == objects.autonomous, "active screen");
+            expect(std::strcmp(lv_label_get_text(objects.obj3),
+                sample == 0 ? "MISSION:TRACKDRIVE" : "MISSION:BRAKE TEST") == 0, "/can/acu mission_select");
+            expect(std::strcmp(lv_label_get_text(objects.km_label_3),
+                sample == 0 ? "State: DRIVING" : "State: FINISHED") == 0, "/can/acu acu_state");
+            expect(lv_bar_get_value(objects.hv_bar_1) == (sample == 0 ? 78 : 62), "/pwt/master_soc_accumulator");
+            expect(std::strcmp(lv_label_get_text(objects.hv_label_1), sample == 0 ? "78%" : "62%") == 0, "SOC label");
+            expect(std::strcmp(lv_label_get_text(objects.lv_label_1), sample == 0 ? "25.2 V" : "24.6 V") == 0, "/data/pdm_lv");
+            expect(std::strcmp(lv_label_get_text(objects.speed_label_1), sample == 0 ? "23" : "47") == 0, "/pwt/inv1_erpm_duty_voltage");
+            expect(lv_bar_get_value(objects.brake_presure_bar_1) == (sample == 0 ? 12 : 24), "front brake pressure");
+            expect(lv_bar_get_value(objects.brake_presure_bar_2) == (sample == 0 ? 35 : 45), "rear brake pressure");
+            expect(std::strcmp(lv_label_get_text(objects.pneum_press_label_f), sample == 0 ? "8.2" : "7.4") == 0, "front EBS tank pressure");
+            expect(std::strcmp(lv_label_get_text(objects.pneum_press_label_r), sample == 0 ? "9.1" : "8.3") == 0, "rear EBS tank pressure");
+        }
+        std::puts("[TEST] Autonomous CAN telemetry updates passed");
+        ui_fini();
+        return 0;
+    }
     if (std::getenv("LART_TEST_DRIVER_GAUGE")) {
         init_lvgl();
         dbc_api.master_precharge_id_1.precharge_state = -1.0f;
