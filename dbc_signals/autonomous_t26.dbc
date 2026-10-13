@@ -206,6 +206,19 @@ BO_ 1335 IMU_Status: 4 JETSON
  SG_ GNSS_Time_Pulse : 26|1@1+ (1,0) [0|1] "" Vector__XXX
  SG_ RTK_Status : 27|2@1+ (1,0) [0|3] "" Vector__XXX
 
+BO_ 1336 IMU_Temperature: 2 JETSON
+ SG_ Temperature : 0|16@1- (0.01,0) [-327.68|327.67] "degC" Vector__XXX
+
+BO_ 1337 IMU_Filter_Velocity: 6 JETSON
+ SG_ Velocity_X : 0|16@1- (0.01,0) [-327.68|327.67] "m/s" Vector__XXX
+ SG_ Velocity_Y : 16|16@1- (0.01,0) [-327.68|327.67] "m/s" Vector__XXX
+ SG_ Velocity_Z : 32|16@1- (0.01,0) [-327.68|327.67] "m/s" Vector__XXX
+
+BO_ 1338 IMU_Free_Acceleration: 6 JETSON
+ SG_ Free_Acceleration_X : 0|16@1- (0.01,0) [-327.68|327.67] "m/s^2" Vector__XXX
+ SG_ Free_Acceleration_Y : 16|16@1- (0.01,0) [-327.68|327.67] "m/s^2" Vector__XXX
+ SG_ Free_Acceleration_Z : 32|16@1- (0.01,0) [-327.68|327.67] "m/s^2" Vector__XXX
+
 
 
 CM_ BU_ AK10_9 "Atuador direcao";
@@ -214,12 +227,15 @@ CM_ BO_ 2147494248 "";
 CM_ SG_ 2147494248 Position " ";
 CM_ BO_ 1328 "IMU acceleration in the IMU frame, gravity included. Source: /imu/acceleration (geometry_msgs/Vector3Stamped)";
 CM_ BO_ 1329 "IMU angular velocity in the IMU frame. Source: /imu/angular_velocity (geometry_msgs/Vector3Stamped)";
-CM_ BO_ 1330 "GNSS position, WGS84. Source: /imu/gnss_pose pose.position.x (latitude) and pose.position.y (longitude)";
-CM_ BO_ 1331 "GNSS altitude. Source: /imu/gnss_pose pose.position.z";
-CM_ BO_ 1332 "Orientation quaternion. Source: /imu/gnss_pose pose.orientation";
+CM_ BO_ 1330 "GNSS position, WGS84. Source: /gnss_pose pose.position.x (latitude) and pose.position.y (longitude)";
+CM_ BO_ 1331 "GNSS altitude. Source: /gnss_pose pose.position.z";
+CM_ BO_ 1332 "Orientation quaternion. Source: /gnss_pose pose.orientation";
 CM_ BO_ 1333 "Velocity in the IMU frame (X forward if the IMU is mounted aligned with the car). Source: /odometry twist.twist.linear (needs pub_odometry: true), or /filter/velocity (ENU) rotated into the IMU frame";
 CM_ BO_ 1334 "Orientation as Euler angles, ENU reference (yaw 0 = East, positive counter-clockwise). Source: /filter/euler (geometry_msgs/Vector3Stamped), already in degrees";
 CM_ BO_ 1335 "Xsens status word, same bit layout as the device so the raw 32-bit word can be copied in. Source: /status (xsens_mti_ros2_driver/XsStatusWord)";
+CM_ BO_ 1336 "IMU temperature. Source: /temperature (sensor_msgs/Temperature)";
+CM_ BO_ 1337 "Filter velocity exactly as published by the driver, ENU (X East, Y North, Z Up). Source: /filter/velocity (geometry_msgs/Vector3Stamped)";
+CM_ BO_ 1338 "Free acceleration in the local earth frame (ENU), gravity removed. Source: /filter/free_acceleration (geometry_msgs/Vector3Stamped)";
 CM_ SG_ 1329 Angular_Velocity_Z "Yaw rate";
 CM_ SG_ 1333 Velocity_X "Longitudinal velocity";
 CM_ SG_ 1333 Velocity_Y "Lateral velocity";
