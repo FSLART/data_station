@@ -150,12 +150,82 @@ BO_ 1285 SLAM_STATS_CAN: 4 JETSON
  SG_ Cones_count_actual : 4|8@1+ (1,0) [0|0] ""  ACU
  SG_ Cones_count_all : 12|17@1+ (1,0) [0|0] ""  ACU
 
+BO_ 1328 IMU_Acceleration: 6 JETSON
+ SG_ Acceleration_X : 0|16@1- (0.01,0) [-327.68|327.67] "m/s^2" Vector__XXX
+ SG_ Acceleration_Y : 16|16@1- (0.01,0) [-327.68|327.67] "m/s^2" Vector__XXX
+ SG_ Acceleration_Z : 32|16@1- (0.01,0) [-327.68|327.67] "m/s^2" Vector__XXX
+
+BO_ 1329 IMU_Angular_Velocity: 6 JETSON
+ SG_ Angular_Velocity_X : 0|16@1- (0.001,0) [-32.768|32.767] "rad/s" Vector__XXX
+ SG_ Angular_Velocity_Y : 16|16@1- (0.001,0) [-32.768|32.767] "rad/s" Vector__XXX
+ SG_ Angular_Velocity_Z : 32|16@1- (0.001,0) [-32.768|32.767] "rad/s" Vector__XXX
+
+BO_ 1330 IMU_GNSS_Position: 8 JETSON
+ SG_ Latitude : 0|32@1- (1E-007,0) [-90|90] "deg" Vector__XXX
+ SG_ Longitude : 32|32@1- (1E-007,0) [-180|180] "deg" Vector__XXX
+
+BO_ 1331 IMU_GNSS_Altitude: 4 JETSON
+ SG_ Altitude : 0|32@1- (0.001,0) [-1000|10000] "m" Vector__XXX
+
+BO_ 1332 IMU_Orientation: 8 JETSON
+ SG_ Quaternion_W : 0|16@1- (0.0001,0) [-1|1] "" Vector__XXX
+ SG_ Quaternion_X : 16|16@1- (0.0001,0) [-1|1] "" Vector__XXX
+ SG_ Quaternion_Y : 32|16@1- (0.0001,0) [-1|1] "" Vector__XXX
+ SG_ Quaternion_Z : 48|16@1- (0.0001,0) [-1|1] "" Vector__XXX
+
+BO_ 1333 IMU_Velocity: 6 JETSON
+ SG_ Velocity_X : 0|16@1- (0.01,0) [-327.68|327.67] "m/s" Vector__XXX
+ SG_ Velocity_Y : 16|16@1- (0.01,0) [-327.68|327.67] "m/s" Vector__XXX
+ SG_ Velocity_Z : 32|16@1- (0.01,0) [-327.68|327.67] "m/s" Vector__XXX
+
+BO_ 1334 IMU_Euler: 6 JETSON
+ SG_ Roll : 0|16@1- (0.01,0) [-180|180] "deg" Vector__XXX
+ SG_ Pitch : 16|16@1- (0.01,0) [-90|90] "deg" Vector__XXX
+ SG_ Yaw : 32|16@1- (0.01,0) [-180|180] "deg" Vector__XXX
+
+BO_ 1335 IMU_Status: 4 JETSON
+ SG_ Self_Test : 0|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ Filter_Valid : 1|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ GNSS_Fix : 2|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ No_Rotation_Update_Status : 3|2@1+ (1,0) [0|3] "" Vector__XXX
+ SG_ Representative_Motion : 5|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ Clock_Bias_Estimation : 6|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ Clip_Acc_X : 8|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ Clip_Acc_Y : 9|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ Clip_Acc_Z : 10|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ Clip_Gyr_X : 11|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ Clip_Gyr_Y : 12|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ Clip_Gyr_Z : 13|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ Clip_Mag_X : 14|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ Clip_Mag_Y : 15|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ Clip_Mag_Z : 16|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ Clipping_Indication : 19|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ SyncIn_Marker : 21|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ SyncOut_Marker : 22|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ Filter_Mode : 23|3@1+ (1,0) [0|7] "" Vector__XXX
+ SG_ GNSS_Time_Pulse : 26|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ RTK_Status : 27|2@1+ (1,0) [0|3] "" Vector__XXX
+
 
 
 CM_ BU_ AK10_9 "Atuador direcao";
 CM_ SG_ 81 ACU_STATE "";
 CM_ BO_ 2147494248 "";
 CM_ SG_ 2147494248 Position " ";
+CM_ BO_ 1328 "IMU acceleration in the IMU frame, gravity included. Source: /imu/acceleration (geometry_msgs/Vector3Stamped)";
+CM_ BO_ 1329 "IMU angular velocity in the IMU frame. Source: /imu/angular_velocity (geometry_msgs/Vector3Stamped)";
+CM_ BO_ 1330 "GNSS position, WGS84. Source: /imu/gnss_pose pose.position.x (latitude) and pose.position.y (longitude)";
+CM_ BO_ 1331 "GNSS altitude. Source: /imu/gnss_pose pose.position.z";
+CM_ BO_ 1332 "Orientation quaternion. Source: /imu/gnss_pose pose.orientation";
+CM_ BO_ 1333 "Velocity in the IMU frame (X forward if the IMU is mounted aligned with the car). Source: /odometry twist.twist.linear (needs pub_odometry: true), or /filter/velocity (ENU) rotated into the IMU frame";
+CM_ BO_ 1334 "Orientation as Euler angles, ENU reference (yaw 0 = East, positive counter-clockwise). Source: /filter/euler (geometry_msgs/Vector3Stamped), already in degrees";
+CM_ BO_ 1335 "Xsens status word, same bit layout as the device so the raw 32-bit word can be copied in. Source: /status (xsens_mti_ros2_driver/XsStatusWord)";
+CM_ SG_ 1329 Angular_Velocity_Z "Yaw rate";
+CM_ SG_ 1333 Velocity_X "Longitudinal velocity";
+CM_ SG_ 1333 Velocity_Y "Lateral velocity";
+CM_ SG_ 1335 Filter_Valid "Set when the filter output (orientation, velocity, position) is valid";
+CM_ SG_ 1335 GNSS_Fix "Set when the GNSS receiver has a position fix";
+CM_ SG_ 1335 Clipping_Indication "Set when any accelerometer, gyroscope or magnetometer axis clipped";
 VAL_ 81 IGN 0 "OFF" 1 "ON" ;
 VAL_ 81 ASMS 0 "OFF" 1 "ON" ;
 VAL_ 81 EMERGENCY 0 "OFF" 1 "ON" ;
@@ -169,4 +239,5 @@ VAL_ 1282 ASB_EBS_state 1 "ASB_EBS_state_deactivated" 2 "ASB_EBS_state_initial_c
 VAL_ 1282 AMI_state 1 "AMI_state_acceleration" 2 "AMI_state_skidpad" 3 "AMI_state_trackdrive" 4 "AMI_state_braketest" 5 "AMI_state_inspection" 6 "AMI_state_autocross" ;
 VAL_ 1282 ASB_redundancy_state 1 "ASB_redundancy_state_deactivated" 2 "ASB_redundancy_state_engaged" 3 "ASB_redundancy_state_initial_checkup_passed" ;
 VAL_ 97 EMERGENCY_CAUSE 0 "None" 1 "RES" 2 "ACU" 3 "ZED" 4 "Steering_error" 5 "Steering_timeout" 6 "Planner" 7 "SLAM" 8 "P-Puma" 9 "IMU" ;
+VAL_ 1335 RTK_Status 0 "No_RTK" 1 "RTK_Floating" 2 "RTK_Fixed" ;
 
