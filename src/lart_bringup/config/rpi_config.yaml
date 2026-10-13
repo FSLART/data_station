@@ -101,7 +101,7 @@ dashboard_ui:
 bag_recorder:
   ros__parameters:
     trigger_topic: /pwt/start_precharge
-    record_regex: /data/.*|/pwt/.*|/can/(?!frames$).*|/imu/.*
+    # Records all discoverable ROS topics, including hidden topics and /can/frames.
     bag_dir: "~/bags"            # session folders precharge_YYYYMMDD_HHMMSS
     stop_grace_s: 30.0           # keep recording this long after request=0
     split_duration_s: 0          # 0 = single continuous file per session (no splitting)
