@@ -2,7 +2,8 @@
 
 Watches the precharge request signal and records all discoverable ROS topics,
 including hidden topics and raw CAN frames (/can/frames), into timestamped
-rosbag2 sessions. Topic discovery stays enabled during recording:
+rosbag2 sessions. Topics under /zed/ are excluded. Topic discovery stays
+enabled during recording:
 
   precharge_request >= 0.5       → start recording (new session folder)
   precharge_request < 0.5        → keep recording for stop_grace_s, then finalize
@@ -78,7 +79,7 @@ class BagRecorderNode(Node):
         split_desc = f'{self._split_s}s' if self._split_s > 0 else 'off (single file)'
         self.get_logger().info(
             f'bag_recorder ready — trigger={self._trigger_topic}, '
-            f'topics=all (including hidden), out={self._bag_dir}, '
+            f'topics=all (including hidden, excluding /zed/*), out={self._bag_dir}, '
             f'grace={self._stop_grace_s:.0f}s, split={split_desc}'
         )
 
@@ -117,6 +118,7 @@ class BagRecorderNode(Node):
         cmd = [
             'ros2', 'bag', 'record',
             '--all-topics', '--include-hidden-topics',
+            '--exclude-regex', '^/zed/.*',
             '-o', str(out),
             '--disable-keyboard-controls',
         ]
