@@ -125,3 +125,56 @@ def test_powertrain_vcu_states_rejects_truncated_frame(decoders):
     result, _ = unpack(decoders, "powertrain_t26_vcu_states", VcuStates,
                        bytes.fromhex("96 fa bd 64 15 f9 bd"))
     assert result == -22
+
+
+@pytest.mark.parametrize(("name", "fields", "raw_type", "payload", "expected"), [
+    ("imu_acceleration", "acceleration_x acceleration_y acceleration_z",
+     ctypes.c_int16, "2e fb 29 09 00 80", [-12.34, 23.45, -327.68]),
+    ("imu_angular_velocity", "angular_velocity_x angular_velocity_y angular_velocity_z",
+     ctypes.c_int16, "2e fb 29 09 ff 7f", [-1.234, 2.345, 32.767]),
+    ("imu_gnss_position", "latitude longitude", ctypes.c_int32,
+     "80 74 d2 1a 00 17 5b ca", [45, -90]),
+    ("imu_gnss_altitude", "altitude", ctypes.c_int32,
+     "c0 1d fe ff", [-123.456]),
+    ("imu_orientation", "quaternion_w quaternion_x quaternion_y quaternion_z",
+     ctypes.c_int16, "10 27 78 ec c4 09 00 00", [1, -0.5, 0.25, 0]),
+    ("imu_velocity", "velocity_x velocity_y velocity_z", ctypes.c_int16,
+     "2e fb 29 09 00 80", [-12.34, 23.45, -327.68]),
+    ("imu_euler", "roll pitch yaw", ctypes.c_int16,
+     "b0 b9 28 23 50 46", [-180, 90, 180]),
+])
+def test_autonomous_imu_physical_values_and_frame_lengths(
+        decoders, name, fields, raw_type, payload, expected):
+    message_type = type(name, (ctypes.Structure,), {
+        "_fields_": [(field, raw_type) for field in fields.split()],
+    })
+    decoder = f"autonomous_t26_{name}"
+    raw = bytes.fromhex(payload)
+    result, message = unpack(decoders, decoder, message_type, raw)
+    assert result == 0
+    assert physical(decoders, decoder, message) == pytest.approx(expected)
+    result, _ = unpack(decoders, decoder, message_type, raw[:-1])
+    assert result == -22
+
+
+def test_autonomous_imu_status_preserves_device_bit_layout(decoders):
+    fields = (
+        "self_test filter_valid gnss_fix no_rotation_update_status "
+        "representative_motion clock_bias_estimation clip_acc_x clip_acc_y "
+        "clip_acc_z clip_gyr_x clip_gyr_y clip_gyr_z clip_mag_x clip_mag_y "
+        "clip_mag_z clipping_indication sync_in_marker sync_out_marker "
+        "filter_mode gnss_time_pulse rtk_status"
+    ).split()
+    message_type = type("ImuStatus", (ctypes.Structure,), {
+        "_fields_": [(field, ctypes.c_uint8) for field in fields],
+    })
+    # Bits 0, 2, 4, 6, 8, 10, 12, 14, 16, 19, 21, 24, 26, 28.
+    result, message = unpack(decoders, "autonomous_t26_imu_status", message_type,
+                             bytes.fromhex("55 55 29 15"))
+    assert result == 0
+    assert physical(decoders, "autonomous_t26_imu_status", message) == [
+        1, 0, 1, 2, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 2, 1, 2,
+    ]
+    result, _ = unpack(decoders, "autonomous_t26_imu_status", message_type,
+                       bytes.fromhex("55 55 29"))
+    assert result == -22

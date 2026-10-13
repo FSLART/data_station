@@ -158,3 +158,14 @@ angle uses 0.25 degrees per bit.
 The regenerated powertrain decoder, `VcuStates.msg`, dashboard API and bridge
 expose these fields on `/pwt/vcu_states`. Rebuild and restart its publishers and
 subscribers together. Existing ready-state values 6 and 7 remain unchanged.
+
+## Autonomous DBC update (13 October 2026)
+
+The autonomous DBC adds eight IMU frames at CAN IDs `0x530`–`0x537`:
+acceleration, angular velocity, GNSS position, GNSS altitude, quaternion
+orientation, velocity, Euler angles and device status. The regenerated decoder,
+ROS interfaces, dashboard API and bridge expose them on `/can/imu_*` topics.
+Acceleration includes gravity; Euler angles use degrees with an ENU reference.
+The status frame preserves the Xsens device bit layout, including RTK status.
+Rebuild `lart_msgs`, the dashboard and the bridge together before restarting
+publishers and subscribers.

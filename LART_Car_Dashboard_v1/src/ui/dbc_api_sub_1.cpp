@@ -18,6 +18,14 @@ extern std::mutex dbc_api_mutex;
 #include <lart_msgs/msg/icd_request.hpp>
 #include <lart_msgs/msg/icd_response.hpp>
 #include <lart_msgs/msg/icd_result.hpp>
+#include <lart_msgs/msg/imu_acceleration.hpp>
+#include <lart_msgs/msg/imu_angular_velocity.hpp>
+#include <lart_msgs/msg/imu_euler.hpp>
+#include <lart_msgs/msg/imu_gnss_altitude.hpp>
+#include <lart_msgs/msg/imu_gnss_position.hpp>
+#include <lart_msgs/msg/imu_orientation.hpp>
+#include <lart_msgs/msg/imu_status.hpp>
+#include <lart_msgs/msg/imu_velocity.hpp>
 #include <lart_msgs/msg/inv1_ac_dc_current.hpp>
 #include <lart_msgs/msg/inv1_erpm_duty_voltage.hpp>
 #include <lart_msgs/msg/inv1_foc.hpp>
@@ -28,14 +36,6 @@ extern std::mutex dbc_api_mutex;
 #include <lart_msgs/msg/inv1_setbrakecurrent.hpp>
 #include <lart_msgs/msg/inv1_setdigoutput.hpp>
 #include <lart_msgs/msg/inv1_setdriveenable.hpp>
-#include <lart_msgs/msg/inv1_seterpm.hpp>
-#include <lart_msgs/msg/inv1_setmaxacbrakecurrent.hpp>
-#include <lart_msgs/msg/inv1_setmaxaccurrent.hpp>
-#include <lart_msgs/msg/inv1_setmaxdcbrakecurrent.hpp>
-#include <lart_msgs/msg/inv1_setmaxdccurrent.hpp>
-#include <lart_msgs/msg/inv1_setposition.hpp>
-#include <lart_msgs/msg/inv1_setrelbrakecurrent.hpp>
-#include <lart_msgs/msg/inv1_setrelcurrent.hpp>
 
 void init_dbc_api_subscribers_chunk_1(std::shared_ptr<rclcpp::Node> node, std::vector<rclcpp::SubscriptionBase::SharedPtr>& subs) {
     auto sensor_qos = rclcpp::QoS(10).best_effort();
@@ -285,6 +285,94 @@ void init_dbc_api_subscribers_chunk_1(std::shared_ptr<rclcpp::Node> node, std::v
                 dbc_api.icd_result.icd_ubat = msg->icd_ubat;
             }
         }));
+    subs.push_back(node->create_subscription<lart_msgs::msg::ImuAcceleration>(
+        "/can/imu_acceleration", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::ImuAcceleration> msg) {
+            if (msg) {
+                std::lock_guard<std::mutex> lock(dbc_api_mutex);
+                dbc_api.imu_acceleration.acceleration_x = msg->acceleration_x;
+                dbc_api.imu_acceleration.acceleration_y = msg->acceleration_y;
+                dbc_api.imu_acceleration.acceleration_z = msg->acceleration_z;
+            }
+        }));
+    subs.push_back(node->create_subscription<lart_msgs::msg::ImuAngularVelocity>(
+        "/can/imu_angular_velocity", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::ImuAngularVelocity> msg) {
+            if (msg) {
+                std::lock_guard<std::mutex> lock(dbc_api_mutex);
+                dbc_api.imu_angular_velocity.angular_velocity_x = msg->angular_velocity_x;
+                dbc_api.imu_angular_velocity.angular_velocity_y = msg->angular_velocity_y;
+                dbc_api.imu_angular_velocity.angular_velocity_z = msg->angular_velocity_z;
+            }
+        }));
+    subs.push_back(node->create_subscription<lart_msgs::msg::ImuEuler>(
+        "/can/imu_euler", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::ImuEuler> msg) {
+            if (msg) {
+                std::lock_guard<std::mutex> lock(dbc_api_mutex);
+                dbc_api.imu_euler.pitch = msg->pitch;
+                dbc_api.imu_euler.roll = msg->roll;
+                dbc_api.imu_euler.yaw = msg->yaw;
+            }
+        }));
+    subs.push_back(node->create_subscription<lart_msgs::msg::ImuGnssAltitude>(
+        "/can/imu_gnss_altitude", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::ImuGnssAltitude> msg) {
+            if (msg) {
+                std::lock_guard<std::mutex> lock(dbc_api_mutex);
+                dbc_api.imu_gnss_altitude.altitude = msg->altitude;
+            }
+        }));
+    subs.push_back(node->create_subscription<lart_msgs::msg::ImuGnssPosition>(
+        "/can/imu_gnss_position", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::ImuGnssPosition> msg) {
+            if (msg) {
+                std::lock_guard<std::mutex> lock(dbc_api_mutex);
+                dbc_api.imu_gnss_position.latitude = msg->latitude;
+                dbc_api.imu_gnss_position.longitude = msg->longitude;
+            }
+        }));
+    subs.push_back(node->create_subscription<lart_msgs::msg::ImuOrientation>(
+        "/can/imu_orientation", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::ImuOrientation> msg) {
+            if (msg) {
+                std::lock_guard<std::mutex> lock(dbc_api_mutex);
+                dbc_api.imu_orientation.quaternion_w = msg->quaternion_w;
+                dbc_api.imu_orientation.quaternion_x = msg->quaternion_x;
+                dbc_api.imu_orientation.quaternion_y = msg->quaternion_y;
+                dbc_api.imu_orientation.quaternion_z = msg->quaternion_z;
+            }
+        }));
+    subs.push_back(node->create_subscription<lart_msgs::msg::ImuStatus>(
+        "/can/imu_status", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::ImuStatus> msg) {
+            if (msg) {
+                std::lock_guard<std::mutex> lock(dbc_api_mutex);
+                dbc_api.imu_status.clip_acc_x = msg->clip_acc_x;
+                dbc_api.imu_status.clip_acc_y = msg->clip_acc_y;
+                dbc_api.imu_status.clip_acc_z = msg->clip_acc_z;
+                dbc_api.imu_status.clip_gyr_x = msg->clip_gyr_x;
+                dbc_api.imu_status.clip_gyr_y = msg->clip_gyr_y;
+                dbc_api.imu_status.clip_gyr_z = msg->clip_gyr_z;
+                dbc_api.imu_status.clip_mag_x = msg->clip_mag_x;
+                dbc_api.imu_status.clip_mag_y = msg->clip_mag_y;
+                dbc_api.imu_status.clip_mag_z = msg->clip_mag_z;
+                dbc_api.imu_status.clipping_indication = msg->clipping_indication;
+                dbc_api.imu_status.clock_bias_estimation = msg->clock_bias_estimation;
+                dbc_api.imu_status.filter_mode = msg->filter_mode;
+                dbc_api.imu_status.filter_valid = msg->filter_valid;
+                dbc_api.imu_status.gnss_fix = msg->gnss_fix;
+                dbc_api.imu_status.gnss_time_pulse = msg->gnss_time_pulse;
+                dbc_api.imu_status.no_rotation_update_status = msg->no_rotation_update_status;
+                dbc_api.imu_status.representative_motion = msg->representative_motion;
+                dbc_api.imu_status.rtk_status = msg->rtk_status;
+                dbc_api.imu_status.self_test = msg->self_test;
+                dbc_api.imu_status.syncin_marker = msg->syncin_marker;
+                dbc_api.imu_status.syncout_marker = msg->syncout_marker;
+            }
+        }));
+    subs.push_back(node->create_subscription<lart_msgs::msg::ImuVelocity>(
+        "/can/imu_velocity", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::ImuVelocity> msg) {
+            if (msg) {
+                std::lock_guard<std::mutex> lock(dbc_api_mutex);
+                dbc_api.imu_velocity.velocity_x = msg->velocity_x;
+                dbc_api.imu_velocity.velocity_y = msg->velocity_y;
+                dbc_api.imu_velocity.velocity_z = msg->velocity_z;
+            }
+        }));
     subs.push_back(node->create_subscription<lart_msgs::msg::Inv1AcDcCurrent>(
         "/pwt/inv1_ac_dc_current", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::Inv1AcDcCurrent> msg) {
             if (msg) {
@@ -388,62 +476,6 @@ void init_dbc_api_subscribers_chunk_1(std::shared_ptr<rclcpp::Node> node, std::v
             if (msg) {
                 std::lock_guard<std::mutex> lock(dbc_api_mutex);
                 dbc_api.inv1_setdriveenable.inv1_cmd_driveenable = msg->inv1_cmd_driveenable;
-            }
-        }));
-    subs.push_back(node->create_subscription<lart_msgs::msg::Inv1Seterpm>(
-        "/pwt/inv1_seterpm", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::Inv1Seterpm> msg) {
-            if (msg) {
-                std::lock_guard<std::mutex> lock(dbc_api_mutex);
-                dbc_api.inv1_seterpm.inv1_cmd_targetspeed = msg->inv1_cmd_targetspeed;
-            }
-        }));
-    subs.push_back(node->create_subscription<lart_msgs::msg::Inv1Setmaxacbrakecurrent>(
-        "/pwt/inv1_setmaxacbrakecurrent", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::Inv1Setmaxacbrakecurrent> msg) {
-            if (msg) {
-                std::lock_guard<std::mutex> lock(dbc_api_mutex);
-                dbc_api.inv1_setmaxacbrakecurrent.inv1_cmd_maxacbrakecurrent = msg->inv1_cmd_maxacbrakecurrent;
-            }
-        }));
-    subs.push_back(node->create_subscription<lart_msgs::msg::Inv1Setmaxaccurrent>(
-        "/pwt/inv1_setmaxaccurrent", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::Inv1Setmaxaccurrent> msg) {
-            if (msg) {
-                std::lock_guard<std::mutex> lock(dbc_api_mutex);
-                dbc_api.inv1_setmaxaccurrent.inv1_cmd_maxaccurrent = msg->inv1_cmd_maxaccurrent;
-            }
-        }));
-    subs.push_back(node->create_subscription<lart_msgs::msg::Inv1Setmaxdcbrakecurrent>(
-        "/pwt/inv1_setmaxdcbrakecurrent", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::Inv1Setmaxdcbrakecurrent> msg) {
-            if (msg) {
-                std::lock_guard<std::mutex> lock(dbc_api_mutex);
-                dbc_api.inv1_setmaxdcbrakecurrent.inv1_cmd_maxdcbrakecurrent = msg->inv1_cmd_maxdcbrakecurrent;
-            }
-        }));
-    subs.push_back(node->create_subscription<lart_msgs::msg::Inv1Setmaxdccurrent>(
-        "/pwt/inv1_setmaxdccurrent", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::Inv1Setmaxdccurrent> msg) {
-            if (msg) {
-                std::lock_guard<std::mutex> lock(dbc_api_mutex);
-                dbc_api.inv1_setmaxdccurrent.inv1_cmd_maxdccurrent = msg->inv1_cmd_maxdccurrent;
-            }
-        }));
-    subs.push_back(node->create_subscription<lart_msgs::msg::Inv1Setposition>(
-        "/pwt/inv1_setposition", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::Inv1Setposition> msg) {
-            if (msg) {
-                std::lock_guard<std::mutex> lock(dbc_api_mutex);
-                dbc_api.inv1_setposition.inv1_cmd_targetposition = msg->inv1_cmd_targetposition;
-            }
-        }));
-    subs.push_back(node->create_subscription<lart_msgs::msg::Inv1Setrelbrakecurrent>(
-        "/pwt/inv1_setrelbrakecurrent", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::Inv1Setrelbrakecurrent> msg) {
-            if (msg) {
-                std::lock_guard<std::mutex> lock(dbc_api_mutex);
-                dbc_api.inv1_setrelbrakecurrent.inv1_cmd_tgtrelbrakecurrent = msg->inv1_cmd_tgtrelbrakecurrent;
-            }
-        }));
-    subs.push_back(node->create_subscription<lart_msgs::msg::Inv1Setrelcurrent>(
-        "/pwt/inv1_setrelcurrent", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::Inv1Setrelcurrent> msg) {
-            if (msg) {
-                std::lock_guard<std::mutex> lock(dbc_api_mutex);
-                dbc_api.inv1_setrelcurrent.inv1_cmd_targetrelativecurrent = msg->inv1_cmd_targetrelativecurrent;
             }
         }));
 }

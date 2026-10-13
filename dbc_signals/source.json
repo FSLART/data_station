@@ -3,7 +3,7 @@
   "commit": null,
   "repository": "FSLART/T26_DBC",
   "sha256": {
-    "autonomous_t26.dbc": "2f38ab9b3daa67793096689ed51e084e54e9a8d1862c0dae470c058f80660c8d",
+    "autonomous_t26.dbc": "84518ad102a05f270fe39abcf571ab39eeb79e5c4978d260bec45fbb126e8797",
     "data_t26.dbc": "92ac738d7590d2b616b6844a8fe81e98a608e8d1d8a846d04291ee591f2c70bb",
     "powertrain_t26.dbc": "02b660ecbeb0b34ab2443588eb4f8bbba6f1287d87041d74486f002402e9b9e7"
   }
