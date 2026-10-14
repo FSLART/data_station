@@ -21,10 +21,13 @@ extern std::mutex dbc_api_mutex;
 #include <lart_msgs/msg/imu_acceleration.hpp>
 #include <lart_msgs/msg/imu_angular_velocity.hpp>
 #include <lart_msgs/msg/imu_euler.hpp>
+#include <lart_msgs/msg/imu_filter_velocity.hpp>
+#include <lart_msgs/msg/imu_free_acceleration.hpp>
 #include <lart_msgs/msg/imu_gnss_altitude.hpp>
 #include <lart_msgs/msg/imu_gnss_position.hpp>
 #include <lart_msgs/msg/imu_orientation.hpp>
 #include <lart_msgs/msg/imu_status.hpp>
+#include <lart_msgs/msg/imu_temperature.hpp>
 #include <lart_msgs/msg/imu_velocity.hpp>
 #include <lart_msgs/msg/inv1_ac_dc_current.hpp>
 #include <lart_msgs/msg/inv1_erpm_duty_voltage.hpp>
@@ -33,9 +36,6 @@ extern std::mutex dbc_api_mutex;
 #include <lart_msgs/msg/inv1_minmaxdccurrent.hpp>
 #include <lart_msgs/msg/inv1_misc.hpp>
 #include <lart_msgs/msg/inv1_setaccurrent.hpp>
-#include <lart_msgs/msg/inv1_setbrakecurrent.hpp>
-#include <lart_msgs/msg/inv1_setdigoutput.hpp>
-#include <lart_msgs/msg/inv1_setdriveenable.hpp>
 
 void init_dbc_api_subscribers_chunk_1(std::shared_ptr<rclcpp::Node> node, std::vector<rclcpp::SubscriptionBase::SharedPtr>& subs) {
     auto sensor_qos = rclcpp::QoS(10).best_effort();
@@ -312,6 +312,24 @@ void init_dbc_api_subscribers_chunk_1(std::shared_ptr<rclcpp::Node> node, std::v
                 dbc_api.imu_euler.yaw = msg->yaw;
             }
         }));
+    subs.push_back(node->create_subscription<lart_msgs::msg::ImuFilterVelocity>(
+        "/can/imu_filter_velocity", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::ImuFilterVelocity> msg) {
+            if (msg) {
+                std::lock_guard<std::mutex> lock(dbc_api_mutex);
+                dbc_api.imu_filter_velocity.velocity_x = msg->velocity_x;
+                dbc_api.imu_filter_velocity.velocity_y = msg->velocity_y;
+                dbc_api.imu_filter_velocity.velocity_z = msg->velocity_z;
+            }
+        }));
+    subs.push_back(node->create_subscription<lart_msgs::msg::ImuFreeAcceleration>(
+        "/can/imu_free_acceleration", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::ImuFreeAcceleration> msg) {
+            if (msg) {
+                std::lock_guard<std::mutex> lock(dbc_api_mutex);
+                dbc_api.imu_free_acceleration.free_acceleration_x = msg->free_acceleration_x;
+                dbc_api.imu_free_acceleration.free_acceleration_y = msg->free_acceleration_y;
+                dbc_api.imu_free_acceleration.free_acceleration_z = msg->free_acceleration_z;
+            }
+        }));
     subs.push_back(node->create_subscription<lart_msgs::msg::ImuGnssAltitude>(
         "/can/imu_gnss_altitude", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::ImuGnssAltitude> msg) {
             if (msg) {
@@ -362,6 +380,13 @@ void init_dbc_api_subscribers_chunk_1(std::shared_ptr<rclcpp::Node> node, std::v
                 dbc_api.imu_status.self_test = msg->self_test;
                 dbc_api.imu_status.syncin_marker = msg->syncin_marker;
                 dbc_api.imu_status.syncout_marker = msg->syncout_marker;
+            }
+        }));
+    subs.push_back(node->create_subscription<lart_msgs::msg::ImuTemperature>(
+        "/can/imu_temperature", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::ImuTemperature> msg) {
+            if (msg) {
+                std::lock_guard<std::mutex> lock(dbc_api_mutex);
+                dbc_api.imu_temperature.temperature = msg->temperature;
             }
         }));
     subs.push_back(node->create_subscription<lart_msgs::msg::ImuVelocity>(
@@ -452,30 +477,6 @@ void init_dbc_api_subscribers_chunk_1(std::shared_ptr<rclcpp::Node> node, std::v
             if (msg) {
                 std::lock_guard<std::mutex> lock(dbc_api_mutex);
                 dbc_api.inv1_setaccurrent.inv1_cmd_targetaccurrent = msg->inv1_cmd_targetaccurrent;
-            }
-        }));
-    subs.push_back(node->create_subscription<lart_msgs::msg::Inv1Setbrakecurrent>(
-        "/pwt/inv1_setbrakecurrent", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::Inv1Setbrakecurrent> msg) {
-            if (msg) {
-                std::lock_guard<std::mutex> lock(dbc_api_mutex);
-                dbc_api.inv1_setbrakecurrent.inv1_cmd_targetbrakecurrent = msg->inv1_cmd_targetbrakecurrent;
-            }
-        }));
-    subs.push_back(node->create_subscription<lart_msgs::msg::Inv1Setdigoutput>(
-        "/pwt/inv1_setdigoutput", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::Inv1Setdigoutput> msg) {
-            if (msg) {
-                std::lock_guard<std::mutex> lock(dbc_api_mutex);
-                dbc_api.inv1_setdigoutput.inv1_cmd_setdigoutput1 = msg->inv1_cmd_setdigoutput1;
-                dbc_api.inv1_setdigoutput.inv1_cmd_setdigoutput2 = msg->inv1_cmd_setdigoutput2;
-                dbc_api.inv1_setdigoutput.inv1_cmd_setdigoutput3 = msg->inv1_cmd_setdigoutput3;
-                dbc_api.inv1_setdigoutput.inv1_cmd_setdigoutput4 = msg->inv1_cmd_setdigoutput4;
-            }
-        }));
-    subs.push_back(node->create_subscription<lart_msgs::msg::Inv1Setdriveenable>(
-        "/pwt/inv1_setdriveenable", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::Inv1Setdriveenable> msg) {
-            if (msg) {
-                std::lock_guard<std::mutex> lock(dbc_api_mutex);
-                dbc_api.inv1_setdriveenable.inv1_cmd_driveenable = msg->inv1_cmd_driveenable;
             }
         }));
 }

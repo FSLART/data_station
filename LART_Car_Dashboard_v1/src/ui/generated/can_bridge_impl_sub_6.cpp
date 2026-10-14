@@ -4,6 +4,15 @@
 void CanBridgeImpl::init_publishers_chunk_6(rclcpp::Node* node) {
     auto sensor_qos = rclcpp::QoS(10).best_effort();
     if (database_ == "powertrain_t26") {
+        pub_slave_10_temperature_id_2 = node->create_publisher<lart_msgs::msg::Slave10TemperatureId2>(database_ == "data_t26" ? "/data/slave_10_temperature_id_2" : database_ == "powertrain_t26" ? "/pwt/slave_10_temperature_id_2" : "/can/slave_10_temperature_id_2", sensor_qos);
+    }
+    if (database_ == "powertrain_t26") {
+        pub_slave_10_voltage_id_1 = node->create_publisher<lart_msgs::msg::Slave10VoltageId1>(database_ == "data_t26" ? "/data/slave_10_voltage_id_1" : database_ == "powertrain_t26" ? "/pwt/slave_10_voltage_id_1" : "/can/slave_10_voltage_id_1", sensor_qos);
+    }
+    if (database_ == "powertrain_t26") {
+        pub_slave_10_voltage_id_2 = node->create_publisher<lart_msgs::msg::Slave10VoltageId2>(database_ == "data_t26" ? "/data/slave_10_voltage_id_2" : database_ == "powertrain_t26" ? "/pwt/slave_10_voltage_id_2" : "/can/slave_10_voltage_id_2", sensor_qos);
+    }
+    if (database_ == "powertrain_t26") {
         pub_slave_10_voltage_id_3 = node->create_publisher<lart_msgs::msg::Slave10VoltageId3>(database_ == "data_t26" ? "/data/slave_10_voltage_id_3" : database_ == "powertrain_t26" ? "/pwt/slave_10_voltage_id_3" : "/can/slave_10_voltage_id_3", sensor_qos);
     }
     if (database_ == "powertrain_t26") {
@@ -90,6 +99,78 @@ bool CanBridgeImpl::handle_frame_chunk_6(uint32_t can_id, const uint8_t* data, s
     (void)data;
     (void)dlc;
     switch (can_id) {
+        case 1922u: {
+            {
+                lart_msgs::msg::Aqt2Temperatures2 out;
+                bool decoded_any = false;
+                if (database_ == "data_t26") {
+                    struct data_t26_aqt2_temperatures_2_t decoded = {};
+                    if (data_t26_aqt2_temperatures_2_unpack(&decoded, data, dlc) == 0) {
+                        out.temperature_009 = data_t26_aqt2_temperatures_2_temperature_009_decode(decoded.temperature_009);
+                        out.temperature_010 = data_t26_aqt2_temperatures_2_temperature_010_decode(decoded.temperature_010);
+                        out.temperature_011 = data_t26_aqt2_temperatures_2_temperature_011_decode(decoded.temperature_011);
+                        out.temperature_012 = data_t26_aqt2_temperatures_2_temperature_012_decode(decoded.temperature_012);
+                        out.temperature_013 = data_t26_aqt2_temperatures_2_temperature_013_decode(decoded.temperature_013);
+                        out.temperature_014 = data_t26_aqt2_temperatures_2_temperature_014_decode(decoded.temperature_014);
+                        out.temperature_015 = data_t26_aqt2_temperatures_2_temperature_015_decode(decoded.temperature_015);
+                        out.temperature_016 = data_t26_aqt2_temperatures_2_temperature_016_decode(decoded.temperature_016);
+                        decoded_any = true;
+                    }
+                }
+                if (decoded_any) {
+                    pub_aqt2_temperatures_2->publish(out);
+                }
+            }
+            return true;
+        }
+        case 1923u: {
+            {
+                lart_msgs::msg::Aqt2Temperatures3 out;
+                bool decoded_any = false;
+                if (database_ == "data_t26") {
+                    struct data_t26_aqt2_temperatures_3_t decoded = {};
+                    if (data_t26_aqt2_temperatures_3_unpack(&decoded, data, dlc) == 0) {
+                        out.temperature_017 = data_t26_aqt2_temperatures_3_temperature_017_decode(decoded.temperature_017);
+                        out.temperature_018 = data_t26_aqt2_temperatures_3_temperature_018_decode(decoded.temperature_018);
+                        out.temperature_019 = data_t26_aqt2_temperatures_3_temperature_019_decode(decoded.temperature_019);
+                        out.temperature_020 = data_t26_aqt2_temperatures_3_temperature_020_decode(decoded.temperature_020);
+                        out.temperature_021 = data_t26_aqt2_temperatures_3_temperature_021_decode(decoded.temperature_021);
+                        out.temperature_022 = data_t26_aqt2_temperatures_3_temperature_022_decode(decoded.temperature_022);
+                        out.temperature_023 = data_t26_aqt2_temperatures_3_temperature_023_decode(decoded.temperature_023);
+                        out.temperature_024 = data_t26_aqt2_temperatures_3_temperature_024_decode(decoded.temperature_024);
+                        decoded_any = true;
+                    }
+                }
+                if (decoded_any) {
+                    pub_aqt2_temperatures_3->publish(out);
+                }
+            }
+            return true;
+        }
+        case 1924u: {
+            {
+                lart_msgs::msg::Aqt2Temperatures4 out;
+                bool decoded_any = false;
+                if (database_ == "data_t26") {
+                    struct data_t26_aqt2_temperatures_4_t decoded = {};
+                    if (data_t26_aqt2_temperatures_4_unpack(&decoded, data, dlc) == 0) {
+                        out.temperature_025 = data_t26_aqt2_temperatures_4_temperature_025_decode(decoded.temperature_025);
+                        out.temperature_026 = data_t26_aqt2_temperatures_4_temperature_026_decode(decoded.temperature_026);
+                        out.temperature_027 = data_t26_aqt2_temperatures_4_temperature_027_decode(decoded.temperature_027);
+                        out.temperature_028 = data_t26_aqt2_temperatures_4_temperature_028_decode(decoded.temperature_028);
+                        out.temperature_029 = data_t26_aqt2_temperatures_4_temperature_029_decode(decoded.temperature_029);
+                        out.temperature_030 = data_t26_aqt2_temperatures_4_temperature_030_decode(decoded.temperature_030);
+                        out.temperature_031 = data_t26_aqt2_temperatures_4_temperature_031_decode(decoded.temperature_031);
+                        out.temperature_032 = data_t26_aqt2_temperatures_4_temperature_032_decode(decoded.temperature_032);
+                        decoded_any = true;
+                    }
+                }
+                if (decoded_any) {
+                    pub_aqt2_temperatures_4->publish(out);
+                }
+            }
+            return true;
+        }
         case 1925u: {
             {
                 lart_msgs::msg::Aqt2Temperatures5 out;

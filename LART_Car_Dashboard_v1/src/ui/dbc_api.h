@@ -487,6 +487,16 @@ typedef struct {
         float yaw;
     } imu_euler;
     struct {
+        float velocity_x;
+        float velocity_y;
+        float velocity_z;
+    } imu_filter_velocity;
+    struct {
+        float free_acceleration_x;
+        float free_acceleration_y;
+        float free_acceleration_z;
+    } imu_free_acceleration;
+    struct {
         float altitude;
     } imu_gnss_altitude;
     struct {
@@ -522,6 +532,9 @@ typedef struct {
         float syncin_marker;
         float syncout_marker;
     } imu_status;
+    struct {
+        float temperature;
+    } imu_temperature;
     struct {
         float velocity_x;
         float velocity_y;

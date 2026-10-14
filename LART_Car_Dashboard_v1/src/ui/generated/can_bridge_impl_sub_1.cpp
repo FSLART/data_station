@@ -49,6 +49,12 @@ void CanBridgeImpl::init_publishers_chunk_1(rclcpp::Node* node) {
         pub_imu_euler = node->create_publisher<lart_msgs::msg::ImuEuler>(database_ == "data_t26" ? "/data/imu_euler" : database_ == "powertrain_t26" ? "/pwt/imu_euler" : "/can/imu_euler", sensor_qos);
     }
     if (database_ == "autonomous_t26") {
+        pub_imu_filter_velocity = node->create_publisher<lart_msgs::msg::ImuFilterVelocity>(database_ == "data_t26" ? "/data/imu_filter_velocity" : database_ == "powertrain_t26" ? "/pwt/imu_filter_velocity" : "/can/imu_filter_velocity", sensor_qos);
+    }
+    if (database_ == "autonomous_t26") {
+        pub_imu_free_acceleration = node->create_publisher<lart_msgs::msg::ImuFreeAcceleration>(database_ == "data_t26" ? "/data/imu_free_acceleration" : database_ == "powertrain_t26" ? "/pwt/imu_free_acceleration" : "/can/imu_free_acceleration", sensor_qos);
+    }
+    if (database_ == "autonomous_t26") {
         pub_imu_gnss_altitude = node->create_publisher<lart_msgs::msg::ImuGnssAltitude>(database_ == "data_t26" ? "/data/imu_gnss_altitude" : database_ == "powertrain_t26" ? "/pwt/imu_gnss_altitude" : "/can/imu_gnss_altitude", sensor_qos);
     }
     if (database_ == "autonomous_t26") {
@@ -59,6 +65,9 @@ void CanBridgeImpl::init_publishers_chunk_1(rclcpp::Node* node) {
     }
     if (database_ == "autonomous_t26") {
         pub_imu_status = node->create_publisher<lart_msgs::msg::ImuStatus>(database_ == "data_t26" ? "/data/imu_status" : database_ == "powertrain_t26" ? "/pwt/imu_status" : "/can/imu_status", sensor_qos);
+    }
+    if (database_ == "autonomous_t26") {
+        pub_imu_temperature = node->create_publisher<lart_msgs::msg::ImuTemperature>(database_ == "data_t26" ? "/data/imu_temperature" : database_ == "powertrain_t26" ? "/pwt/imu_temperature" : "/can/imu_temperature", sensor_qos);
     }
     if (database_ == "autonomous_t26") {
         pub_imu_velocity = node->create_publisher<lart_msgs::msg::ImuVelocity>(database_ == "data_t26" ? "/data/imu_velocity" : database_ == "powertrain_t26" ? "/pwt/imu_velocity" : "/can/imu_velocity", sensor_qos);
@@ -83,15 +92,6 @@ void CanBridgeImpl::init_publishers_chunk_1(rclcpp::Node* node) {
     }
     if (database_ == "powertrain_t26") {
         pub_inv1_setaccurrent = node->create_publisher<lart_msgs::msg::Inv1Setaccurrent>(database_ == "data_t26" ? "/data/inv1_setaccurrent" : database_ == "powertrain_t26" ? "/pwt/inv1_setaccurrent" : "/can/inv1_setaccurrent", sensor_qos);
-    }
-    if (database_ == "powertrain_t26") {
-        pub_inv1_setbrakecurrent = node->create_publisher<lart_msgs::msg::Inv1Setbrakecurrent>(database_ == "data_t26" ? "/data/inv1_setbrakecurrent" : database_ == "powertrain_t26" ? "/pwt/inv1_setbrakecurrent" : "/can/inv1_setbrakecurrent", sensor_qos);
-    }
-    if (database_ == "powertrain_t26") {
-        pub_inv1_setdigoutput = node->create_publisher<lart_msgs::msg::Inv1Setdigoutput>(database_ == "data_t26" ? "/data/inv1_setdigoutput" : database_ == "powertrain_t26" ? "/pwt/inv1_setdigoutput" : "/can/inv1_setdigoutput", sensor_qos);
-    }
-    if (database_ == "powertrain_t26") {
-        pub_inv1_setdriveenable = node->create_publisher<lart_msgs::msg::Inv1Setdriveenable>(database_ == "data_t26" ? "/data/inv1_setdriveenable" : database_ == "powertrain_t26" ? "/pwt/inv1_setdriveenable" : "/can/inv1_setdriveenable", sensor_qos);
     }
 }
 

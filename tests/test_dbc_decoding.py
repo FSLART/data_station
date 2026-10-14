@@ -142,6 +142,12 @@ def test_powertrain_vcu_states_rejects_truncated_frame(decoders):
      "2e fb 29 09 00 80", [-12.34, 23.45, -327.68]),
     ("imu_euler", "roll pitch yaw", ctypes.c_int16,
      "b0 b9 28 23 50 46", [-180, 90, 180]),
+    ("imu_temperature", "temperature", ctypes.c_int16,
+     "2e fb", [-12.34]),
+    ("imu_filter_velocity", "velocity_x velocity_y velocity_z", ctypes.c_int16,
+     "2e fb 29 09 00 80", [-12.34, 23.45, -327.68]),
+    ("imu_free_acceleration", "free_acceleration_x free_acceleration_y free_acceleration_z",
+     ctypes.c_int16, "2e fb 29 09 ff 7f", [-12.34, 23.45, 327.67]),
 ])
 def test_autonomous_imu_physical_values_and_frame_lengths(
         decoders, name, fields, raw_type, payload, expected):

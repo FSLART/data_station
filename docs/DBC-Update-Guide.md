@@ -169,3 +169,15 @@ Acceleration includes gravity; Euler angles use degrees with an ENU reference.
 The status frame preserves the Xsens device bit layout, including RTK status.
 Rebuild `lart_msgs`, the dashboard and the bridge together before restarting
 publishers and subscribers.
+
+## Autonomous DBC update (14 October 2026)
+
+The autonomous decoder, ROS interfaces, dashboard API and bridge now include
+`IMU_Temperature` (`0x538`, two bytes), `IMU_Filter_Velocity` (`0x539`, six
+bytes) and `IMU_Free_Acceleration` (`0x53A`, six bytes). All signals are signed
+16-bit values with a scale of 0.01. The new `/can/imu_temperature`,
+`/can/imu_filter_velocity` and `/can/imu_free_acceleration` topics use degrees
+Celsius, m/s and m/s² respectively. Filter velocity and free acceleration use
+ENU coordinates; free acceleration has gravity removed. Rebuild `lart_msgs`,
+the dashboard and the bridge together before restarting publishers and
+subscribers.

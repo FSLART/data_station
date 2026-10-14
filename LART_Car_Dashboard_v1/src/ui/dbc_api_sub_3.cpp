@@ -6,6 +6,9 @@
 #include <mutex>
 #include <vector>
 extern std::mutex dbc_api_mutex;
+#include <lart_msgs/msg/inv2_setrelcurrent.hpp>
+#include <lart_msgs/msg/inv2_targetiq.hpp>
+#include <lart_msgs/msg/inv2_temperatures.hpp>
 #include <lart_msgs/msg/ivt_msg_cmd.hpp>
 #include <lart_msgs/msg/ivt_msg_response.hpp>
 #include <lart_msgs/msg/ivt_msg_result_as.hpp>
@@ -33,13 +36,36 @@ extern std::mutex dbc_api_mutex;
 #include <lart_msgs/msg/slave01_temperature_id2.hpp>
 #include <lart_msgs/msg/slave01_voltage_id1.hpp>
 #include <lart_msgs/msg/slave01_voltage_id2.hpp>
-#include <lart_msgs/msg/slave01_voltage_id3.hpp>
-#include <lart_msgs/msg/slave02_msc_id1.hpp>
-#include <lart_msgs/msg/slave02_msc_id2.hpp>
 
 void init_dbc_api_subscribers_chunk_3(std::shared_ptr<rclcpp::Node> node, std::vector<rclcpp::SubscriptionBase::SharedPtr>& subs) {
     auto sensor_qos = rclcpp::QoS(10).best_effort();
 
+    subs.push_back(node->create_subscription<lart_msgs::msg::Inv2Setrelcurrent>(
+        "/pwt/inv2_setrelcurrent", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::Inv2Setrelcurrent> msg) {
+            if (msg) {
+                std::lock_guard<std::mutex> lock(dbc_api_mutex);
+                dbc_api.inv2_setrelcurrent.inv2_cmd_targetrelativecurrent = msg->inv2_cmd_targetrelativecurrent;
+            }
+        }));
+    subs.push_back(node->create_subscription<lart_msgs::msg::Inv2Targetiq>(
+        "/pwt/inv2_targetiq", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::Inv2Targetiq> msg) {
+            if (msg) {
+                std::lock_guard<std::mutex> lock(dbc_api_mutex);
+                dbc_api.inv2_targetiq.inv2_controlmode = msg->inv2_controlmode;
+                dbc_api.inv2_targetiq.inv2_ismotorstill = msg->inv2_ismotorstill;
+                dbc_api.inv2_targetiq.inv2_motorposition = msg->inv2_motorposition;
+                dbc_api.inv2_targetiq.inv2_targetiq = msg->inv2_targetiq;
+            }
+        }));
+    subs.push_back(node->create_subscription<lart_msgs::msg::Inv2Temperatures>(
+        "/pwt/inv2_temperatures", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::Inv2Temperatures> msg) {
+            if (msg) {
+                std::lock_guard<std::mutex> lock(dbc_api_mutex);
+                dbc_api.inv2_temperatures.inv2_actual_faultcode = msg->inv2_actual_faultcode;
+                dbc_api.inv2_temperatures.inv2_actual_tempcontroller = msg->inv2_actual_tempcontroller;
+                dbc_api.inv2_temperatures.inv2_actual_tempmotor = msg->inv2_actual_tempmotor;
+            }
+        }));
     subs.push_back(node->create_subscription<lart_msgs::msg::IvtMsgCmd>(
         "/pwt/ivt_msg_cmd", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::IvtMsgCmd> msg) {
             if (msg) {
@@ -541,39 +567,6 @@ void init_dbc_api_subscribers_chunk_3(std::shared_ptr<rclcpp::Node> node, std::v
                 dbc_api.slave_01_voltage_id_2.cell_voltage_6 = msg->cell_voltage_6;
                 dbc_api.slave_01_voltage_id_2.cell_voltage_7 = msg->cell_voltage_7;
                 dbc_api.slave_01_voltage_id_2.cell_voltage_8 = msg->cell_voltage_8;
-            }
-        }));
-    subs.push_back(node->create_subscription<lart_msgs::msg::Slave01VoltageId3>(
-        "/pwt/slave_01_voltage_id_3", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::Slave01VoltageId3> msg) {
-            if (msg) {
-                std::lock_guard<std::mutex> lock(dbc_api_mutex);
-                dbc_api.slave_01_voltage_id_3.cell_voltage_10 = msg->cell_voltage_10;
-                dbc_api.slave_01_voltage_id_3.cell_voltage_11 = msg->cell_voltage_11;
-                dbc_api.slave_01_voltage_id_3.cell_voltage_12 = msg->cell_voltage_12;
-                dbc_api.slave_01_voltage_id_3.cell_voltage_9 = msg->cell_voltage_9;
-            }
-        }));
-    subs.push_back(node->create_subscription<lart_msgs::msg::Slave02MscId1>(
-        "/pwt/slave_02_msc_id_1", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::Slave02MscId1> msg) {
-            if (msg) {
-                std::lock_guard<std::mutex> lock(dbc_api_mutex);
-                dbc_api.slave_02_msc_id_1.module_voltage_avg = msg->module_voltage_avg;
-                dbc_api.slave_02_msc_id_1.module_voltage_max = msg->module_voltage_max;
-                dbc_api.slave_02_msc_id_1.module_voltage_min = msg->module_voltage_min;
-                dbc_api.slave_02_msc_id_1.module_voltage_sum = msg->module_voltage_sum;
-            }
-        }));
-    subs.push_back(node->create_subscription<lart_msgs::msg::Slave02MscId2>(
-        "/pwt/slave_02_msc_id_2", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::Slave02MscId2> msg) {
-            if (msg) {
-                std::lock_guard<std::mutex> lock(dbc_api_mutex);
-                dbc_api.slave_02_msc_id_2.module_ic_temperature = msg->module_ic_temperature;
-                dbc_api.slave_02_msc_id_2.module_ic_voltage = msg->module_ic_voltage;
-                dbc_api.slave_02_msc_id_2.module_open_wire = msg->module_open_wire;
-                dbc_api.slave_02_msc_id_2.module_overvoltage = msg->module_overvoltage;
-                dbc_api.slave_02_msc_id_2.module_under_over_identifier = msg->module_under_over_identifier;
-                dbc_api.slave_02_msc_id_2.module_undervoltage = msg->module_undervoltage;
-                dbc_api.slave_02_msc_id_2.module_voltage_delta = msg->module_voltage_delta;
             }
         }));
 }

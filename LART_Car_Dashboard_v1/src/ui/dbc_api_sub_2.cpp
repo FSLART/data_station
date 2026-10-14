@@ -6,6 +6,9 @@
 #include <mutex>
 #include <vector>
 extern std::mutex dbc_api_mutex;
+#include <lart_msgs/msg/inv1_setbrakecurrent.hpp>
+#include <lart_msgs/msg/inv1_setdigoutput.hpp>
+#include <lart_msgs/msg/inv1_setdriveenable.hpp>
 #include <lart_msgs/msg/inv1_seterpm.hpp>
 #include <lart_msgs/msg/inv1_setmaxacbrakecurrent.hpp>
 #include <lart_msgs/msg/inv1_setmaxaccurrent.hpp>
@@ -33,13 +36,34 @@ extern std::mutex dbc_api_mutex;
 #include <lart_msgs/msg/inv2_setmaxdccurrent.hpp>
 #include <lart_msgs/msg/inv2_setposition.hpp>
 #include <lart_msgs/msg/inv2_setrelbrakecurrent.hpp>
-#include <lart_msgs/msg/inv2_setrelcurrent.hpp>
-#include <lart_msgs/msg/inv2_targetiq.hpp>
-#include <lart_msgs/msg/inv2_temperatures.hpp>
 
 void init_dbc_api_subscribers_chunk_2(std::shared_ptr<rclcpp::Node> node, std::vector<rclcpp::SubscriptionBase::SharedPtr>& subs) {
     auto sensor_qos = rclcpp::QoS(10).best_effort();
 
+    subs.push_back(node->create_subscription<lart_msgs::msg::Inv1Setbrakecurrent>(
+        "/pwt/inv1_setbrakecurrent", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::Inv1Setbrakecurrent> msg) {
+            if (msg) {
+                std::lock_guard<std::mutex> lock(dbc_api_mutex);
+                dbc_api.inv1_setbrakecurrent.inv1_cmd_targetbrakecurrent = msg->inv1_cmd_targetbrakecurrent;
+            }
+        }));
+    subs.push_back(node->create_subscription<lart_msgs::msg::Inv1Setdigoutput>(
+        "/pwt/inv1_setdigoutput", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::Inv1Setdigoutput> msg) {
+            if (msg) {
+                std::lock_guard<std::mutex> lock(dbc_api_mutex);
+                dbc_api.inv1_setdigoutput.inv1_cmd_setdigoutput1 = msg->inv1_cmd_setdigoutput1;
+                dbc_api.inv1_setdigoutput.inv1_cmd_setdigoutput2 = msg->inv1_cmd_setdigoutput2;
+                dbc_api.inv1_setdigoutput.inv1_cmd_setdigoutput3 = msg->inv1_cmd_setdigoutput3;
+                dbc_api.inv1_setdigoutput.inv1_cmd_setdigoutput4 = msg->inv1_cmd_setdigoutput4;
+            }
+        }));
+    subs.push_back(node->create_subscription<lart_msgs::msg::Inv1Setdriveenable>(
+        "/pwt/inv1_setdriveenable", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::Inv1Setdriveenable> msg) {
+            if (msg) {
+                std::lock_guard<std::mutex> lock(dbc_api_mutex);
+                dbc_api.inv1_setdriveenable.inv1_cmd_driveenable = msg->inv1_cmd_driveenable;
+            }
+        }));
     subs.push_back(node->create_subscription<lart_msgs::msg::Inv1Seterpm>(
         "/pwt/inv1_seterpm", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::Inv1Seterpm> msg) {
             if (msg) {
@@ -267,32 +291,6 @@ void init_dbc_api_subscribers_chunk_2(std::shared_ptr<rclcpp::Node> node, std::v
             if (msg) {
                 std::lock_guard<std::mutex> lock(dbc_api_mutex);
                 dbc_api.inv2_setrelbrakecurrent.inv2_cmd_tgtrelbrakecurrent = msg->inv2_cmd_tgtrelbrakecurrent;
-            }
-        }));
-    subs.push_back(node->create_subscription<lart_msgs::msg::Inv2Setrelcurrent>(
-        "/pwt/inv2_setrelcurrent", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::Inv2Setrelcurrent> msg) {
-            if (msg) {
-                std::lock_guard<std::mutex> lock(dbc_api_mutex);
-                dbc_api.inv2_setrelcurrent.inv2_cmd_targetrelativecurrent = msg->inv2_cmd_targetrelativecurrent;
-            }
-        }));
-    subs.push_back(node->create_subscription<lart_msgs::msg::Inv2Targetiq>(
-        "/pwt/inv2_targetiq", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::Inv2Targetiq> msg) {
-            if (msg) {
-                std::lock_guard<std::mutex> lock(dbc_api_mutex);
-                dbc_api.inv2_targetiq.inv2_controlmode = msg->inv2_controlmode;
-                dbc_api.inv2_targetiq.inv2_ismotorstill = msg->inv2_ismotorstill;
-                dbc_api.inv2_targetiq.inv2_motorposition = msg->inv2_motorposition;
-                dbc_api.inv2_targetiq.inv2_targetiq = msg->inv2_targetiq;
-            }
-        }));
-    subs.push_back(node->create_subscription<lart_msgs::msg::Inv2Temperatures>(
-        "/pwt/inv2_temperatures", sensor_qos, [](const std::shared_ptr<lart_msgs::msg::Inv2Temperatures> msg) {
-            if (msg) {
-                std::lock_guard<std::mutex> lock(dbc_api_mutex);
-                dbc_api.inv2_temperatures.inv2_actual_faultcode = msg->inv2_actual_faultcode;
-                dbc_api.inv2_temperatures.inv2_actual_tempcontroller = msg->inv2_actual_tempcontroller;
-                dbc_api.inv2_temperatures.inv2_actual_tempmotor = msg->inv2_actual_tempmotor;
             }
         }));
 }

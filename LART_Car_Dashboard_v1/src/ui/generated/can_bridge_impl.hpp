@@ -56,10 +56,13 @@
 #include <lart_msgs/msg/imu_acceleration.hpp>
 #include <lart_msgs/msg/imu_angular_velocity.hpp>
 #include <lart_msgs/msg/imu_euler.hpp>
+#include <lart_msgs/msg/imu_filter_velocity.hpp>
+#include <lart_msgs/msg/imu_free_acceleration.hpp>
 #include <lart_msgs/msg/imu_gnss_altitude.hpp>
 #include <lart_msgs/msg/imu_gnss_position.hpp>
 #include <lart_msgs/msg/imu_orientation.hpp>
 #include <lart_msgs/msg/imu_status.hpp>
+#include <lart_msgs/msg/imu_temperature.hpp>
 #include <lart_msgs/msg/imu_velocity.hpp>
 #include <lart_msgs/msg/inv1_ac_dc_current.hpp>
 #include <lart_msgs/msg/inv1_erpm_duty_voltage.hpp>
@@ -282,10 +285,13 @@ private:
     rclcpp::Publisher<lart_msgs::msg::ImuAcceleration>::SharedPtr pub_imu_acceleration;
     rclcpp::Publisher<lart_msgs::msg::ImuAngularVelocity>::SharedPtr pub_imu_angular_velocity;
     rclcpp::Publisher<lart_msgs::msg::ImuEuler>::SharedPtr pub_imu_euler;
+    rclcpp::Publisher<lart_msgs::msg::ImuFilterVelocity>::SharedPtr pub_imu_filter_velocity;
+    rclcpp::Publisher<lart_msgs::msg::ImuFreeAcceleration>::SharedPtr pub_imu_free_acceleration;
     rclcpp::Publisher<lart_msgs::msg::ImuGnssAltitude>::SharedPtr pub_imu_gnss_altitude;
     rclcpp::Publisher<lart_msgs::msg::ImuGnssPosition>::SharedPtr pub_imu_gnss_position;
     rclcpp::Publisher<lart_msgs::msg::ImuOrientation>::SharedPtr pub_imu_orientation;
     rclcpp::Publisher<lart_msgs::msg::ImuStatus>::SharedPtr pub_imu_status;
+    rclcpp::Publisher<lart_msgs::msg::ImuTemperature>::SharedPtr pub_imu_temperature;
     rclcpp::Publisher<lart_msgs::msg::ImuVelocity>::SharedPtr pub_imu_velocity;
     rclcpp::Publisher<lart_msgs::msg::Inv1AcDcCurrent>::SharedPtr pub_inv1_ac_dc_current;
     rclcpp::Publisher<lart_msgs::msg::Inv1ErpmDutyVoltage>::SharedPtr pub_inv1_erpm_duty_voltage;
