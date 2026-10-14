@@ -53,40 +53,73 @@ input hashes change. Never attribute edited DBC files to an upstream revision.
 
 ## Scheduled automation
 
-The new **Regenerate T26 DBC outputs** workflow (`regenerate-dbcs.yml`) checks upstream `main` every 30
-minutes. Manual dispatch accepts a branch, tag or exact commit through `dbc_ref`.
-It checks out the three DBCs together and regenerates against current
-`lart_msgs/main`. When nothing changes, it skips tests, builds and publication.
-When changes exist, decoder/API tests and the full ARM64 ROS workspace/dashboard
-build must pass before either update is published.
+The **Regenerate T26 DBC outputs with Codex** workflow (`regenerate-dbcs.yml`)
+runs in **perdo1305/data_station** and checks **FSLART/T26_DBC/main** twice an
+hour, at minutes 7 and 37 (UTC; GitHub may delay scheduled runs). Manual dispatch
+accepts a branch, tag or exact source commit through `dbc_ref`. It imports the
+three DBCs together and regenerates against **FSLART/lart_msgs/main**.
 
-Configure a GitHub App installed on **FSLART/data_station** and
-**FSLART/lart_msgs**, with **Contents: read/write** and
-**Pull requests: read/write** permissions. In data_station repository Actions
-settings, set variable `DBC_SYNC_APP_ID` and secret
-`DBC_SYNC_APP_PRIVATE_KEY`. The ordinary repository token cannot publish the
-separate interface repository; the App token also allows generated PRs to
-trigger validation. Without this configuration publication fails; it never
-falls back to pushing partial updates to master.
+When changes exist, `openai/codex-action@v1` reviews the DBC/generated diff and
+adapts affected handwritten dashboard code, ROS nodes, simulator overrides,
+Foxglove extensions and tests. Its instructions live in
+`.github/codex/dbc-update.md`. Codex must report a completed adaptation; an
+ambiguous wire layout or failed adaptation stops publication. All root tests,
+focused simulator/DBC topic tests, Python consumer imports,
+the ARM64 ROS workspace build and both `ui_runner` and `can_bridge` builds must
+pass before either PR is published. Codex runs with a workspace sandbox, no
+network and dropped sudo privileges. Toolchains are installed before it runs.
+
+Add these **Actions repository secrets** in
+[perdo1305/data_station settings](https://github.com/perdo1305/data_station/settings/secrets/actions):
+
+| Secret | Value |
+| --- | --- |
+| `OPENAI_API_KEY` | An OpenAI API project key with available API billing/quota. Codex runs consume API usage. |
+| `DBC_SYNC_TOKEN` | A GitHub personal access token whose user can push branches and create PRs in **perdo1305/data_station** and **FSLART/lart_msgs**. |
+
+For these repositories under different owners, use a **classic PAT** with
+`public_repo` for public repositories (`repo` if private repository access is
+required), and authorize it for FSLART SSO if the organization requires it.
+Organization policy may prohibit classic PATs; in that case use separate GitHub
+App installation tokens and adjust the publication steps accordingly. A
+fine-grained PAT scoped only to your personal account cannot write to FSLART.
+The token cannot grant permissions its user does not already have. The ordinary
+`GITHUB_TOKEN` cannot publish `lart_msgs` from Data Station.
+
+The old `DBC_SYNC_APP_ID`/`DBC_SYNC_APP_PRIVATE_KEY` configuration is replaced by
+`DBC_SYNC_TOKEN`. Only the publication job receives this credential. That job
+runs on a fresh runner, applies the exact tested patches to the recorded baseline
+commits, and does not execute the generated application code. If a destination
+branch moved during validation, the preflight stops the run so it can be retried.
+Publication commits the staged tested tree directly and uses an explicit Git
+lease when updating each automation branch; it never rebases the tested files.
+
+When no update is needed, Codex, tests, builds and publication are skipped. A
+scheduled run also skips a DBC revision already proposed in an open automation
+PR, avoiding repeated API charges while that PR awaits review. Manual dispatch
+bypasses this duplicate check so you can retry an adaptation deliberately.
 
 Updates use stable `automation/dbc-regeneration` branches. The workflow opens
 or refreshes the interface PR first, then pins its published commit in a linked
 data_station PR. Merge the interface PR first, then the dashboard PR. Neither
 PR is automatically merged. Avoid squash/rebase merging the interface PR unless
 you also update the dashboard submodule pointer to the resulting merged commit.
-Review application consumers when fields or semantics change; generation does
-not rewrite hand-maintained screens, simulator overrides or Foxglove layouts.
+Review Codex's consumer adaptations when fields or semantics change. A successful
+build cannot establish that an ambiguous application-level change is correct.
+The run artifact `tested-dbc-update` contains both patches and Codex's JSON summary.
 
 The separate **Validate DBC ARM64 build** workflow (`validate-dbc-arm64.yml`)
 runs regeneration, tests and the ARM64 build on dashboard PRs, master pushes,
 and pushes to `automate-dbc-regeneration`. It also supports manual dispatch,
-uses no App credentials and publishes no releases.
+uses no publication credentials and publishes no releases.
 
-The existing `fetch-dbcs.yml`, `build-arm64.yml` and shared ARM64 setup action
-are preserved exactly. The original DBC sync still updates inputs on master
-independently; the new workflow proposes the complete generated update through
-linked PRs. Existing build/release behavior continues through its original
-workflow. These schedules run only after the new workflow reaches master.
+The old `fetch-dbcs.yml` workflow is removed so raw DBC inputs cannot be pushed
+to master independently of generated code. `build-arm64.yml` and the shared
+ARM64 setup action retain their existing build/release behavior. Scheduling
+starts only after this workflow reaches master. To test setup, open
+**Actions → Regenerate T26 DBC outputs with Codex → Run workflow** on master,
+leave `dbc_ref` as `main`, and inspect the run and linked PRs. No PRs are merged
+and nothing is deployed by this automation.
 
 The API generator updates `dbc_api.h`, `dbc_api.cpp`, `dbc_api_sub_*.cpp`,
 `src/lart_msgs/dbc_msgs/*.msg` and the generated CMake interface entries.
@@ -111,7 +144,7 @@ submodule files.
 Run these build commands in Bash (`setup.bash` is Bash-specific):
 
 ```bash
-/tmp/dbc-venv/bin/python -m pytest -q tests/test_regenerate_dbcs.py tests/test_dbc_generation.py tests/test_dbc_api_abi.py tests/test_dbc_decoding.py tests/test_dbc_sync_workflow.py
+/tmp/dbc-venv/bin/python -m pytest -q tests
 source /opt/ros/jazzy/setup.bash
 colcon build --packages-select lart_msgs --parallel-workers 2
 source install/setup.bash

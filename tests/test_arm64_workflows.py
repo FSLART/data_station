@@ -33,17 +33,12 @@ class Arm64WorkflowTests(unittest.TestCase):
             "latest-arm64",
         )
 
-    def test_fast_build_preserves_each_version_and_updates_latest(self):
-        releases = self.release_steps("build-arm64-faster.yml")
-
-        self.assertEqual(
-            releases["Publish versioned release"]["with"]["tag_name"],
-            "faster-arm64-${{ github.sha }}",
-        )
-        self.assertEqual(
-            releases["Update latest release"]["with"]["tag_name"],
-            "faster-arm64",
-        )
+    def test_only_normal_build_publishes_releases(self):
+        # The faster build workflow was deleted; DBC validation/sync must not
+        # introduce another publisher while the normal workflow owns releases.
+        publishers = sorted(path.name for path in WORKFLOWS.glob('*.yml')
+                            if self.release_steps(path.name))
+        self.assertEqual(publishers, ['build-arm64.yml'])
 
 
 if __name__ == "__main__":
