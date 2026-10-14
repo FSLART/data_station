@@ -53,20 +53,22 @@ input hashes change. Never attribute edited DBC files to an upstream revision.
 
 ## Scheduled automation
 
-The **Regenerate T26 DBC outputs with Codex** workflow (`regenerate-dbcs.yml`)
+The **Regenerate T26 DBC outputs with OpenRouter** workflow (`regenerate-dbcs.yml`)
 runs in **perdo1305/data_station** and checks **FSLART/T26_DBC/main** twice an
 hour, at minutes 7 and 37 (UTC; GitHub may delay scheduled runs). Manual dispatch
 accepts a branch, tag or exact source commit through `dbc_ref`. It imports the
 three DBCs together and regenerates against **FSLART/lart_msgs/main**.
 
-When changes exist, `openai/codex-action@v1` reviews the DBC/generated diff and
+When changes exist, `openai/codex-action@v1` runs the coding agent against
+OpenRouter's Responses API at `https://openrouter.ai/api/v1/responses`, using
+only the `openrouter/free` model router. The agent reviews the DBC/generated diff and
 adapts affected handwritten dashboard code, ROS nodes, simulator overrides,
 Foxglove extensions and tests. Its instructions live in
-`.github/codex/dbc-update.md`. Codex must report a completed adaptation; an
+`.github/prompts/dbc-update.md`. The agent must report a completed adaptation; an
 ambiguous wire layout or failed adaptation stops publication. All root tests,
 focused simulator/DBC topic tests, Python consumer imports,
 the ARM64 ROS workspace build and both `ui_runner` and `can_bridge` builds must
-pass before either PR is published. Codex runs with a workspace sandbox, no
+pass before either PR is published. The agent runs with a workspace sandbox, no
 network and dropped sudo privileges. Toolchains are installed before it runs.
 
 Add these **Actions repository secrets** in
@@ -74,7 +76,7 @@ Add these **Actions repository secrets** in
 
 | Secret | Value |
 | --- | --- |
-| `OPENAI_API_KEY` | An OpenAI API project key with available API billing/quota. Codex runs consume API usage. |
+| `OPENROUTER_API_KEY` | An API key from [OpenRouter settings](https://openrouter.ai/settings/keys), with access to free models. |
 | `DBC_SYNC_TOKEN` | A GitHub personal access token whose user can push branches and create PRs in **perdo1305/data_station** and **FSLART/lart_msgs**. |
 
 For these repositories under different owners, use a **classic PAT** with
@@ -86,7 +88,9 @@ fine-grained PAT scoped only to your personal account cannot write to FSLART.
 The token cannot grant permissions its user does not already have. The ordinary
 `GITHUB_TOKEN` cannot publish `lart_msgs` from Data Station.
 
-The old `DBC_SYNC_APP_ID`/`DBC_SYNC_APP_PRIVATE_KEY` configuration is replaced by
+The agent sends inference requests to OpenRouter; neither `OPENAI_API_KEY` nor
+`ANTHROPIC_API_KEY` is used. The existing GitHub publishing credential stays the
+same. The old `DBC_SYNC_APP_ID`/`DBC_SYNC_APP_PRIVATE_KEY` configuration is replaced by
 `DBC_SYNC_TOKEN`. Only the publication job receives this credential. That job
 runs on a fresh runner, applies the exact tested patches to the recorded baseline
 commits, and does not execute the generated application code. If a destination
@@ -94,9 +98,16 @@ branch moved during validation, the preflight stops the run so it can be retried
 Publication commits the staged tested tree directly and uses an explicit Git
 lease when updating each automation branch; it never rebases the tested files.
 
-When no update is needed, Codex, tests, builds and publication are skipped. A
+The model is pinned to `openrouter/free`; there is no paid-model fallback.
+[OpenRouter's free router](https://openrouter.ai/docs/guides/routing/routers/free-router)
+selects among currently available free models and filters for requested features.
+Free-model availability and request quotas apply. If the API rejects the request,
+the run fails before publication. API token charges are zero for this route;
+GitHub Actions runner usage is subject to your GitHub plan.
+
+When no update is needed, the agent, tests, builds and publication are skipped. A
 scheduled run also skips a DBC revision already proposed in an open automation
-PR, avoiding repeated API charges while that PR awaits review. Manual dispatch
+PR, avoiding repeated API requests while that PR awaits review. Manual dispatch
 bypasses this duplicate check so you can retry an adaptation deliberately.
 
 Updates use stable `automation/dbc-regeneration` branches. The workflow opens
@@ -104,9 +115,9 @@ or refreshes the interface PR first, then pins its published commit in a linked
 data_station PR. Merge the interface PR first, then the dashboard PR. Neither
 PR is automatically merged. Avoid squash/rebase merging the interface PR unless
 you also update the dashboard submodule pointer to the resulting merged commit.
-Review Codex's consumer adaptations when fields or semantics change. A successful
+Review the agent's consumer adaptations when fields or semantics change. A successful
 build cannot establish that an ambiguous application-level change is correct.
-The run artifact `tested-dbc-update` contains both patches and Codex's JSON summary.
+The run artifact `tested-dbc-update` contains both patches and the agent's JSON summary (`agent-result.json`).
 
 The separate **Validate DBC ARM64 build** workflow (`validate-dbc-arm64.yml`)
 runs regeneration, tests and the ARM64 build on dashboard PRs, master pushes,
@@ -117,7 +128,7 @@ The old `fetch-dbcs.yml` workflow is removed so raw DBC inputs cannot be pushed
 to master independently of generated code. `build-arm64.yml` and the shared
 ARM64 setup action retain their existing build/release behavior. Scheduling
 starts only after this workflow reaches master. To test setup, open
-**Actions → Regenerate T26 DBC outputs with Codex → Run workflow** on master,
+**Actions → Regenerate T26 DBC outputs with OpenRouter → Run workflow** on master,
 leave `dbc_ref` as `main`, and inspect the run and linked PRs. No PRs are merged
 and nothing is deployed by this automation.
 

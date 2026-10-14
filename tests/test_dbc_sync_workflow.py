@@ -18,7 +18,7 @@ def test_sync_builds_before_publishing_and_pins_interface_commit():
     steps = publication_job['steps']
     names = [step['name'] for step in steps]
     update_names = [step['name'] for step in update['steps']]
-    assert update_names.index('Adapt DBC consumers with Codex') < update_names.index('Test DBC outputs')
+    assert update_names.index('Adapt DBC consumers with OpenRouter') < update_names.index('Test DBC outputs')
     assert update_names.index('Build dashboard UI') < update_names.index('Package tested changes')
     assert update_names.index('Package tested changes') < update_names.index('Upload tested changes')
     assert names.index('Pin published interfaces') < names.index('Publish dashboard PR')
@@ -35,21 +35,27 @@ def test_sync_builds_before_publishing_and_pins_interface_commit():
     assert 'git push' not in str(update)
 
 
-def test_codex_is_gated_and_has_no_publication_credentials():
+def test_openrouter_is_free_only_gated_and_has_no_publication_credentials():
     config = workflow('regenerate-dbcs.yml')
     update = config['jobs']['sync-dbc']
     assert config['permissions']['contents'] == 'read'
     assert 'pull_request' not in config['on']
     codex = next(s for s in update['steps'] if s.get('uses', '').startswith('openai/codex-action@'))
     assert codex['if'] == "steps.changes.outputs.changed == 'true'"
-    assert codex['with']['openai-api-key'] == '${{ secrets.OPENAI_API_KEY }}'
+    assert codex['with']['openai-api-key'] == '${{ secrets.OPENROUTER_API_KEY }}'
+    assert codex['with']['responses-api-endpoint'] == 'https://openrouter.ai/api/v1/responses'
+    assert codex['with']['model'] == 'openrouter/free'
+    assert codex['with']['prompt-file'] == '.github/prompts/dbc-update.md'
+    assert (ROOT / codex['with']['prompt-file']).is_file()
     assert codex['with']['permission-profile'] == ':workspace'
     assert codex['with']['safety-strategy'] == 'drop-sudo'
     assert codex['with']['output-schema']
     names = [s['name'] for s in update['steps']]
-    assert names.index('Set up ROS2 build') < names.index('Adapt DBC consumers with Codex')
+    assert names.index('Set up ROS2 build') < names.index('Adapt DBC consumers with OpenRouter')
     assert names.index('Require completed adaptation') < names.index('Test DBC outputs')
     assert 'DBC_SYNC_TOKEN' not in str(update)
+    assert 'secrets.OPENAI_API_KEY' not in str(config)
+    assert 'secrets.ANTHROPIC_API_KEY' not in str(config)
     assert all(s.get('with', {}).get('persist-credentials') == 'false'
                for s in update['steps'] if s.get('uses', '').startswith('actions/checkout@'))
 

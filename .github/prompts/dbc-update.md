@@ -1,4 +1,4 @@
-Update Data Station and its `src/lart_msgs` Git submodule for the imported T26 DBC revision.
+Adapt Data Station and its `src/lart_msgs` Git submodule for the imported T26 DBC revision.
 
 The workflow has already validated and imported the three DBCs, recorded upstream
 provenance in `dbc_signals/source.json`, and run the complete regeneration chain.
