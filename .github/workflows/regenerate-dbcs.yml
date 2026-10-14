@@ -7,6 +7,10 @@ on:
         description: T26_DBC branch, tag, or commit to import
         default: main
         type: string
+      dry_run:
+        description: Run adaptation and validation without publishing PRs
+        default: false
+        type: boolean
   schedule:
     - cron: "7,37 * * * *"
 
@@ -30,7 +34,7 @@ jobs:
       - name: Checkout destination repository
         uses: actions/checkout@v4
         with:
-          ref: master
+          ref: ${{ github.sha }}
           submodules: recursive
           persist-credentials: false
 
@@ -99,6 +103,28 @@ jobs:
         if: steps.changes.outputs.changed == 'true'
         uses: ./.github/actions/setup-arm64
 
+      - name: Start OpenRouter pacing relay
+        id: pacer
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          # A root-owned copy/process keeps forwarded credentials outside the
+          # coding agent's reach after the action drops its privileges.
+          sudo install -m 0644 .github/scripts/openrouter_pacer.py /usr/local/lib/dbc-openrouter-pacer.py
+          sudo /usr/bin/python3 -I /usr/local/lib/dbc-openrouter-pacer.py \
+            --server-info "$RUNNER_TEMP/openrouter-pacer.json" \
+            > "$RUNNER_TEMP/openrouter-pacer.log" 2>&1 &
+          for attempt in {1..50}; do
+            if [ -s "$RUNNER_TEMP/openrouter-pacer.json" ]; then break; fi
+            sleep 0.1
+          done
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          port = json.loads((Path(os.environ['RUNNER_TEMP']) / 'openrouter-pacer.json').read_text())['port']
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write(f'base_url=http://127.0.0.1:{port}\n')
+          PY
+
       - name: Adapt DBC consumers with OpenRouter
         if: steps.changes.outputs.changed == 'true'
         uses: openai/codex-action@v1
@@ -107,7 +133,7 @@ jobs:
           DBC_PYTHON: ${{ runner.temp }}/dbc-venv/bin/python
         with:
           openai-api-key: ${{ secrets.OPENROUTER_API_KEY }}
-          responses-api-endpoint: https://openrouter.ai/api/v1/responses
+          responses-api-endpoint: ${{ steps.pacer.outputs.base_url }}/v1/responses
           model: openrouter/free
           permission-profile: ':workspace'
           safety-strategy: drop-sudo
@@ -115,6 +141,14 @@ jobs:
           output-file: ${{ runner.temp }}/dbc-agent-result.json
           output-schema: |
             {"type":"object","properties":{"ready":{"type":"boolean"},"summary":{"type":"string"}},"required":["ready","summary"],"additionalProperties":false}
+
+      - name: Stop OpenRouter pacing relay
+        if: always() && steps.pacer.outputs.base_url != ''
+        env:
+          PACER_URL: ${{ steps.pacer.outputs.base_url }}
+        run: |
+          curl --fail --silent --show-error --max-time 5 "$PACER_URL/shutdown"
+          cat "$RUNNER_TEMP/openrouter-pacer.log"
 
       - name: Require completed adaptation
         if: steps.changes.outputs.changed == 'true'
@@ -203,7 +237,7 @@ jobs:
   # Fresh runner: The coding agent and builds never receive the publishing credential.
   publish:
     needs: sync-dbc
-    if: needs.sync-dbc.outputs.changed == 'true'
+    if: needs.sync-dbc.outputs.changed == 'true' && !inputs.dry_run
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
