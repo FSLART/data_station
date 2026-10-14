@@ -14,7 +14,8 @@ def test_sync_builds_before_publishing_and_pins_interface_commit():
     update = config['jobs']['sync-dbc']
     publication_job = config['jobs']['publish']
     assert publication_job['needs'] == 'sync-dbc'
-    assert publication_job['if'] == "needs.sync-dbc.outputs.changed == 'true'"
+    assert publication_job['if'] == "needs.sync-dbc.outputs.changed == 'true' && !inputs.dry_run"
+    assert config['on']['workflow_dispatch']['inputs']['dry_run']['default'] == 'false'
     steps = publication_job['steps']
     names = [step['name'] for step in steps]
     update_names = [step['name'] for step in update['steps']]
@@ -43,7 +44,7 @@ def test_openrouter_is_free_only_gated_and_has_no_publication_credentials():
     codex = next(s for s in update['steps'] if s.get('uses', '').startswith('openai/codex-action@'))
     assert codex['if'] == "steps.changes.outputs.changed == 'true'"
     assert codex['with']['openai-api-key'] == '${{ secrets.OPENROUTER_API_KEY }}'
-    assert codex['with']['responses-api-endpoint'] == 'https://openrouter.ai/api/v1/responses'
+    assert codex['with']['responses-api-endpoint'] == '${{ steps.pacer.outputs.base_url }}/v1/responses'
     assert codex['with']['model'] == 'openrouter/free'
     assert codex['with']['prompt-file'] == '.github/prompts/dbc-update.md'
     assert (ROOT / codex['with']['prompt-file']).is_file()
@@ -51,6 +52,13 @@ def test_openrouter_is_free_only_gated_and_has_no_publication_credentials():
     assert codex['with']['safety-strategy'] == 'drop-sudo'
     assert codex['with']['output-schema']
     names = [s['name'] for s in update['steps']]
+    assert names.index('Start OpenRouter pacing relay') < names.index('Adapt DBC consumers with OpenRouter')
+    assert names.index('Stop OpenRouter pacing relay') > names.index('Adapt DBC consumers with OpenRouter')
+    relay = next(s for s in update['steps'] if s['name'] == 'Start OpenRouter pacing relay')
+    assert 'secrets.' not in str(relay)
+    assert '/usr/bin/python3 -I' in relay['run']
+    checkout = next(s for s in update['steps'] if s['name'] == 'Checkout destination repository')
+    assert checkout['with']['ref'] == '${{ github.sha }}'
     assert names.index('Set up ROS2 build') < names.index('Adapt DBC consumers with OpenRouter')
     assert names.index('Require completed adaptation') < names.index('Test DBC outputs')
     assert 'DBC_SYNC_TOKEN' not in str(update)

@@ -60,7 +60,8 @@ accepts a branch, tag or exact source commit through `dbc_ref`. It imports the
 three DBCs together and regenerates against **FSLART/lart_msgs/main**.
 
 When changes exist, `openai/codex-action@v1` runs the coding agent against
-OpenRouter's Responses API at `https://openrouter.ai/api/v1/responses`, using
+OpenRouter's Responses API at `https://openrouter.ai/api/v1/responses` through
+a local pacing relay, using
 only the `openrouter/free` model router. The agent reviews the DBC/generated diff and
 adapts affected handwritten dashboard code, ROS nodes, simulator overrides,
 Foxglove extensions and tests. Its instructions live in
@@ -104,6 +105,26 @@ selects among currently available free models and filters for requested features
 Free-model availability and request quotas apply. If the API rejects the request,
 the run fails before publication. API token charges are zero for this route;
 GitHub Actions runner usage is subject to your GitHub plan.
+
+The relay starts upstream model requests at least **six seconds apart**, including
+retries, and serializes response streams. For HTTP 429/500/502/503/504 before a
+response starts, it makes at most four attempts, with 6/12/24-second backoff and
+longer `Retry-After` delays honored (seconds or HTTP dates). Delays over two
+minutes are returned to the caller and retained as a cooldown instead of
+retrying early. On a 429, the relay checks the daily quota using the metadata API;
+an exhausted daily allowance blocks further upstream calls for that run.
+Streams already delivered to the agent are never replayed. Quota restrictions
+and busy providers can still prevent completion; there is no paid fallback.
+
+The relay runs from a root-owned copy on loopback and forwards only
+`openrouter/free` requests to the fixed OpenRouter endpoint. It receives the
+credential from the existing protected API proxy, logs only status/retry
+information, and stops after adaptation even if the agent fails.
+
+For a full test before merging, manually run the workflow on the PR branch with
+**dry_run: true**. It checks out the exact selected revision and runs adaptation,
+tests and builds, then uploads the patches/summary without publishing PRs.
+The default is false, so scheduled runs retain normal publication behavior.
 
 When no update is needed, the agent, tests, builds and publication are skipped. A
 scheduled run also skips a DBC revision already proposed in an open automation
