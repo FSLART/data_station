@@ -12,7 +12,7 @@ python3 -m venv /tmp/dbc-venv && /tmp/dbc-venv/bin/pip install -r scripts/requir
 /tmp/dbc-venv/bin/python -m pytest -q tests
 /tmp/dbc-venv/bin/python -m pytest -q tests/test_dbc_decoding.py::<test_name>
 
-# Package tests (need ROS sourced + package paths, as in regenerate-dbcs.yml)
+# Package tests (need ROS sourced + package paths)
 source /opt/ros/jazzy/setup.bash && source install/setup.bash
 PYTHONPATH=src/sim:src/lart_bringup:src/led_controller python3 -m pytest -q src/sim/test src/lart_bringup/test src/input_handler/test
 
@@ -63,7 +63,8 @@ For which consumer changes a given DBC edit requires, see the table in `docs/DBC
 ## CI
 
 - `build-arm64.yml`: builds the workspace and `ui_runner` on every push to `master` and publishes `arm64-<sha>` / `latest-arm64` releases. The Pi pulls them with `scripts/pull_arm64_build.sh` instead of compiling.
-- `regenerate-dbcs.yml`: runs on a cron twice an hour and checks FSLART/T26_DBC. When it changes, a Codex agent (on OpenRouter `openrouter/free`, paced by `.github/scripts/openrouter_pacer.py`, prompt in `.github/prompts/dbc-update.md`) adapts consumers. The workflow then opens linked PRs: `lart_msgs` first, then the dashboard. Workflow behaviour is pinned by `tests/test_dbc_sync_workflow.py`, `test_arm64_workflows.py` and `test_openrouter_pacer.py`. Update those tests when you edit the workflows.
+- `validate-dbc-arm64.yml`: regenerates, tests and builds on PRs without publishing releases.
+- No scheduled DBC sync: when FSLART/T26_DBC changes, regenerate locally and open the `lart_msgs` PR first, then the dashboard PR. Workflow behaviour is pinned by `tests/test_dbc_sync_workflow.py` and `test_arm64_workflows.py`. Update those tests when you edit the workflows.
 
 ## Deployment
 
@@ -72,3 +73,9 @@ On the Pi, the workspace lives at `/home/lart2026/GIT/data_station/`, and severa
 ## Agent rules
 
 `AGENTS.md`, `.github/copilot-instructions.md` and the `.cursor` / `.windsurf` / `.clinerules` files contain only a terse-response style rule (caveman). Code, comments, commits and docs are written normally.
+
+## Save the limit
+- Hand quick, mechanical work to the haiku-helper subagent: finding files, grep searches, reading logs,
+listing folders, renames, one-line edits, running a command and reporting the output.
+- Batch several small lookups into one haiku-helper call.
+- Keep planning, debugging, architecture and multi-file changes for yourself.
