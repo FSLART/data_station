@@ -30,7 +30,8 @@ deploy/.env
 
 # Superpowers subagent-driven-development scratch (progress ledger, etc.)
 .superpowers/
-.claude/
+.claude/*
+!.claude/skills/
 .agents/
 
 /build.github-backup/

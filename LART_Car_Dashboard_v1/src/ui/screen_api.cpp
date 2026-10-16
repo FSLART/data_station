@@ -31,22 +31,8 @@ void set_speed_pull_labels(const char *time_text, const char *status_text) {
         lv_obj_set_style_text_font(objects.lastlap_label, &ui_font_orbitron_bold_30, LV_PART_MAIN | LV_STATE_DEFAULT);
         lv_label_set_text(objects.lastlap_label, status_text);
     }
-    if (objects.laptime_label_1) {
-        lv_obj_set_pos(objects.laptime_label_1, 6, 8);
-        lv_obj_set_style_text_font(objects.laptime_label_1, &ui_font_orbitron_bold_30, LV_PART_MAIN | LV_STATE_DEFAULT);
-        lv_label_set_text(objects.laptime_label_1, time_text);
-    }
-    if (objects.lastlap_label_1) {
-        lv_obj_set_pos(objects.lastlap_label_1, 205, 8);
-        lv_obj_set_style_text_font(objects.lastlap_label_1, &ui_font_orbitron_bold_30, LV_PART_MAIN | LV_STATE_DEFAULT);
-        lv_label_set_text(objects.lastlap_label_1, status_text);
-    }
-
-    if (objects.lap_times_container_1) lv_obj_set_width(objects.lap_times_container_1, 370);
     if (objects.obj0) lv_obj_add_flag(objects.obj0, LV_OBJ_FLAG_HIDDEN);
     if (objects.obj1) lv_obj_add_flag(objects.obj1, LV_OBJ_FLAG_HIDDEN);
-    if (objects.obj4) lv_obj_add_flag(objects.obj4, LV_OBJ_FLAG_HIDDEN);
-    if (objects.obj5) lv_obj_add_flag(objects.obj5, LV_OBJ_FLAG_HIDDEN);
 }
 
 } // namespace

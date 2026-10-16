@@ -387,6 +387,49 @@ void check_expired_notifications() {
 }  // namespace
 
 int main(int argc, char **argv) {
+    if (std::getenv("LART_TEST_AUTONOMOUS_TELEMETRY")) {
+        init_lvgl();
+        dbc_api.master_precharge_id_1.precharge_state = -1.0f;
+        ui_init();
+        ui_set_screen(SCREEN_ID_AUTONOMOUS - 1);
+        ui_tick();
+        const auto expect = [](bool condition, const char *field) {
+            if (!condition) {
+                std::fprintf(stderr, "[TEST] Autonomous telemetry failed: %s\n", field);
+                std::_Exit(1);
+            }
+        };
+        // Change subscribed CAN fields while staying on Autonomous. No manual
+        // telemetry refresh: the regular screen tick must propagate each update.
+        for (int sample = 0; sample < 2; ++sample) {
+            dbc_api.acu.mission_select = sample == 0 ? 3.0f : 4.0f;
+            dbc_api.acu.acu_state = sample == 0 ? 5.0f : 8.0f;
+            dbc_api.master_soc_accumulator.soc_float = sample == 0 ? 78.0f : 62.0f;
+            dbc_api.pdm_lv.lv_voltage_mv = sample == 0 ? 25.2f : 24.6f;
+            dbc_api.inv1_erpm_duty_voltage.inv1_actual_erpm = sample == 0 ? 18000.0f : 36000.0f;
+            dbc_api.asf_signals.brake_pressure_front = sample == 0 ? 12.0f : 24.0f;
+            dbc_api.asf_signals.brake_pressure_rear = sample == 0 ? 35.0f : 45.0f;
+            dbc_api.asf_signals.ebs_pressure_tank_front = sample == 0 ? 8.2f : 7.4f;
+            dbc_api.asf_signals.ebs_pressure_tank_rear = sample == 0 ? 9.1f : 8.3f;
+            ui_tick();
+            expect(lv_screen_active() == objects.autonomous, "active screen");
+            expect(std::strcmp(lv_label_get_text(objects.obj3),
+                sample == 0 ? "MISSION:TRACKDRIVE" : "MISSION:BRAKE TEST") == 0, "/can/acu mission_select");
+            expect(std::strcmp(lv_label_get_text(objects.km_label_3),
+                sample == 0 ? "State: DRIVING" : "State: FINISHED") == 0, "/can/acu acu_state");
+            expect(lv_bar_get_value(objects.hv_bar_1) == (sample == 0 ? 78 : 62), "/pwt/master_soc_accumulator");
+            expect(std::strcmp(lv_label_get_text(objects.hv_label_1), sample == 0 ? "78%" : "62%") == 0, "SOC label");
+            expect(std::strcmp(lv_label_get_text(objects.lv_label_1), sample == 0 ? "25.2 V" : "24.6 V") == 0, "/data/pdm_lv");
+            expect(std::strcmp(lv_label_get_text(objects.speed_label_1), sample == 0 ? "23" : "47") == 0, "/pwt/inv1_erpm_duty_voltage");
+            expect(lv_bar_get_value(objects.brake_presure_bar_1) == (sample == 0 ? 12 : 24), "front brake pressure");
+            expect(lv_bar_get_value(objects.brake_presure_bar_2) == (sample == 0 ? 35 : 45), "rear brake pressure");
+            expect(std::strcmp(lv_label_get_text(objects.pneum_press_label_f), sample == 0 ? "8.2" : "7.4") == 0, "front EBS tank pressure");
+            expect(std::strcmp(lv_label_get_text(objects.pneum_press_label_r), sample == 0 ? "9.1" : "8.3") == 0, "rear EBS tank pressure");
+        }
+        std::puts("[TEST] Autonomous CAN telemetry updates passed");
+        ui_fini();
+        return 0;
+    }
     if (std::getenv("LART_TEST_DRIVER_GAUGE")) {
         init_lvgl();
         dbc_api.master_precharge_id_1.precharge_state = -1.0f;
@@ -394,8 +437,6 @@ int main(int argc, char **argv) {
         assert(eez_flow_get_current_screen() == SCREEN_ID_DRIVER_GAUGE);
         assert(lv_screen_active() == objects.driver_gauge);
         dbc_api.inv1_erpm_duty_voltage.inv1_actual_erpm = 18000.0f;
-        dbc_api.aqt2.front_left_wheel_rpm = 1000.0f;
-        dbc_api.aqt2.front_right_wheel_rpm = 1200.0f;
         dbc_api.inv1_temperatures.inv1_actual_tempmotor = 67.0f;
         dbc_api.inv1_temperatures.inv1_actual_tempcontroller = 42.0f;
         dbc_api.master_msc_id_3.overall_maximum_temperature = 35.0f;
@@ -408,18 +449,6 @@ int main(int argc, char **argv) {
         assert(eez_flow_get_current_screen() == SCREEN_ID_DRIVER_GAUGE);
         assert(lv_screen_active() == objects.driver_gauge);
         assert(std::strcmp(lv_label_get_text(objects.gauge_speed), "23") == 0);
-        assert(std::abs(ui_get_speed() - 23.118980f) < 0.01f);
-        dbc_api.inv1_erpm_duty_voltage.inv1_actual_erpm = 0.0f;
-        ui_tick();
-        assert(std::abs(ui_get_speed() - 23.118980f) < 0.01f);
-        dbc_api.aqt2.front_left_wheel_rpm = 0.0f;
-        dbc_api.aqt2.front_right_wheel_rpm = 0.0f;
-        ui_tick();
-        assert(ui_get_speed() == 0.0f);
-        dbc_api.inv1_erpm_duty_voltage.inv1_actual_erpm = 18000.0f;
-        dbc_api.aqt2.front_left_wheel_rpm = 1000.0f;
-        dbc_api.aqt2.front_right_wheel_rpm = 1200.0f;
-        ui_tick();
         assert(std::strcmp(lv_label_get_text(objects.gauge_motor_temp), "67") == 0);
         assert(std::strcmp(lv_label_get_text(objects.gauge_inv_temp), "42") == 0);
         assert(std::strcmp(lv_label_get_text(objects.gauge_bat_temp), "35") == 0);
@@ -659,13 +688,9 @@ int main(int argc, char **argv) {
         assert(lv_bar_get_value(objects.gauge_apps_bar) == 0);
         assert(lv_bar_get_value(objects.gauge_brake_bar) == 0);
         dbc_api.inv1_erpm_duty_voltage.inv1_actual_erpm = -8000.0f;
-        dbc_api.aqt2.front_left_wheel_rpm = -100.0f;
-        dbc_api.aqt2.front_right_wheel_rpm = -100.0f;
         ui_tick();
         assert(std::strcmp(lv_label_get_text(objects.gauge_speed), "0") == 0);
         dbc_api.inv1_erpm_duty_voltage.inv1_actual_erpm = 80000.0f;
-        dbc_api.aqt2.front_left_wheel_rpm = 4900.0f;
-        dbc_api.aqt2.front_right_wheel_rpm = 5000.0f;
         ui_tick();
         assert(std::strcmp(lv_label_get_text(objects.gauge_speed), "104") == 0);
         const auto *line = reinterpret_cast<const lv_line_t *>(objects.gauge_needle);
@@ -673,8 +698,6 @@ int main(int argc, char **argv) {
         assert(std::fabs(full_scale.x - (236.0f + 190.0f / std::sqrt(2.0f))) < 1.0f);
         assert(std::fabs(full_scale.y - full_scale.x) < 1.0f);
         dbc_api.inv1_erpm_duty_voltage.inv1_actual_erpm = 96000.0f;
-        dbc_api.aqt2.front_left_wheel_rpm = 5900.0f;
-        dbc_api.aqt2.front_right_wheel_rpm = 6000.0f;
         ui_tick();
         assert(std::strcmp(lv_label_get_text(objects.gauge_speed), "125") == 0);
         assert(line->point_array[1].x == full_scale.x);
@@ -841,8 +864,6 @@ int main(int argc, char **argv) {
         dbc_api.vcu_ign_r2d.r2d_manual = 1.0f;
         dbc_api.dv_dynamics_1.speed_actual = 55.4f;
         dbc_api.inv1_erpm_duty_voltage.inv1_actual_erpm = 1000.0f;
-        dbc_api.aqt2.front_left_wheel_rpm = 500.0f;
-        dbc_api.aqt2.front_right_wheel_rpm = 1500.0f;
         dbc_api.inv1_temperatures.inv1_actual_tempcontroller = 38.2f;
         dbc_api.inv1_temperatures.inv1_actual_tempmotor = 62.1f;
         dbc_api.slam_stats_can.lap_counter = 3.0f;
@@ -867,18 +888,7 @@ int main(int argc, char **argv) {
         assert(std::strcmp(val_ready.getString(), "READY") == 0);
 
         auto val_speed = eez::flow::getGlobalVariable(FLOW_GLOBAL_VARIABLE_SPEED);
-        assert(std::abs(val_speed.getFloat() - 21.017255f) < 0.01f);
-
-        // Motor eRPM must not affect the speed derived from the front wheels.
-        dbc_api.inv1_erpm_duty_voltage.inv1_actual_erpm = 96000.0f;
-        ui_update_telemetry_vars(nullptr);
-        assert(std::abs(ui_get_speed() - 21.017255f) < 0.01f);
-        dbc_api.aqt2.front_left_wheel_rpm = 0.0f;
-        dbc_api.aqt2.front_right_wheel_rpm = 0.0f;
-        ui_update_telemetry_vars(nullptr);
-        assert(ui_get_speed() == 0.0f);
-        dbc_api.aqt2.front_left_wheel_rpm = 500.0f;
-        dbc_api.aqt2.front_right_wheel_rpm = 1500.0f;
+        assert(std::abs(val_speed.getFloat() - 20.802334f) < 0.01f);
 
         auto val_temp_inv = eez::flow::getGlobalVariable(FLOW_GLOBAL_VARIABLE_TEMP_INV);
         assert(std::abs(val_temp_inv.getFloat() - 38.2f) < 0.01f);
@@ -914,7 +924,7 @@ int main(int argc, char **argv) {
         assert(eez::flow::getGlobalVariable(FLOW_GLOBAL_VARIABLE_SOC).getInt() == 80);
         assert(std::abs(eez::flow::getGlobalVariable(FLOW_GLOBAL_VARIABLE_LV).getFloat() - 25.0f) < 0.01f);
         assert(std::strcmp(eez::flow::getGlobalVariable(FLOW_GLOBAL_VARIABLE_READY).getString(), "READY") == 0);
-        assert(std::abs(eez::flow::getGlobalVariable(FLOW_GLOBAL_VARIABLE_SPEED).getFloat() - 21.017255f) < 0.01f);
+        assert(std::abs(eez::flow::getGlobalVariable(FLOW_GLOBAL_VARIABLE_SPEED).getFloat() - 41.604668f) < 0.01f);
         assert(std::abs(eez::flow::getGlobalVariable(FLOW_GLOBAL_VARIABLE_TEMP_INV).getFloat() - 30.0f) < 0.01f);
         assert(std::abs(eez::flow::getGlobalVariable(FLOW_GLOBAL_VARIABLE_TEMP_MOTOR).getFloat() - 40.0f) < 0.01f);
         assert(eez::flow::getGlobalVariable(FLOW_GLOBAL_VARIABLE_LAP_COUNT).getInt() == 5);

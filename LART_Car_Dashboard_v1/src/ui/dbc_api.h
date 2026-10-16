@@ -472,6 +472,75 @@ typedef struct {
         float icd_ubat;
     } icd_result;
     struct {
+        float acceleration_x;
+        float acceleration_y;
+        float acceleration_z;
+    } imu_acceleration;
+    struct {
+        float angular_velocity_x;
+        float angular_velocity_y;
+        float angular_velocity_z;
+    } imu_angular_velocity;
+    struct {
+        float pitch;
+        float roll;
+        float yaw;
+    } imu_euler;
+    struct {
+        float velocity_x;
+        float velocity_y;
+        float velocity_z;
+    } imu_filter_velocity;
+    struct {
+        float free_acceleration_x;
+        float free_acceleration_y;
+        float free_acceleration_z;
+    } imu_free_acceleration;
+    struct {
+        float altitude;
+    } imu_gnss_altitude;
+    struct {
+        float latitude;
+        float longitude;
+    } imu_gnss_position;
+    struct {
+        float quaternion_w;
+        float quaternion_x;
+        float quaternion_y;
+        float quaternion_z;
+    } imu_orientation;
+    struct {
+        float clip_acc_x;
+        float clip_acc_y;
+        float clip_acc_z;
+        float clip_gyr_x;
+        float clip_gyr_y;
+        float clip_gyr_z;
+        float clip_mag_x;
+        float clip_mag_y;
+        float clip_mag_z;
+        float clipping_indication;
+        float clock_bias_estimation;
+        float filter_mode;
+        float filter_valid;
+        float gnss_fix;
+        float gnss_time_pulse;
+        float no_rotation_update_status;
+        float representative_motion;
+        float rtk_status;
+        float self_test;
+        float syncin_marker;
+        float syncout_marker;
+    } imu_status;
+    struct {
+        float temperature;
+    } imu_temperature;
+    struct {
+        float velocity_x;
+        float velocity_y;
+        float velocity_z;
+    } imu_velocity;
+    struct {
         float inv1_actual_accurrent;
         float inv1_actual_dccurrent;
     } inv1_ac_dc_current;
@@ -1572,7 +1641,19 @@ typedef struct {
         float rpm_target;
     } vcu_rpm_target;
     struct {
+        float front_left_speed;
+        float front_right_speed;
+        float front_wheel_speed_ok;
+        float road_wheel_angle;
+        float steering_angle_ok;
+        float tc_factor_rear_left;
+        float tc_factor_rear_right;
+        float tc_state;
+        float throttle_status;
+        float tv_shift;
+        float tv_state;
         float vcu_state;
+        float vcu_states_counter;
     } vcu_states;
     struct {
         float torque_target;

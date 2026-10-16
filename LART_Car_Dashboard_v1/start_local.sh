@@ -21,7 +21,7 @@ export ROS_DOMAIN_ID="${ROS_DOMAIN_ID:-42}"
 export LART_UI_START_MINIMIZED=1
 echo "CAN simulation starts when you open: ros2 run sim admin_panel"
 
-# 4. Start the precharge-triggered bag recorder (records /can/* topics
+# 4. Start the precharge-triggered bag recorder (records all ROS topics
 # to ~/bags while precharge_request is active; see lart_bringup/bag_recorder.py)
 BAG_RECORDER_BIN="$WS_DIR/install/lart_bringup/lib/lart_bringup/bag_recorder"
 if [ -x "$BAG_RECORDER_BIN" ]; then

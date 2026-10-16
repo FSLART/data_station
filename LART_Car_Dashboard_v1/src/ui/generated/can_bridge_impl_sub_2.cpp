@@ -4,6 +4,39 @@
 void CanBridgeImpl::init_publishers_chunk_2(rclcpp::Node* node) {
     auto sensor_qos = rclcpp::QoS(10).best_effort();
     if (database_ == "powertrain_t26") {
+        pub_inv1_setbrakecurrent = node->create_publisher<lart_msgs::msg::Inv1Setbrakecurrent>(database_ == "data_t26" ? "/data/inv1_setbrakecurrent" : database_ == "powertrain_t26" ? "/pwt/inv1_setbrakecurrent" : "/can/inv1_setbrakecurrent", sensor_qos);
+    }
+    if (database_ == "powertrain_t26") {
+        pub_inv1_setdigoutput = node->create_publisher<lart_msgs::msg::Inv1Setdigoutput>(database_ == "data_t26" ? "/data/inv1_setdigoutput" : database_ == "powertrain_t26" ? "/pwt/inv1_setdigoutput" : "/can/inv1_setdigoutput", sensor_qos);
+    }
+    if (database_ == "powertrain_t26") {
+        pub_inv1_setdriveenable = node->create_publisher<lart_msgs::msg::Inv1Setdriveenable>(database_ == "data_t26" ? "/data/inv1_setdriveenable" : database_ == "powertrain_t26" ? "/pwt/inv1_setdriveenable" : "/can/inv1_setdriveenable", sensor_qos);
+    }
+    if (database_ == "powertrain_t26") {
+        pub_inv1_seterpm = node->create_publisher<lart_msgs::msg::Inv1Seterpm>(database_ == "data_t26" ? "/data/inv1_seterpm" : database_ == "powertrain_t26" ? "/pwt/inv1_seterpm" : "/can/inv1_seterpm", sensor_qos);
+    }
+    if (database_ == "powertrain_t26") {
+        pub_inv1_setmaxacbrakecurrent = node->create_publisher<lart_msgs::msg::Inv1Setmaxacbrakecurrent>(database_ == "data_t26" ? "/data/inv1_setmaxacbrakecurrent" : database_ == "powertrain_t26" ? "/pwt/inv1_setmaxacbrakecurrent" : "/can/inv1_setmaxacbrakecurrent", sensor_qos);
+    }
+    if (database_ == "powertrain_t26") {
+        pub_inv1_setmaxaccurrent = node->create_publisher<lart_msgs::msg::Inv1Setmaxaccurrent>(database_ == "data_t26" ? "/data/inv1_setmaxaccurrent" : database_ == "powertrain_t26" ? "/pwt/inv1_setmaxaccurrent" : "/can/inv1_setmaxaccurrent", sensor_qos);
+    }
+    if (database_ == "powertrain_t26") {
+        pub_inv1_setmaxdcbrakecurrent = node->create_publisher<lart_msgs::msg::Inv1Setmaxdcbrakecurrent>(database_ == "data_t26" ? "/data/inv1_setmaxdcbrakecurrent" : database_ == "powertrain_t26" ? "/pwt/inv1_setmaxdcbrakecurrent" : "/can/inv1_setmaxdcbrakecurrent", sensor_qos);
+    }
+    if (database_ == "powertrain_t26") {
+        pub_inv1_setmaxdccurrent = node->create_publisher<lart_msgs::msg::Inv1Setmaxdccurrent>(database_ == "data_t26" ? "/data/inv1_setmaxdccurrent" : database_ == "powertrain_t26" ? "/pwt/inv1_setmaxdccurrent" : "/can/inv1_setmaxdccurrent", sensor_qos);
+    }
+    if (database_ == "powertrain_t26") {
+        pub_inv1_setposition = node->create_publisher<lart_msgs::msg::Inv1Setposition>(database_ == "data_t26" ? "/data/inv1_setposition" : database_ == "powertrain_t26" ? "/pwt/inv1_setposition" : "/can/inv1_setposition", sensor_qos);
+    }
+    if (database_ == "powertrain_t26") {
+        pub_inv1_setrelbrakecurrent = node->create_publisher<lart_msgs::msg::Inv1Setrelbrakecurrent>(database_ == "data_t26" ? "/data/inv1_setrelbrakecurrent" : database_ == "powertrain_t26" ? "/pwt/inv1_setrelbrakecurrent" : "/can/inv1_setrelbrakecurrent", sensor_qos);
+    }
+    if (database_ == "powertrain_t26") {
+        pub_inv1_setrelcurrent = node->create_publisher<lart_msgs::msg::Inv1Setrelcurrent>(database_ == "data_t26" ? "/data/inv1_setrelcurrent" : database_ == "powertrain_t26" ? "/pwt/inv1_setrelcurrent" : "/can/inv1_setrelcurrent", sensor_qos);
+    }
+    if (database_ == "powertrain_t26") {
         pub_inv1_targetiq = node->create_publisher<lart_msgs::msg::Inv1Targetiq>(database_ == "data_t26" ? "/data/inv1_targetiq" : database_ == "powertrain_t26" ? "/pwt/inv1_targetiq" : "/can/inv1_targetiq", sensor_qos);
     }
     if (database_ == "powertrain_t26") {
@@ -60,45 +93,51 @@ void CanBridgeImpl::init_publishers_chunk_2(rclcpp::Node* node) {
     if (database_ == "powertrain_t26") {
         pub_inv2_setrelbrakecurrent = node->create_publisher<lart_msgs::msg::Inv2Setrelbrakecurrent>(database_ == "data_t26" ? "/data/inv2_setrelbrakecurrent" : database_ == "powertrain_t26" ? "/pwt/inv2_setrelbrakecurrent" : "/can/inv2_setrelbrakecurrent", sensor_qos);
     }
-    if (database_ == "powertrain_t26") {
-        pub_inv2_setrelcurrent = node->create_publisher<lart_msgs::msg::Inv2Setrelcurrent>(database_ == "data_t26" ? "/data/inv2_setrelcurrent" : database_ == "powertrain_t26" ? "/pwt/inv2_setrelcurrent" : "/can/inv2_setrelcurrent", sensor_qos);
-    }
-    if (database_ == "powertrain_t26") {
-        pub_inv2_targetiq = node->create_publisher<lart_msgs::msg::Inv2Targetiq>(database_ == "data_t26" ? "/data/inv2_targetiq" : database_ == "powertrain_t26" ? "/pwt/inv2_targetiq" : "/can/inv2_targetiq", sensor_qos);
-    }
-    if (database_ == "powertrain_t26") {
-        pub_inv2_temperatures = node->create_publisher<lart_msgs::msg::Inv2Temperatures>(database_ == "data_t26" ? "/data/inv2_temperatures" : database_ == "powertrain_t26" ? "/pwt/inv2_temperatures" : "/can/inv2_temperatures", sensor_qos);
-    }
-    if (database_ == "powertrain_t26") {
-        pub_ivt_msg_cmd = node->create_publisher<lart_msgs::msg::IvtMsgCmd>(database_ == "data_t26" ? "/data/ivt_msg_cmd" : database_ == "powertrain_t26" ? "/pwt/ivt_msg_cmd" : "/can/ivt_msg_cmd", sensor_qos);
-    }
-    if (database_ == "powertrain_t26") {
-        pub_ivt_msg_response = node->create_publisher<lart_msgs::msg::IvtMsgResponse>(database_ == "data_t26" ? "/data/ivt_msg_response" : database_ == "powertrain_t26" ? "/pwt/ivt_msg_response" : "/can/ivt_msg_response", sensor_qos);
-    }
-    if (database_ == "powertrain_t26") {
-        pub_ivt_msg_result_as = node->create_publisher<lart_msgs::msg::IvtMsgResultAs>(database_ == "data_t26" ? "/data/ivt_msg_result_as" : database_ == "powertrain_t26" ? "/pwt/ivt_msg_result_as" : "/can/ivt_msg_result_as", sensor_qos);
-    }
-    if (database_ == "powertrain_t26") {
-        pub_ivt_msg_result_i = node->create_publisher<lart_msgs::msg::IvtMsgResultI>(database_ == "data_t26" ? "/data/ivt_msg_result_i" : database_ == "powertrain_t26" ? "/pwt/ivt_msg_result_i" : "/can/ivt_msg_result_i", sensor_qos);
-    }
-    if (database_ == "powertrain_t26") {
-        pub_ivt_msg_result_t = node->create_publisher<lart_msgs::msg::IvtMsgResultT>(database_ == "data_t26" ? "/data/ivt_msg_result_t" : database_ == "powertrain_t26" ? "/pwt/ivt_msg_result_t" : "/can/ivt_msg_result_t", sensor_qos);
-    }
-    if (database_ == "powertrain_t26") {
-        pub_ivt_msg_result_u1 = node->create_publisher<lart_msgs::msg::IvtMsgResultU1>(database_ == "data_t26" ? "/data/ivt_msg_result_u1" : database_ == "powertrain_t26" ? "/pwt/ivt_msg_result_u1" : "/can/ivt_msg_result_u1", sensor_qos);
-    }
-    if (database_ == "powertrain_t26") {
-        pub_ivt_msg_result_u2 = node->create_publisher<lart_msgs::msg::IvtMsgResultU2>(database_ == "data_t26" ? "/data/ivt_msg_result_u2" : database_ == "powertrain_t26" ? "/pwt/ivt_msg_result_u2" : "/can/ivt_msg_result_u2", sensor_qos);
-    }
-    if (database_ == "powertrain_t26") {
-        pub_ivt_msg_result_u3 = node->create_publisher<lart_msgs::msg::IvtMsgResultU3>(database_ == "data_t26" ? "/data/ivt_msg_result_u3" : database_ == "powertrain_t26" ? "/pwt/ivt_msg_result_u3" : "/can/ivt_msg_result_u3", sensor_qos);
-    }
 }
 
 bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, size_t dlc) {
     (void)data;
     (void)dlc;
     switch (can_id) {
+        case 1285u: {
+            {
+                lart_msgs::msg::SlamStatsCan out;
+                bool decoded_any = false;
+                if (database_ == "autonomous_t26") {
+                    struct autonomous_t26_slam_stats_can_t decoded = {};
+                    if (autonomous_t26_slam_stats_can_unpack(&decoded, data, dlc) == 0) {
+                        out.lap_counter = autonomous_t26_slam_stats_can_lap_counter_decode(decoded.lap_counter);
+                        out.cones_count_actual = autonomous_t26_slam_stats_can_cones_count_actual_decode(decoded.cones_count_actual);
+                        out.cones_count_all = autonomous_t26_slam_stats_can_cones_count_all_decode(decoded.cones_count_all);
+                        decoded_any = true;
+                    }
+                }
+                if (decoded_any) {
+                    pub_slam_stats_can->publish(out);
+                }
+            }
+            return true;
+        }
+        case 1289u: {
+            {
+                lart_msgs::msg::VcuRpm out;
+                bool decoded_any = false;
+                if (database_ == "autonomous_t26") {
+                    struct autonomous_t26_vcu_rpm_t decoded = {};
+                    if (autonomous_t26_vcu_rpm_unpack(&decoded, data, dlc) == 0) {
+                        out.motor_rpm_left = autonomous_t26_vcu_rpm_motor_rpm_left_decode(decoded.motor_rpm_left);
+                        out.motor_rpm_right = autonomous_t26_vcu_rpm_motor_rpm_right_decode(decoded.motor_rpm_right);
+                        out.motor_current_left = autonomous_t26_vcu_rpm_motor_current_left_decode(decoded.motor_current_left);
+                        out.motor_current_right = autonomous_t26_vcu_rpm_motor_current_right_decode(decoded.motor_current_right);
+                        decoded_any = true;
+                    }
+                }
+                if (decoded_any) {
+                    pub_vcu_rpm->publish(out);
+                }
+            }
+            return true;
+        }
         case 1297u: {
             {
                 lart_msgs::msg::IvtMsgResponse out;
@@ -416,6 +455,229 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
             }
             return true;
         }
+        case 1328u: {
+            {
+                lart_msgs::msg::ImuAcceleration out;
+                bool decoded_any = false;
+                if (database_ == "autonomous_t26") {
+                    struct autonomous_t26_imu_acceleration_t decoded = {};
+                    if (autonomous_t26_imu_acceleration_unpack(&decoded, data, dlc) == 0) {
+                        out.acceleration_x = autonomous_t26_imu_acceleration_acceleration_x_decode(decoded.acceleration_x);
+                        out.acceleration_y = autonomous_t26_imu_acceleration_acceleration_y_decode(decoded.acceleration_y);
+                        out.acceleration_z = autonomous_t26_imu_acceleration_acceleration_z_decode(decoded.acceleration_z);
+                        decoded_any = true;
+                    }
+                }
+                if (decoded_any) {
+                    pub_imu_acceleration->publish(out);
+                }
+            }
+            return true;
+        }
+        case 1329u: {
+            {
+                lart_msgs::msg::ImuAngularVelocity out;
+                bool decoded_any = false;
+                if (database_ == "autonomous_t26") {
+                    struct autonomous_t26_imu_angular_velocity_t decoded = {};
+                    if (autonomous_t26_imu_angular_velocity_unpack(&decoded, data, dlc) == 0) {
+                        out.angular_velocity_x = autonomous_t26_imu_angular_velocity_angular_velocity_x_decode(decoded.angular_velocity_x);
+                        out.angular_velocity_y = autonomous_t26_imu_angular_velocity_angular_velocity_y_decode(decoded.angular_velocity_y);
+                        out.angular_velocity_z = autonomous_t26_imu_angular_velocity_angular_velocity_z_decode(decoded.angular_velocity_z);
+                        decoded_any = true;
+                    }
+                }
+                if (decoded_any) {
+                    pub_imu_angular_velocity->publish(out);
+                }
+            }
+            return true;
+        }
+        case 1330u: {
+            {
+                lart_msgs::msg::ImuGnssPosition out;
+                bool decoded_any = false;
+                if (database_ == "autonomous_t26") {
+                    struct autonomous_t26_imu_gnss_position_t decoded = {};
+                    if (autonomous_t26_imu_gnss_position_unpack(&decoded, data, dlc) == 0) {
+                        out.latitude = autonomous_t26_imu_gnss_position_latitude_decode(decoded.latitude);
+                        out.longitude = autonomous_t26_imu_gnss_position_longitude_decode(decoded.longitude);
+                        decoded_any = true;
+                    }
+                }
+                if (decoded_any) {
+                    pub_imu_gnss_position->publish(out);
+                }
+            }
+            return true;
+        }
+        case 1331u: {
+            {
+                lart_msgs::msg::ImuGnssAltitude out;
+                bool decoded_any = false;
+                if (database_ == "autonomous_t26") {
+                    struct autonomous_t26_imu_gnss_altitude_t decoded = {};
+                    if (autonomous_t26_imu_gnss_altitude_unpack(&decoded, data, dlc) == 0) {
+                        out.altitude = autonomous_t26_imu_gnss_altitude_altitude_decode(decoded.altitude);
+                        decoded_any = true;
+                    }
+                }
+                if (decoded_any) {
+                    pub_imu_gnss_altitude->publish(out);
+                }
+            }
+            return true;
+        }
+        case 1332u: {
+            {
+                lart_msgs::msg::ImuOrientation out;
+                bool decoded_any = false;
+                if (database_ == "autonomous_t26") {
+                    struct autonomous_t26_imu_orientation_t decoded = {};
+                    if (autonomous_t26_imu_orientation_unpack(&decoded, data, dlc) == 0) {
+                        out.quaternion_w = autonomous_t26_imu_orientation_quaternion_w_decode(decoded.quaternion_w);
+                        out.quaternion_x = autonomous_t26_imu_orientation_quaternion_x_decode(decoded.quaternion_x);
+                        out.quaternion_y = autonomous_t26_imu_orientation_quaternion_y_decode(decoded.quaternion_y);
+                        out.quaternion_z = autonomous_t26_imu_orientation_quaternion_z_decode(decoded.quaternion_z);
+                        decoded_any = true;
+                    }
+                }
+                if (decoded_any) {
+                    pub_imu_orientation->publish(out);
+                }
+            }
+            return true;
+        }
+        case 1333u: {
+            {
+                lart_msgs::msg::ImuVelocity out;
+                bool decoded_any = false;
+                if (database_ == "autonomous_t26") {
+                    struct autonomous_t26_imu_velocity_t decoded = {};
+                    if (autonomous_t26_imu_velocity_unpack(&decoded, data, dlc) == 0) {
+                        out.velocity_x = autonomous_t26_imu_velocity_velocity_x_decode(decoded.velocity_x);
+                        out.velocity_y = autonomous_t26_imu_velocity_velocity_y_decode(decoded.velocity_y);
+                        out.velocity_z = autonomous_t26_imu_velocity_velocity_z_decode(decoded.velocity_z);
+                        decoded_any = true;
+                    }
+                }
+                if (decoded_any) {
+                    pub_imu_velocity->publish(out);
+                }
+            }
+            return true;
+        }
+        case 1334u: {
+            {
+                lart_msgs::msg::ImuEuler out;
+                bool decoded_any = false;
+                if (database_ == "autonomous_t26") {
+                    struct autonomous_t26_imu_euler_t decoded = {};
+                    if (autonomous_t26_imu_euler_unpack(&decoded, data, dlc) == 0) {
+                        out.roll = autonomous_t26_imu_euler_roll_decode(decoded.roll);
+                        out.pitch = autonomous_t26_imu_euler_pitch_decode(decoded.pitch);
+                        out.yaw = autonomous_t26_imu_euler_yaw_decode(decoded.yaw);
+                        decoded_any = true;
+                    }
+                }
+                if (decoded_any) {
+                    pub_imu_euler->publish(out);
+                }
+            }
+            return true;
+        }
+        case 1335u: {
+            {
+                lart_msgs::msg::ImuStatus out;
+                bool decoded_any = false;
+                if (database_ == "autonomous_t26") {
+                    struct autonomous_t26_imu_status_t decoded = {};
+                    if (autonomous_t26_imu_status_unpack(&decoded, data, dlc) == 0) {
+                        out.self_test = autonomous_t26_imu_status_self_test_decode(decoded.self_test);
+                        out.filter_valid = autonomous_t26_imu_status_filter_valid_decode(decoded.filter_valid);
+                        out.gnss_fix = autonomous_t26_imu_status_gnss_fix_decode(decoded.gnss_fix);
+                        out.no_rotation_update_status = autonomous_t26_imu_status_no_rotation_update_status_decode(decoded.no_rotation_update_status);
+                        out.representative_motion = autonomous_t26_imu_status_representative_motion_decode(decoded.representative_motion);
+                        out.clock_bias_estimation = autonomous_t26_imu_status_clock_bias_estimation_decode(decoded.clock_bias_estimation);
+                        out.clip_acc_x = autonomous_t26_imu_status_clip_acc_x_decode(decoded.clip_acc_x);
+                        out.clip_acc_y = autonomous_t26_imu_status_clip_acc_y_decode(decoded.clip_acc_y);
+                        out.clip_acc_z = autonomous_t26_imu_status_clip_acc_z_decode(decoded.clip_acc_z);
+                        out.clip_gyr_x = autonomous_t26_imu_status_clip_gyr_x_decode(decoded.clip_gyr_x);
+                        out.clip_gyr_y = autonomous_t26_imu_status_clip_gyr_y_decode(decoded.clip_gyr_y);
+                        out.clip_gyr_z = autonomous_t26_imu_status_clip_gyr_z_decode(decoded.clip_gyr_z);
+                        out.clip_mag_x = autonomous_t26_imu_status_clip_mag_x_decode(decoded.clip_mag_x);
+                        out.clip_mag_y = autonomous_t26_imu_status_clip_mag_y_decode(decoded.clip_mag_y);
+                        out.clip_mag_z = autonomous_t26_imu_status_clip_mag_z_decode(decoded.clip_mag_z);
+                        out.clipping_indication = autonomous_t26_imu_status_clipping_indication_decode(decoded.clipping_indication);
+                        out.syncin_marker = autonomous_t26_imu_status_sync_in_marker_decode(decoded.sync_in_marker);
+                        out.syncout_marker = autonomous_t26_imu_status_sync_out_marker_decode(decoded.sync_out_marker);
+                        out.filter_mode = autonomous_t26_imu_status_filter_mode_decode(decoded.filter_mode);
+                        out.gnss_time_pulse = autonomous_t26_imu_status_gnss_time_pulse_decode(decoded.gnss_time_pulse);
+                        out.rtk_status = autonomous_t26_imu_status_rtk_status_decode(decoded.rtk_status);
+                        decoded_any = true;
+                    }
+                }
+                if (decoded_any) {
+                    pub_imu_status->publish(out);
+                }
+            }
+            return true;
+        }
+        case 1336u: {
+            {
+                lart_msgs::msg::ImuTemperature out;
+                bool decoded_any = false;
+                if (database_ == "autonomous_t26") {
+                    struct autonomous_t26_imu_temperature_t decoded = {};
+                    if (autonomous_t26_imu_temperature_unpack(&decoded, data, dlc) == 0) {
+                        out.temperature = autonomous_t26_imu_temperature_temperature_decode(decoded.temperature);
+                        decoded_any = true;
+                    }
+                }
+                if (decoded_any) {
+                    pub_imu_temperature->publish(out);
+                }
+            }
+            return true;
+        }
+        case 1337u: {
+            {
+                lart_msgs::msg::ImuFilterVelocity out;
+                bool decoded_any = false;
+                if (database_ == "autonomous_t26") {
+                    struct autonomous_t26_imu_filter_velocity_t decoded = {};
+                    if (autonomous_t26_imu_filter_velocity_unpack(&decoded, data, dlc) == 0) {
+                        out.velocity_x = autonomous_t26_imu_filter_velocity_velocity_x_decode(decoded.velocity_x);
+                        out.velocity_y = autonomous_t26_imu_filter_velocity_velocity_y_decode(decoded.velocity_y);
+                        out.velocity_z = autonomous_t26_imu_filter_velocity_velocity_z_decode(decoded.velocity_z);
+                        decoded_any = true;
+                    }
+                }
+                if (decoded_any) {
+                    pub_imu_filter_velocity->publish(out);
+                }
+            }
+            return true;
+        }
+        case 1338u: {
+            {
+                lart_msgs::msg::ImuFreeAcceleration out;
+                bool decoded_any = false;
+                if (database_ == "autonomous_t26") {
+                    struct autonomous_t26_imu_free_acceleration_t decoded = {};
+                    if (autonomous_t26_imu_free_acceleration_unpack(&decoded, data, dlc) == 0) {
+                        out.free_acceleration_x = autonomous_t26_imu_free_acceleration_free_acceleration_x_decode(decoded.free_acceleration_x);
+                        out.free_acceleration_y = autonomous_t26_imu_free_acceleration_free_acceleration_y_decode(decoded.free_acceleration_y);
+                        out.free_acceleration_z = autonomous_t26_imu_free_acceleration_free_acceleration_z_decode(decoded.free_acceleration_z);
+                        decoded_any = true;
+                    }
+                }
+                if (decoded_any) {
+                    pub_imu_free_acceleration->publish(out);
+                }
+            }
+            return true;
+        }
         case 1536u: {
             {
                 lart_msgs::msg::Slave01VoltageId1 out;
@@ -596,269 +858,6 @@ bool CanBridgeImpl::handle_frame_chunk_2(uint32_t can_id, const uint8_t* data, s
                 }
                 if (decoded_any) {
                     pub_slave_02_voltage_id_1->publish(out);
-                }
-            }
-            return true;
-        }
-        case 1544u: {
-            {
-                lart_msgs::msg::Slave02VoltageId2 out;
-                bool decoded_any = false;
-                if (database_ == "powertrain_t26") {
-                    struct powertrain_t26_slave_02_voltage_id_2_t decoded = {};
-                    if (powertrain_t26_slave_02_voltage_id_2_unpack(&decoded, data, dlc) == 0) {
-                        out.cell_voltage_5 = powertrain_t26_slave_02_voltage_id_2_cell_voltage_5_decode(decoded.cell_voltage_5);
-                        out.cell_voltage_6 = powertrain_t26_slave_02_voltage_id_2_cell_voltage_6_decode(decoded.cell_voltage_6);
-                        out.cell_voltage_7 = powertrain_t26_slave_02_voltage_id_2_cell_voltage_7_decode(decoded.cell_voltage_7);
-                        out.cell_voltage_8 = powertrain_t26_slave_02_voltage_id_2_cell_voltage_8_decode(decoded.cell_voltage_8);
-                        decoded_any = true;
-                    }
-                }
-                if (decoded_any) {
-                    pub_slave_02_voltage_id_2->publish(out);
-                }
-            }
-            return true;
-        }
-        case 1545u: {
-            {
-                lart_msgs::msg::Slave02VoltageId3 out;
-                bool decoded_any = false;
-                if (database_ == "powertrain_t26") {
-                    struct powertrain_t26_slave_02_voltage_id_3_t decoded = {};
-                    if (powertrain_t26_slave_02_voltage_id_3_unpack(&decoded, data, dlc) == 0) {
-                        out.cell_voltage_9 = powertrain_t26_slave_02_voltage_id_3_cell_voltage_9_decode(decoded.cell_voltage_9);
-                        out.cell_voltage_10 = powertrain_t26_slave_02_voltage_id_3_cell_voltage_10_decode(decoded.cell_voltage_10);
-                        out.cell_voltage_11 = powertrain_t26_slave_02_voltage_id_3_cell_voltage_11_decode(decoded.cell_voltage_11);
-                        out.cell_voltage_12 = powertrain_t26_slave_02_voltage_id_3_cell_voltage_12_decode(decoded.cell_voltage_12);
-                        decoded_any = true;
-                    }
-                }
-                if (decoded_any) {
-                    pub_slave_02_voltage_id_3->publish(out);
-                }
-            }
-            return true;
-        }
-        case 1546u: {
-            {
-                lart_msgs::msg::Slave02TemperatureId1 out;
-                bool decoded_any = false;
-                if (database_ == "powertrain_t26") {
-                    struct powertrain_t26_slave_02_temperature_id_1_t decoded = {};
-                    if (powertrain_t26_slave_02_temperature_id_1_unpack(&decoded, data, dlc) == 0) {
-                        out.temperature_value_1 = powertrain_t26_slave_02_temperature_id_1_temperature_value_1_decode(decoded.temperature_value_1);
-                        out.temperature_value_2 = powertrain_t26_slave_02_temperature_id_1_temperature_value_2_decode(decoded.temperature_value_2);
-                        out.temperature_value_3 = powertrain_t26_slave_02_temperature_id_1_temperature_value_3_decode(decoded.temperature_value_3);
-                        out.temperature_value_4 = powertrain_t26_slave_02_temperature_id_1_temperature_value_4_decode(decoded.temperature_value_4);
-                        decoded_any = true;
-                    }
-                }
-                if (decoded_any) {
-                    pub_slave_02_temperature_id_1->publish(out);
-                }
-            }
-            return true;
-        }
-        case 1547u: {
-            {
-                lart_msgs::msg::Slave02TemperatureId2 out;
-                bool decoded_any = false;
-                if (database_ == "powertrain_t26") {
-                    struct powertrain_t26_slave_02_temperature_id_2_t decoded = {};
-                    if (powertrain_t26_slave_02_temperature_id_2_unpack(&decoded, data, dlc) == 0) {
-                        out.temperature_value_5 = powertrain_t26_slave_02_temperature_id_2_temperature_value_5_decode(decoded.temperature_value_5);
-                        out.temperature_value_6 = powertrain_t26_slave_02_temperature_id_2_temperature_value_6_decode(decoded.temperature_value_6);
-                        out.temperature_maximum = powertrain_t26_slave_02_temperature_id_2_temperature_maximum_decode(decoded.temperature_maximum);
-                        out.temperature_delta = powertrain_t26_slave_02_temperature_id_2_temperature_delta_decode(decoded.temperature_delta);
-                        decoded_any = true;
-                    }
-                }
-                if (decoded_any) {
-                    pub_slave_02_temperature_id_2->publish(out);
-                }
-            }
-            return true;
-        }
-        case 1548u: {
-            {
-                lart_msgs::msg::Slave02MscId1 out;
-                bool decoded_any = false;
-                if (database_ == "powertrain_t26") {
-                    struct powertrain_t26_slave_02_msc_id_1_t decoded = {};
-                    if (powertrain_t26_slave_02_msc_id_1_unpack(&decoded, data, dlc) == 0) {
-                        out.module_voltage_sum = powertrain_t26_slave_02_msc_id_1_module_voltage_sum_decode(decoded.module_voltage_sum);
-                        out.module_voltage_avg = powertrain_t26_slave_02_msc_id_1_module_voltage_avg_decode(decoded.module_voltage_avg);
-                        out.module_voltage_min = powertrain_t26_slave_02_msc_id_1_module_voltage_min_decode(decoded.module_voltage_min);
-                        out.module_voltage_max = powertrain_t26_slave_02_msc_id_1_module_voltage_max_decode(decoded.module_voltage_max);
-                        decoded_any = true;
-                    }
-                }
-                if (decoded_any) {
-                    pub_slave_02_msc_id_1->publish(out);
-                }
-            }
-            return true;
-        }
-        case 1549u: {
-            {
-                lart_msgs::msg::Slave02MscId2 out;
-                bool decoded_any = false;
-                if (database_ == "powertrain_t26") {
-                    struct powertrain_t26_slave_02_msc_id_2_t decoded = {};
-                    if (powertrain_t26_slave_02_msc_id_2_unpack(&decoded, data, dlc) == 0) {
-                        out.module_voltage_delta = powertrain_t26_slave_02_msc_id_2_module_voltage_delta_decode(decoded.module_voltage_delta);
-                        out.module_ic_voltage = powertrain_t26_slave_02_msc_id_2_module_ic_voltage_decode(decoded.module_ic_voltage);
-                        out.module_open_wire = powertrain_t26_slave_02_msc_id_2_module_open_wire_decode(decoded.module_open_wire);
-                        out.module_ic_temperature = powertrain_t26_slave_02_msc_id_2_module_ic_temperature_decode(decoded.module_ic_temperature);
-                        out.module_overvoltage = powertrain_t26_slave_02_msc_id_2_module_overvoltage_decode(decoded.module_overvoltage);
-                        out.module_undervoltage = powertrain_t26_slave_02_msc_id_2_module_undervoltage_decode(decoded.module_undervoltage);
-                        out.module_under_over_identifier = powertrain_t26_slave_02_msc_id_2_module_under_over_identifier_decode(decoded.module_under_over_identifier);
-                        decoded_any = true;
-                    }
-                }
-                if (decoded_any) {
-                    pub_slave_02_msc_id_2->publish(out);
-                }
-            }
-            return true;
-        }
-        case 1550u: {
-            {
-                lart_msgs::msg::Slave03VoltageId1 out;
-                bool decoded_any = false;
-                if (database_ == "powertrain_t26") {
-                    struct powertrain_t26_slave_03_voltage_id_1_t decoded = {};
-                    if (powertrain_t26_slave_03_voltage_id_1_unpack(&decoded, data, dlc) == 0) {
-                        out.cell_voltage_1 = powertrain_t26_slave_03_voltage_id_1_cell_voltage_1_decode(decoded.cell_voltage_1);
-                        out.cell_voltage_2 = powertrain_t26_slave_03_voltage_id_1_cell_voltage_2_decode(decoded.cell_voltage_2);
-                        out.cell_voltage_3 = powertrain_t26_slave_03_voltage_id_1_cell_voltage_3_decode(decoded.cell_voltage_3);
-                        out.cell_voltage_4 = powertrain_t26_slave_03_voltage_id_1_cell_voltage_4_decode(decoded.cell_voltage_4);
-                        decoded_any = true;
-                    }
-                }
-                if (decoded_any) {
-                    pub_slave_03_voltage_id_1->publish(out);
-                }
-            }
-            return true;
-        }
-        case 1551u: {
-            {
-                lart_msgs::msg::Slave03VoltageId2 out;
-                bool decoded_any = false;
-                if (database_ == "powertrain_t26") {
-                    struct powertrain_t26_slave_03_voltage_id_2_t decoded = {};
-                    if (powertrain_t26_slave_03_voltage_id_2_unpack(&decoded, data, dlc) == 0) {
-                        out.cell_voltage_5 = powertrain_t26_slave_03_voltage_id_2_cell_voltage_5_decode(decoded.cell_voltage_5);
-                        out.cell_voltage_6 = powertrain_t26_slave_03_voltage_id_2_cell_voltage_6_decode(decoded.cell_voltage_6);
-                        out.cell_voltage_7 = powertrain_t26_slave_03_voltage_id_2_cell_voltage_7_decode(decoded.cell_voltage_7);
-                        out.cell_voltage_8 = powertrain_t26_slave_03_voltage_id_2_cell_voltage_8_decode(decoded.cell_voltage_8);
-                        decoded_any = true;
-                    }
-                }
-                if (decoded_any) {
-                    pub_slave_03_voltage_id_2->publish(out);
-                }
-            }
-            return true;
-        }
-        case 1552u: {
-            {
-                lart_msgs::msg::Slave03VoltageId3 out;
-                bool decoded_any = false;
-                if (database_ == "powertrain_t26") {
-                    struct powertrain_t26_slave_03_voltage_id_3_t decoded = {};
-                    if (powertrain_t26_slave_03_voltage_id_3_unpack(&decoded, data, dlc) == 0) {
-                        out.cell_voltage_9 = powertrain_t26_slave_03_voltage_id_3_cell_voltage_9_decode(decoded.cell_voltage_9);
-                        out.cell_voltage_10 = powertrain_t26_slave_03_voltage_id_3_cell_voltage_10_decode(decoded.cell_voltage_10);
-                        out.cell_voltage_11 = powertrain_t26_slave_03_voltage_id_3_cell_voltage_11_decode(decoded.cell_voltage_11);
-                        out.cell_voltage_12 = powertrain_t26_slave_03_voltage_id_3_cell_voltage_12_decode(decoded.cell_voltage_12);
-                        decoded_any = true;
-                    }
-                }
-                if (decoded_any) {
-                    pub_slave_03_voltage_id_3->publish(out);
-                }
-            }
-            return true;
-        }
-        case 1553u: {
-            {
-                lart_msgs::msg::Slave03TemperatureId1 out;
-                bool decoded_any = false;
-                if (database_ == "powertrain_t26") {
-                    struct powertrain_t26_slave_03_temperature_id_1_t decoded = {};
-                    if (powertrain_t26_slave_03_temperature_id_1_unpack(&decoded, data, dlc) == 0) {
-                        out.temperature_value_1 = powertrain_t26_slave_03_temperature_id_1_temperature_value_1_decode(decoded.temperature_value_1);
-                        out.temperature_value_2 = powertrain_t26_slave_03_temperature_id_1_temperature_value_2_decode(decoded.temperature_value_2);
-                        out.temperature_value_3 = powertrain_t26_slave_03_temperature_id_1_temperature_value_3_decode(decoded.temperature_value_3);
-                        out.temperature_value_4 = powertrain_t26_slave_03_temperature_id_1_temperature_value_4_decode(decoded.temperature_value_4);
-                        decoded_any = true;
-                    }
-                }
-                if (decoded_any) {
-                    pub_slave_03_temperature_id_1->publish(out);
-                }
-            }
-            return true;
-        }
-        case 1554u: {
-            {
-                lart_msgs::msg::Slave03TemperatureId2 out;
-                bool decoded_any = false;
-                if (database_ == "powertrain_t26") {
-                    struct powertrain_t26_slave_03_temperature_id_2_t decoded = {};
-                    if (powertrain_t26_slave_03_temperature_id_2_unpack(&decoded, data, dlc) == 0) {
-                        out.temperature_value_5 = powertrain_t26_slave_03_temperature_id_2_temperature_value_5_decode(decoded.temperature_value_5);
-                        out.temperature_value_6 = powertrain_t26_slave_03_temperature_id_2_temperature_value_6_decode(decoded.temperature_value_6);
-                        out.temperature_maximum = powertrain_t26_slave_03_temperature_id_2_temperature_maximum_decode(decoded.temperature_maximum);
-                        out.temperature_delta = powertrain_t26_slave_03_temperature_id_2_temperature_delta_decode(decoded.temperature_delta);
-                        decoded_any = true;
-                    }
-                }
-                if (decoded_any) {
-                    pub_slave_03_temperature_id_2->publish(out);
-                }
-            }
-            return true;
-        }
-        case 1555u: {
-            {
-                lart_msgs::msg::Slave03MscId1 out;
-                bool decoded_any = false;
-                if (database_ == "powertrain_t26") {
-                    struct powertrain_t26_slave_03_msc_id_1_t decoded = {};
-                    if (powertrain_t26_slave_03_msc_id_1_unpack(&decoded, data, dlc) == 0) {
-                        out.module_voltage_sum = powertrain_t26_slave_03_msc_id_1_module_voltage_sum_decode(decoded.module_voltage_sum);
-                        out.module_voltage_avg = powertrain_t26_slave_03_msc_id_1_module_voltage_avg_decode(decoded.module_voltage_avg);
-                        out.module_voltage_min = powertrain_t26_slave_03_msc_id_1_module_voltage_min_decode(decoded.module_voltage_min);
-                        out.module_voltage_max = powertrain_t26_slave_03_msc_id_1_module_voltage_max_decode(decoded.module_voltage_max);
-                        decoded_any = true;
-                    }
-                }
-                if (decoded_any) {
-                    pub_slave_03_msc_id_1->publish(out);
-                }
-            }
-            return true;
-        }
-        case 1556u: {
-            {
-                lart_msgs::msg::Slave03MscId2 out;
-                bool decoded_any = false;
-                if (database_ == "powertrain_t26") {
-                    struct powertrain_t26_slave_03_msc_id_2_t decoded = {};
-                    if (powertrain_t26_slave_03_msc_id_2_unpack(&decoded, data, dlc) == 0) {
-                        out.module_voltage_delta = powertrain_t26_slave_03_msc_id_2_module_voltage_delta_decode(decoded.module_voltage_delta);
-                        out.module_ic_voltage = powertrain_t26_slave_03_msc_id_2_module_ic_voltage_decode(decoded.module_ic_voltage);
-                        out.module_open_wire = powertrain_t26_slave_03_msc_id_2_module_open_wire_decode(decoded.module_open_wire);
-                        out.module_ic_temperature = powertrain_t26_slave_03_msc_id_2_module_ic_temperature_decode(decoded.module_ic_temperature);
-                        decoded_any = true;
-                    }
-                }
-                if (decoded_any) {
-                    pub_slave_03_msc_id_2->publish(out);
                 }
             }
             return true;

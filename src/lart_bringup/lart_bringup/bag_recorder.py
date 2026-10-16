@@ -1,7 +1,9 @@
 """Precharge-triggered rosbag2 recorder.
 
-Watches the precharge request signal and records all DBC-decoded CAN topics
-(/can/*) into timestamped rosbag2 sessions:
+Watches the precharge request signal and records all discoverable ROS topics,
+including hidden topics and raw CAN frames (/can/frames), into timestamped
+rosbag2 sessions. Topics under /zed/ are excluded. Topic discovery stays
+enabled during recording:
 
   precharge_request >= 0.5       → start recording (new session folder)
   precharge_request < 0.5        → keep recording for stop_grace_s, then finalize
@@ -13,15 +15,14 @@ session killed non-gracefully (power loss, hard kill) only loses its last
 few messages, instead of corrupting a whole chunk that metadata.yaml (which
 rosbag2 only writes once, at clean shutdown) then points to — which is what
 breaks timestamp continuity when multiple bags are imported into Foxglove
-together. Raw frames (/can/frames) are never recorded — the regex only
-matches /can/*.
+together.
 
 On startup, any existing session folder under bag_dir that is missing
 metadata.yaml (left behind by an unclean shutdown of a previous run) is
 repaired in place via `ros2 bag reindex` so it stays readable.
 
 Config (rpi_config.yaml → bag_recorder):
-  trigger_topic, record_regex, bag_dir, stop_grace_s, split_duration_s
+  trigger_topic, bag_dir, stop_grace_s, split_duration_s
 """
 
 import signal
@@ -49,15 +50,11 @@ class BagRecorderNode(Node):
         super().__init__('bag_recorder')
 
         self.declare_parameter('trigger_topic', '/pwt/start_precharge')
-        self.declare_parameter(
-            'record_regex', '/data/.*|/pwt/.*|/can/(?!frames$).*'
-        )
         self.declare_parameter('bag_dir', '~/bags')
         self.declare_parameter('stop_grace_s', 30.0)
         self.declare_parameter('split_duration_s', 0)
 
         self._trigger_topic = self.get_parameter('trigger_topic').value
-        self._record_regex = self.get_parameter('record_regex').value
         self._bag_dir = Path(self.get_parameter('bag_dir').value).expanduser()
         self._stop_grace_s = float(self.get_parameter('stop_grace_s').value)
         self._split_s = int(self.get_parameter('split_duration_s').value)
@@ -82,7 +79,7 @@ class BagRecorderNode(Node):
         split_desc = f'{self._split_s}s' if self._split_s > 0 else 'off (single file)'
         self.get_logger().info(
             f'bag_recorder ready — trigger={self._trigger_topic}, '
-            f'regex={self._record_regex}, out={self._bag_dir}, '
+            f'topics=all (including hidden, excluding /zed/*), out={self._bag_dir}, '
             f'grace={self._stop_grace_s:.0f}s, split={split_desc}'
         )
 
@@ -120,7 +117,8 @@ class BagRecorderNode(Node):
             n += 1
         cmd = [
             'ros2', 'bag', 'record',
-            '-e', self._record_regex,
+            '--all-topics', '--include-hidden-topics',
+            '--exclude-regex', '^/zed/.*',
             '-o', str(out),
             '--disable-keyboard-controls',
         ]
