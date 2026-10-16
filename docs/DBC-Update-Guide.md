@@ -51,107 +51,15 @@ git -C /tmp/t26-dbc checkout <commit-sha>
 input and pinned cantools version. Local edits clear the recorded commit when
 input hashes change. Never attribute edited DBC files to an upstream revision.
 
-## Scheduled automation
+## CI validation
 
-The **Regenerate T26 DBC outputs with OpenRouter** workflow (`regenerate-dbcs.yml`)
-runs in **perdo1305/data_station** and checks **FSLART/T26_DBC/main** twice an
-hour, at minutes 7 and 37 (UTC; GitHub may delay scheduled runs). Manual dispatch
-accepts a branch, tag or exact source commit through `dbc_ref`. It imports the
-three DBCs together and regenerates against **FSLART/lart_msgs/main**.
+There is no scheduled DBC sync. Regenerate locally (above) when
+**FSLART/T26_DBC** changes, adapt consumers and open the PRs by hand.
 
-When changes exist, `openai/codex-action@v1` runs the coding agent against
-OpenRouter's Responses API at `https://openrouter.ai/api/v1/responses` through
-a local pacing relay, using
-only the `openrouter/free` model router. The agent reviews the DBC/generated diff and
-adapts affected handwritten dashboard code, ROS nodes, simulator overrides,
-Foxglove extensions and tests. Its instructions live in
-`.github/prompts/dbc-update.md`. The agent must report a completed adaptation; an
-ambiguous wire layout or failed adaptation stops publication. All root tests,
-focused simulator/DBC topic tests, Python consumer imports,
-the ARM64 ROS workspace build and both `ui_runner` and `can_bridge` builds must
-pass before either PR is published. The agent runs with a workspace sandbox, no
-network and dropped sudo privileges. Toolchains are installed before it runs.
-
-Add these **Actions repository secrets** in
-[perdo1305/data_station settings](https://github.com/perdo1305/data_station/settings/secrets/actions):
-
-| Secret | Value |
-| --- | --- |
-| `OPENROUTER_API_KEY` | An API key from [OpenRouter settings](https://openrouter.ai/settings/keys), with access to free models. |
-| `DBC_SYNC_TOKEN` | A GitHub personal access token whose user can push branches and create PRs in **perdo1305/data_station** and **FSLART/lart_msgs**. |
-
-For these repositories under different owners, use a **classic PAT** with
-`public_repo` for public repositories (`repo` if private repository access is
-required), and authorize it for FSLART SSO if the organization requires it.
-Organization policy may prohibit classic PATs; in that case use separate GitHub
-App installation tokens and adjust the publication steps accordingly. A
-fine-grained PAT scoped only to your personal account cannot write to FSLART.
-The token cannot grant permissions its user does not already have. The ordinary
-`GITHUB_TOKEN` cannot publish `lart_msgs` from Data Station.
-
-The agent sends inference requests to OpenRouter; neither `OPENAI_API_KEY` nor
-`ANTHROPIC_API_KEY` is used. The existing GitHub publishing credential stays the
-same. The old `DBC_SYNC_APP_ID`/`DBC_SYNC_APP_PRIVATE_KEY` configuration is replaced by
-`DBC_SYNC_TOKEN`. Only the publication job receives this credential. That job
-runs on a fresh runner, applies the exact tested patches to the recorded baseline
-commits, and does not execute the generated application code. If a destination
-branch moved during validation, the preflight stops the run so it can be retried.
-Publication commits the staged tested tree directly and uses an explicit Git
-lease when updating each automation branch; it never rebases the tested files.
-
-The model is pinned to `openrouter/free`; there is no paid-model fallback.
-[OpenRouter's free router](https://openrouter.ai/docs/guides/routing/routers/free-router)
-selects among currently available free models and filters for requested features.
-Free-model availability and request quotas apply. If the API rejects the request,
-the run fails before publication. API token charges are zero for this route;
-GitHub Actions runner usage is subject to your GitHub plan.
-
-The relay starts upstream model requests at least **six seconds apart**, including
-retries, and serializes response streams. For HTTP 429/500/502/503/504 before a
-response starts, it makes at most four attempts, with 6/12/24-second backoff and
-longer `Retry-After` delays honored (seconds or HTTP dates). Delays over two
-minutes are returned to the caller and retained as a cooldown instead of
-retrying early. On a 429, the relay checks the daily quota using the metadata API;
-an exhausted daily allowance blocks further upstream calls for that run.
-Streams already delivered to the agent are never replayed. Quota restrictions
-and busy providers can still prevent completion; there is no paid fallback.
-
-The relay runs from a root-owned copy on loopback and forwards only
-`openrouter/free` requests to the fixed OpenRouter endpoint. It receives the
-credential from the existing protected API proxy, logs only status/retry
-information, and stops after adaptation even if the agent fails.
-
-For a full test before merging, manually run the workflow on the PR branch with
-**dry_run: true**. It checks out the exact selected revision and runs adaptation,
-tests and builds, then uploads the patches/summary without publishing PRs.
-The default is false, so scheduled runs retain normal publication behavior.
-
-When no update is needed, the agent, tests, builds and publication are skipped. A
-scheduled run also skips a DBC revision already proposed in an open automation
-PR, avoiding repeated API requests while that PR awaits review. Manual dispatch
-bypasses this duplicate check so you can retry an adaptation deliberately.
-
-Updates use stable `automation/dbc-regeneration` branches. The workflow opens
-or refreshes the interface PR first, then pins its published commit in a linked
-data_station PR. Merge the interface PR first, then the dashboard PR. Neither
-PR is automatically merged. Avoid squash/rebase merging the interface PR unless
-you also update the dashboard submodule pointer to the resulting merged commit.
-Review the agent's consumer adaptations when fields or semantics change. A successful
-build cannot establish that an ambiguous application-level change is correct.
-The run artifact `tested-dbc-update` contains both patches and the agent's JSON summary (`agent-result.json`).
-
-The separate **Validate DBC ARM64 build** workflow (`validate-dbc-arm64.yml`)
+The **Validate DBC ARM64 build** workflow (`validate-dbc-arm64.yml`)
 runs regeneration, tests and the ARM64 build on dashboard PRs, master pushes,
 and pushes to `automate-dbc-regeneration`. It also supports manual dispatch,
 uses no publication credentials and publishes no releases.
-
-The old `fetch-dbcs.yml` workflow is removed so raw DBC inputs cannot be pushed
-to master independently of generated code. `build-arm64.yml` and the shared
-ARM64 setup action retain their existing build/release behavior. Scheduling
-starts only after this workflow reaches master. To test setup, open
-**Actions → Regenerate T26 DBC outputs with OpenRouter → Run workflow** on master,
-leave `dbc_ref` as `main`, and inspect the run and linked PRs. No PRs are merged
-and nothing is deployed by this automation.
 
 The API generator updates `dbc_api.h`, `dbc_api.cpp`, `dbc_api_sub_*.cpp`,
 `src/lart_msgs/dbc_msgs/*.msg` and the generated CMake interface entries.

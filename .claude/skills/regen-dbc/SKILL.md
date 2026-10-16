@@ -1,6 +1,6 @@
 ---
 name: regen-dbc
-description: Regenerate all DBC-derived code locally (C decoders, lart_msgs, dashboard API, C++ bridge), run the DBC tests, and summarise the generated diff — the same flow regenerate-dbcs.yml runs in CI.
+description: Regenerate all DBC-derived code locally (C decoders, lart_msgs, dashboard API, C++ bridge), run the DBC tests, and summarise the generated diff — the same flow validate-dbc-arm64.yml runs in CI.
 disable-model-invocation: true
 argument-hint: "[--source-dir /path/to/T26_DBC]"
 ---
