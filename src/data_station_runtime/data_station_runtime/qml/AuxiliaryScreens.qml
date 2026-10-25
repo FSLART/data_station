@@ -3,7 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 Item {
-    property var telemetry: dashboard.state
+    required property var telemetry
     property color amber: "#e5b947"
     property color muted: "#8b98a8"
     property var driverKeys: ["soc", "lv", "tempBattery", "tempMotor", "tempInverter", "hvCurrent", "lvCurrent", "apps", "brake"]

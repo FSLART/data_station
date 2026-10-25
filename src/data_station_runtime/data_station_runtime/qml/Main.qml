@@ -10,6 +10,7 @@ ApplicationWindow {
     visible: true
     color: "#050505"
     title: "LART Data Station"
+    property var telemetry: dashboard.state
 
     Shortcut { sequence: "1"; onActivated: dashboard.selectScreen(0) }
     Shortcut { sequence: "2"; onActivated: dashboard.selectScreen(1) }
@@ -26,23 +27,23 @@ ApplicationWindow {
         DriverGauge {
             anchors.fill: parent
             visible: dashboard.screen === 0
-            telemetry: dashboard.state
+            telemetry: window.telemetry
             onNextScreen: dashboard.selectScreen(1)
         }
-        AuxiliaryScreens { anchors.fill: parent; visible: dashboard.screen !== 0 }
+        AuxiliaryScreens { anchors.fill: parent; visible: dashboard.screen !== 0; telemetry: window.telemetry }
         Rectangle {
             x: 0; y: 360; width: 800; height: 120
-            visible: dashboard.state.precharge.visible
-            color: dashboard.state.precharge.color
+            visible: window.telemetry.precharge.visible
+            color: window.telemetry.precharge.color
             opacity: 0.8
         }
         GaugeLabel {
             x: 20; y: 360; width: 760; height: 120
-            visible: dashboard.state.precharge.visible
-            text: dashboard.state.precharge.text
+            visible: window.telemetry.precharge.visible
+            text: window.telemetry.precharge.text
             color: "white"
             family: overlayFont.name
-            font.pixelSize: dashboard.state.precharge.hvOn ? 50 : 30
+            font.pixelSize: window.telemetry.precharge.hvOn ? 50 : 30
             verticalAlignment: Text.AlignVCenter
             wrapMode: Text.WordWrap
             scale: 1
