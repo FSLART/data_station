@@ -1,0 +1,72 @@
+name: Build ARM64 (dev)
+
+# Same as build-arm64.yml for the runtime branch; publishes separate dev tags so
+# master's latest-arm64 is untouched. Pull on the Pi with LART_RELEASE_TAG=latest-arm64-dev.
+
+on:
+  push:
+    branches: [dev/runtime-architecture]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-arm64-dev
+  cancel-in-progress: true
+
+jobs:
+  build-arm64:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Checkout frozen external ROS interfaces
+        run: git submodule update --init src/lart_msgs
+
+      - name: Set up ROS2 build
+        uses: ./.github/actions/setup-arm64
+
+      - name: Install runtime dependencies
+        run: |
+          sudo apt-get install -y ros-jazzy-rosbag2-storage-mcap libegl1 libopengl0 libxkbcommon0 libxcb-cursor0 libxkbcommon-x11-0 fonts-dejavu-core
+          python3 -m pip install --break-system-packages -r requirements-runtime.txt pytest PyYAML
+
+      - name: Build runtime workspace
+        run: |
+          source /opt/ros/jazzy/setup.bash
+          colcon build --base-paths src --packages-up-to data_station_runtime input_handler led_controller --parallel-workers 2
+
+      - name: Test runtime contracts and DBC reload
+        env:
+          QT_QPA_PLATFORM: offscreen
+          QT_QUICK_BACKEND: software
+        run: |
+          source /opt/ros/jazzy/setup.bash
+          source install/setup.bash
+          python3 -m pytest -q src/data_station_runtime/test src/lart_bringup/test/test_trigger_state.py src/lart_bringup/test/test_bag_recorder.py
+          python3 -m data_station_runtime.app --demo --screenshot /tmp/dashboard.png
+
+      - name: Package artifact
+        run: tar czf lart-dashboard-arm64.tar.gz install
+
+      - name: Get short commit SHA
+        id: version
+        run: echo "short_sha=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+
+      - name: Publish versioned release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: arm64-dev-${{ github.sha }}
+          name: "ARM64 dev build ${{ steps.version.outputs.short_sha }}"
+          prerelease: true
+          files: lart-dashboard-arm64.tar.gz
+
+      - name: Update latest release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest-arm64-dev
+          name: "Latest ARM64 dev build"
+          prerelease: true
+          files: lart-dashboard-arm64.tar.gz

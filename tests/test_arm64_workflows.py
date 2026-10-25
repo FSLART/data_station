@@ -37,10 +37,16 @@ class Arm64WorkflowTests(unittest.TestCase):
         # DBC validation/sync must not introduce another publisher.
         publishers = sorted(path.name for path in WORKFLOWS.glob('*.yml')
                             if self.release_steps(path.name))
-        self.assertEqual(publishers, ['build-arm64.yml', 'release.yml'])
+        self.assertEqual(publishers, ['build-arm64-dev.yml', 'build-arm64.yml', 'release.yml'])
+
+    def test_dev_build_never_touches_master_tags(self):
+        releases = self.release_steps("build-arm64-dev.yml")
+        self.assertEqual(releases["Publish versioned release"]["with"]["tag_name"],
+                         "arm64-dev-${{ github.sha }}")
+        self.assertEqual(releases["Update latest release"]["with"]["tag_name"], "latest-arm64-dev")
 
     def test_pi_builds_exclude_the_simulator(self):
-        for filename in ("build-arm64.yml", "release.yml"):
+        for filename in ("build-arm64.yml", "build-arm64-dev.yml", "release.yml"):
             workflow = yaml.load((WORKFLOWS / filename).read_text(), Loader=yaml.BaseLoader)
             commands = " ".join(step.get("run", "") for job in workflow["jobs"].values()
                                 for step in job["steps"])

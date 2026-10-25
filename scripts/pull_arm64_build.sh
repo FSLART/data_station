@@ -2,7 +2,7 @@
 set -euo pipefail
 
 REPO="${LART_RELEASE_REPO:-FSLART/data_station}"
-TAG="latest-arm64"
+TAG="${LART_RELEASE_TAG:-latest-arm64}"  # latest-arm64-dev for the runtime branch build
 ASSET="lart-dashboard-arm64.tar.gz"
 WS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
