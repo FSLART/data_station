@@ -33,7 +33,7 @@ jobs:
       - name: Build runtime workspace
         run: |
           source /opt/ros/jazzy/setup.bash
-          colcon build --base-paths src --packages-up-to data_station_runtime input_handler led_controller sim --parallel-workers 2
+          colcon build --base-paths src --packages-up-to data_station_runtime input_handler led_controller --parallel-workers 2
 
       - name: Test runtime contracts and DBC reload
         env:

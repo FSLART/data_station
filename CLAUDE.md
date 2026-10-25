@@ -63,6 +63,7 @@ For which consumer changes a given DBC edit requires, see the table in `docs/DBC
 ## CI
 
 - `build-arm64.yml`: builds the workspace and `ui_runner` on every push to `master` and publishes `arm64-<sha>` / `latest-arm64` releases. The Pi pulls them with `scripts/pull_arm64_build.sh` instead of compiling.
+- `release.yml`: on `v*` tags (or manual dispatch), builds a self-contained Raspberry Pi bundle (`install/` without `sim`, DBCs, start scripts) and publishes it as a release. Pi builds never include the simulator.
 - `validate-dbc-arm64.yml`: regenerates, tests and builds on PRs without publishing releases.
 - No scheduled DBC sync: when FSLART/T26_DBC changes, regenerate locally and open the `lart_msgs` PR first, then the dashboard PR. Workflow behaviour is pinned by `tests/test_dbc_sync_workflow.py` and `test_arm64_workflows.py`. Update those tests when you edit the workflows.
 

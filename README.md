@@ -85,6 +85,22 @@ replacing the installed files.
 
 ## Run
 
+One command, from a checkout or an extracted release bundle:
+
+```bash
+bash scripts/run_runtime.sh
+```
+
+It installs missing apt/pip dependencies, builds `install/` once if absent, and
+starts the stack. With the CAN HAT it brings up `can0`/`can1`; without it
+(desktop) it creates virtual `can0`/`can1`/`vcan_auto` and adds the DBC
+simulators and admin panel (`car.launch.py sim:=true hardware_io:=false`).
+Do not run it with sudo. Tagged pushes (`v*`) publish a self-contained
+Raspberry Pi bundle, `data-station-arm64.tar.gz` (`.github/workflows/release.yml`),
+without the simulator; extract it on the Pi and run the same command.
+
+Manual steps:
+
 Configure SocketCAN once per boot:
 
 ```bash

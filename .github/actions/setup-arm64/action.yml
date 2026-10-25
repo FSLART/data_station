@@ -16,7 +16,7 @@ runs:
     uses: actions/cache@v4
     with:
       path: ~/.cache/lart-apt/archives
-      key: apt-arm64-jazzy-v3-${{ hashFiles('.github/actions/setup-arm64/action.yml') }}
+      key: apt-${{ runner.arch }}-jazzy-v3-${{ hashFiles('.github/actions/setup-arm64/action.yml') }}
   - name: Install ROS2 and build tooling
     shell: bash
     run: |

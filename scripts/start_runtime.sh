@@ -13,6 +13,8 @@ else
 fi
 source "$WS_DIR/install/setup.bash"
 export ROS_DOMAIN_ID="${ROS_DOMAIN_ID:-42}"
+# Qt's GTK theme plugin aborts on newer GNOME gsettings schemas; the dashboard needs no desktop theme.
+export QT_QPA_PLATFORMTHEME="${QT_QPA_PLATFORMTHEME:-generic}"
 export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
 if [[ -z "${WAYLAND_DISPLAY:-}" ]]; then
     export DISPLAY="${DISPLAY:-:0}"

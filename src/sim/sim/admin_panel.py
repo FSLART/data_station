@@ -76,7 +76,9 @@ class Backend:
             topic = os.environ.get('LART_ROS2_SET_SCREEN_TOPIC', '/dashboard/set_screen')
             self.screen_pub = self.node.create_publisher(Int32, topic, 10)
             try:
-                self.start_stack()
+                # car.launch.py sim:=true owns the simulators; periodic discovery attaches to them.
+                if os.environ.get('LART_SIM_EXTERNAL') != '1':
+                    self.start_stack()
             except Exception as exc:
                 self.event('status', f'Simulation startup: {exc}')
             last_discover = -10
