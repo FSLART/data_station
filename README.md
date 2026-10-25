@@ -34,6 +34,8 @@ flowchart LR
   bind at runtime. New fields appear in Signals automatically. QML controls the
   layout; Python holds calibrated conversions and alert rules. Driver and
   Autonomous refresh at about 30 Hz; Signals refreshes at up to 10 Hz.
+  Driver reproduces the original Gauge screen: circular RPM dial, Orbitron
+  fonts, LART logo, side cards, pedals and warning telltales.
 - **Recording:** separate process, independent of the interface. Precharge or
   Jetson READY/DRIVING starts a session. Both requests must explicitly clear
   before the 30-second grace period. Publisher silence keeps the last request.
@@ -108,6 +110,7 @@ ros2 launch data_station_runtime car.launch.py dbc_dir:="$PWD/dbc_signals"
 
 Without `dbc_dir`, launch uses the installed DBC copies. The UI accepts touch,
 keys `1`/`2`/`3`, arrow keys, and `std_msgs/Int32` on `/dashboard/set_screen`.
+Tap the LART logo on the Gauge screen to open the other pages.
 The existing GPIO node currently logs input events; it does not publish screen
 commands. Its configuration remains in `lart_bringup/config/rpi_config.yaml`.
 

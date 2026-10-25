@@ -135,3 +135,29 @@ def test_hidden_inspector_omits_rows_but_keeps_counts_and_fault_checks():
     assert state["unseenCount"] == 1
     assert state["alerts"][0]["id"] == identity
     assert model.update([sample(identity, 1)])["signals"][0]["displayValue"] == "1"
+
+
+def test_gauge_telltales_keep_native_groups_and_warning_priority():
+    model = DashboardModel()
+    values = [
+        sample("can0/PDM_LV/LV_Voltage_mV", 24),
+        sample("can1/Master_SOC_Accumulator/SOC_Float", 10),
+        sample("can1/Master_MSC_ID_3/overall_maximum_temperature", 56),
+        sample("can1/INV1_Temperatures/INV1_Actual_TempMotor", 101),
+    ]
+    gauge = model.update(values)["gauge"]
+    assert gauge == {"temperature": True, "drive": False, "soc": True, "lv": True,
+                     "warning": "BATTERY TEMPERATURE HIGH"}
+    values.append(sample("can1/INV2_Temperatures/INV2_Actual_FaultCode", 3))
+    gauge = model.update(values)["gauge"]
+    assert gauge["drive"]
+    assert gauge["warning"] == "INV2 ERROR 3: GATE DRIVER FAULT"
+    assert model.update([])["gauge"] == {
+        "temperature": False, "drive": False, "soc": False, "lv": False, "warning": ""}
+
+
+def test_precharge_keeps_native_lower_banner_colors():
+    model = DashboardModel()
+    identity = "can1/Master_PreCharge_ID_1/precharge_state"
+    assert model.update([sample(identity, 9)], now=1)["precharge"]["color"] == "#ff4fd8"
+    assert model.update([sample(identity, 16)], now=2)["precharge"]["color"] == "#ff0000"

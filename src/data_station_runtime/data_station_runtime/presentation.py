@@ -42,6 +42,7 @@ class DashboardModel:
         self._precharge_until = 0.0
         self._precharge_sequence = False
         self._precharge_text = ""
+        self._precharge_color = "#ff0000"
         self.set_catalog(catalog)
         self.state = self.update([])
 
@@ -229,13 +230,27 @@ class DashboardModel:
                 label = choices.get(precharge, choices.get(str(precharge)))
                 self._precharge_text = str(label).replace("_", " ") if label else PRECHARGE_STATES[int(precharge)]
                 self._precharge_until = now + (4 if precharge == 16 else 0.5)
+                self._precharge_color = "#ff0000" if precharge == 16 else (
+                    "#00e5ff", "#fff200", "#39ff14", "#ff8c00", "#ff4fd8")[int(precharge) % 5]
             if precharge == 16:
                 self._precharge_sequence = False
         self._previous_precharge = precharge
+        # The gauge keeps the installed cluster's warning groups and priority.
+        by_id = {item["id"]: item for item in alerts}
+        drive_faults = [by_id[key]["text"] for key in ("inv1", "inv2") if key in by_id]
+        gauge_warning = " | ".join(drive_faults) if drive_faults else next(
+            (by_id[key]["text"] for key in
+             ("battery", "motor", "inverter", "thermalLimit", "lv", "soc") if key in by_id),
+            alerts[0]["text"] if alerts else "")
         self.state = {
+            "gauge": {
+                "temperature": any(key in by_id for key in ("battery", "motor", "inverter", "thermalLimit")),
+                "drive": bool(drive_faults), "soc": "soc" in by_id, "lv": "lv" in by_id,
+                "warning": gauge_warning,
+            },
             "driver": driver, "autonomous": autonomous, "ready": ready,
             "alerts": alerts, "warning": " | ".join(item["text"] for item in alerts),
-            "precharge": {"text": self._precharge_text,
+            "precharge": {"text": self._precharge_text, "color": self._precharge_color,
                           "hvOn": precharge == 16,
                           "visible": precharge is not None and now < self._precharge_until},
             "signals": signal_rows, "signalCount": len(rows),

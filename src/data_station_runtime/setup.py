@@ -6,7 +6,7 @@ setup(
     name="data_station_runtime",
     version="0.1.0",
     packages=find_packages(exclude=["test"]),
-    package_data={"data_station_runtime": ["qml/*.qml"]},
+    package_data={"data_station_runtime": ["qml/*.qml", "qml/assets/*"]},
     data_files=[
         ("share/ament_index/resource_index/packages", ["resource/data_station_runtime"]),
         ("share/data_station_runtime", ["package.xml"]),

@@ -87,17 +87,15 @@ def create_ros_node(receiver, dashboard):
             self.declare_parameter("stale_after", 1.0)
             receiver.store = TelemetryStore(float(self.get_parameter("stale_after").value))
             self._last_warning = {}
-            self._subscriptions = []
-            self._subscriptions.append(self.create_subscription(
-                CanTelemetry, "/telemetry/can", self._frame, qos_profile_sensor_data))
-            self._subscriptions.append(self.create_subscription(
+            self.create_subscription(
+                CanTelemetry, "/telemetry/can", self._frame, qos_profile_sensor_data)
+            self.create_subscription(
                 String, "/telemetry/dbc_manifest", self._manifest,
                 QoSProfile(depth=1, reliability=ReliabilityPolicy.RELIABLE,
-                           durability=DurabilityPolicy.TRANSIENT_LOCAL)))
-            self._subscriptions.append(self.create_subscription(
-                Int32, "/dashboard/set_screen", lambda msg: screen_requests.append(msg.data), 10))
-            self._subscriptions.append(self.create_subscription(
-                String, "/telemetry/status", self._status, 10))
+                           durability=DurabilityPolicy.TRANSIENT_LOCAL))
+            self.create_subscription(
+                Int32, "/dashboard/set_screen", lambda msg: screen_requests.append(msg.data), 10)
+            self.create_subscription(String, "/telemetry/status", self._status, 10)
             self._autonomous()
 
         def _guard(self, key, callback):
@@ -141,9 +139,9 @@ def create_ros_node(receiver, dashboard):
                     self.get_logger().warning(f"{message_name}: external schema lacks {missing}")
                 def receive(msg, name=message_name, mapping=fields):
                     self._guard(name, lambda: receiver.dds(name, mapping, msg))
-                self._subscriptions.append(self.create_subscription(
+                self.create_subscription(
                     message_type, f"{prefix}/{ros_name(message_name)}", receive,
-                    qos_profile_sensor_data))
+                    qos_profile_sensor_data)
 
     # ROS callbacks only update data. All Qt objects stay on the Qt thread.
     from collections import deque
