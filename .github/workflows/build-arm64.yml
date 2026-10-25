@@ -3,6 +3,7 @@ name: Build ARM64
 on:
   push:
     branches: [master]
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -17,64 +18,35 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          submodules: recursive
 
-      - name: Add ROS2 apt repository
+      - name: Checkout frozen external ROS interfaces
+        run: git submodule update --init src/lart_msgs
+
+      - name: Set up ROS2 build
+        uses: ./.github/actions/setup-arm64
+
+      - name: Install runtime dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y curl gnupg lsb-release
-          sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg
-          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" | sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null
-          sudo apt-get update
+          sudo apt-get install -y ros-jazzy-rosbag2-storage-mcap libegl1 libopengl0 libxkbcommon0 libxcb-cursor0 libxkbcommon-x11-0 fonts-dejavu-core
+          python3 -m pip install --break-system-packages -r requirements-runtime.txt pytest PyYAML
 
-      - name: Cache apt archives
-        uses: actions/cache@v4
-        with:
-          path: /var/cache/apt/archives
-          key: apt-arm64-jazzy-${{ hashFiles('.github/workflows/build-arm64.yml') }}
-
-      - name: Install ROS2 and build tooling
-        run: |
-          sudo apt-get install -y \
-            ros-jazzy-ros-base \
-            ros-jazzy-rclcpp \
-            ros-jazzy-rclpy \
-            ros-jazzy-std-msgs \
-            ros-jazzy-rosidl-default-generators \
-            ros-jazzy-rosidl-default-runtime \
-            python3-colcon-common-extensions \
-            build-essential \
-            cmake \
-            pkg-config \
-            libsdl2-dev
-          sudo chown -R "$(id -u):$(id -g)" /var/cache/apt/archives
-
-      - name: Cache colcon build
-        uses: actions/cache@v4
-        with:
-          path: |
-            build
-            install
-            log
-          key: colcon-arm64-${{ hashFiles('src/**/CMakeLists.txt', 'src/**/package.xml', 'src/**/*.cpp', 'src/**/*.hpp', 'src/**/*.h', 'src/**/*.py') }}
-          restore-keys: |
-            colcon-arm64-
-
-      - name: Build ROS2 workspace
+      - name: Build runtime workspace
         run: |
           source /opt/ros/jazzy/setup.bash
-          colcon build --parallel-workers $(nproc)
+          colcon build --base-paths src --packages-up-to data_station_runtime input_handler led_controller sim --parallel-workers 2
 
-      - name: Build dashboard UI
+      - name: Test runtime contracts and DBC reload
+        env:
+          QT_QPA_PLATFORM: offscreen
+          QT_QUICK_BACKEND: software
         run: |
           source /opt/ros/jazzy/setup.bash
           source install/setup.bash
-          cmake -S LART_Car_Dashboard_v1/src/ui -B LART_Car_Dashboard_v1/build/ui-build -DCMAKE_BUILD_TYPE=Release
-          cmake --build LART_Car_Dashboard_v1/build/ui-build --parallel $(nproc)
+          python3 -m pytest -q src/data_station_runtime/test src/lart_bringup/test/test_trigger_state.py src/lart_bringup/test/test_bag_recorder.py
+          python3 -m data_station_runtime.app --demo --screenshot /tmp/dashboard.png
 
       - name: Package artifact
-        run: tar czf lart-dashboard-arm64.tar.gz install LART_Car_Dashboard_v1/build/ui-build
+        run: tar czf lart-dashboard-arm64.tar.gz install
 
       - name: Get short commit SHA
         id: version

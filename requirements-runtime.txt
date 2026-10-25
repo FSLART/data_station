@@ -1,0 +1,4 @@
+# Runtime CAN decoding and the Qt Quick interface (no C++ application build).
+cantools>=42.0,<43
+python-can>=4.6,<5
+PySide6-Essentials>=6.8,<6.13

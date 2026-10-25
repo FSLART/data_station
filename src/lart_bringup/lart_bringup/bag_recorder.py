@@ -1,21 +1,16 @@
 """Precharge-triggered rosbag2 recorder.
 
 Watches the precharge request signal and records all discoverable ROS topics,
-including hidden topics and raw CAN frames (/can/frames), into timestamped
-rosbag2 sessions. Topics under /zed/ are excluded. Topic discovery stays
-enabled during recording:
+including hidden topics, into timestamped MCAP sessions. Topics under /zed/
+are excluded. Topic discovery stays enabled during recording:
 
   precharge_request >= 0.5       → start recording (new session folder)
   precharge_request < 0.5        → keep recording for stop_grace_s, then finalize
   request back to 1 within grace → same session continues
 
-Each session records into a single continuous mcap file (no splitting)
-unless split_duration_s is set > 0. Splitting is avoided by default: a
-session killed non-gracefully (power loss, hard kill) only loses its last
-few messages, instead of corrupting a whole chunk that metadata.yaml (which
-rosbag2 only writes once, at clean shutdown) then points to — which is what
-breaks timestamp continuity when multiple bags are imported into Foxglove
-together.
+Each session records into a single MCAP file unless split_duration_s is set
+above zero. A hard kill or power loss can lose buffered data or damage a file;
+reindexing can recover metadata only when the underlying data remains readable.
 
 On startup, any existing session folder under bag_dir that is missing
 metadata.yaml (left behind by an unclean shutdown of a previous run) is
@@ -35,7 +30,6 @@ from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node
 from rclpy.qos import QoSProfile, QoSReliabilityPolicy, QoSHistoryPolicy
 
-from lart_msgs.msg import StartPrecharge
 from lart_bringup.trigger_state import State, TriggerStateMachine
 
 _BEST_EFFORT = QoSProfile(
@@ -71,17 +65,23 @@ class BagRecorderNode(Node):
             cancel_timer=self._cancel_grace_timer,
         )
 
-        self.create_subscription(
-            StartPrecharge, self._trigger_topic, self._on_trigger, _BEST_EFFORT
-        )
+        trigger_description = self._create_trigger_subscriptions()
         self.create_timer(2.0, self._check_recorder_alive)
 
         split_desc = f'{self._split_s}s' if self._split_s > 0 else 'off (single file)'
         self.get_logger().info(
-            f'bag_recorder ready — trigger={self._trigger_topic}, '
+            f'bag_recorder ready — trigger={trigger_description}, '
             f'topics=all (including hidden, excluding /zed/*), out={self._bag_dir}, '
             f'grace={self._stop_grace_s:.0f}s, split={split_desc}'
         )
+
+    def _create_trigger_subscriptions(self) -> str:
+        from lart_msgs.msg import StartPrecharge
+
+        self.create_subscription(
+            StartPrecharge, self._trigger_topic, self._on_trigger, _BEST_EFFORT
+        )
+        return self._trigger_topic
 
     def _repair_incomplete_bags(self) -> None:
         """Reindex any past session left without metadata.yaml by an unclean shutdown."""
@@ -117,6 +117,7 @@ class BagRecorderNode(Node):
             n += 1
         cmd = [
             'ros2', 'bag', 'record',
+            '-s', 'mcap',
             '--all-topics', '--include-hidden-topics',
             '--exclude-regex', '^/zed/.*',
             '-o', str(out),
@@ -153,7 +154,7 @@ class BagRecorderNode(Node):
             self._stop_grace_s, self._on_grace_expired
         )
         self.get_logger().info(
-            f'Precharge off — finalizing in {self._stop_grace_s:.0f}s '
+            f'Recording trigger off — finalizing in {self._stop_grace_s:.0f}s '
             f'unless it returns.'
         )
 
@@ -165,7 +166,7 @@ class BagRecorderNode(Node):
 
     # ── event sources ──────────────────────────────────────────────────────
 
-    def _on_trigger(self, msg: StartPrecharge) -> None:
+    def _on_trigger(self, msg) -> None:
         self._sm.on_trigger(msg.precharge_request >= 0.5)
 
     def _on_grace_expired(self) -> None:
@@ -187,9 +188,9 @@ class BagRecorderNode(Node):
         super().destroy_node()
 
 
-def main(args=None):
+def main(args=None, node_class=BagRecorderNode):
     rclpy.init(args=args)
-    node = BagRecorderNode()
+    node = node_class()
     # SIGTERM (systemd/launch escalation) must finalize the bag like SIGINT
     signal.signal(signal.SIGTERM, signal.default_int_handler)
     try:

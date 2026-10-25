@@ -1,9 +1,5 @@
 name: Set up ARM64 ROS2 build
-description: Install the shared Jazzy toolchain and compute a compatible build-cache prefix.
-outputs:
-  cache-prefix:
-    description: Cache namespace including installed package versions.
-    value: ${{ steps.toolchain.outputs.prefix }}
+description: Install the shared Jazzy toolchain for the runtime packages.
 runs:
   using: composite
   steps:
@@ -33,11 +29,5 @@ runs:
         ros-jazzy-rosidl-default-generators \
         ros-jazzy-rosidl-default-runtime \
         python3-colcon-common-extensions \
-        build-essential cmake ccache pkg-config libsdl2-dev
+        build-essential cmake
       sudo chown -R "$(id -u):$(id -g)" "$HOME/.cache/lart-apt/archives"
-  - name: Compute toolchain cache prefix
-    id: toolchain
-    shell: bash
-    run: |
-      toolchain=$(dpkg-query -W -f='${binary:Package}=${Version}\n' | sort | sha256sum | cut -d ' ' -f1)
-      echo "prefix=arm64-jazzy-v3-${toolchain}" >> "$GITHUB_OUTPUT"

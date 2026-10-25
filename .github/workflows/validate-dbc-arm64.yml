@@ -1,4 +1,4 @@
-name: Validate DBC ARM64 build
+name: Validate runtime ARM64
 
 on:
   workflow_dispatch:
@@ -20,41 +20,29 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          submodules: recursive
+
+      - name: Checkout frozen external ROS interfaces
+        run: git submodule update --init src/lart_msgs
 
       - name: Set up ROS2 build
         uses: ./.github/actions/setup-arm64
 
-      - name: Regenerate and test DBC outputs
+      - name: Install runtime dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y python3-venv
-          python3 -m venv "$RUNNER_TEMP/dbc-venv"
-          "$RUNNER_TEMP/dbc-venv/bin/pip" install -r scripts/requirements-dbc.txt
-          "$RUNNER_TEMP/dbc-venv/bin/python" scripts/regenerate_dbcs.py
-          "$RUNNER_TEMP/dbc-venv/bin/python" -m pytest -q tests/test_regenerate_dbcs.py tests/test_dbc_generation.py tests/test_dbc_api_abi.py tests/test_dbc_decoding.py tests/test_dbc_sync_workflow.py
+          sudo apt-get install -y ros-jazzy-rosbag2-storage-mcap libegl1 libopengl0 libxkbcommon0 libxcb-cursor0 libxkbcommon-x11-0 fonts-dejavu-core
+          python3 -m pip install --break-system-packages -r requirements-runtime.txt pytest PyYAML
 
-      - name: Cache colcon build
-        uses: actions/cache@v4
-        with:
-          path: |
-            build
-            install
-            log
-          key: dbc-validation-colcon-arm64-${{ hashFiles('src/**/CMakeLists.txt', 'src/**/package.xml', 'src/**/*.cpp', 'src/**/*.hpp', 'src/**/*.h', 'src/**/*.py', 'src/**/*.msg', 'src/**/*.srv') }}
-          restore-keys: |
-            dbc-validation-colcon-arm64-
-
-      - name: Build ROS2 workspace
+      - name: Build runtime workspace
         run: |
           source /opt/ros/jazzy/setup.bash
-          colcon build --parallel-workers $(nproc)
+          colcon build --base-paths src --packages-up-to data_station_runtime input_handler led_controller sim --parallel-workers 2
 
-      - name: Build dashboard UI
+      - name: Test runtime contracts and DBC reload
+        env:
+          QT_QPA_PLATFORM: offscreen
+          QT_QUICK_BACKEND: software
         run: |
           source /opt/ros/jazzy/setup.bash
           source install/setup.bash
-          cmake -S LART_Car_Dashboard_v1/src/ui -B LART_Car_Dashboard_v1/build/ui-build -DCMAKE_BUILD_TYPE=Release
-          cmake --build LART_Car_Dashboard_v1/build/ui-build --parallel $(nproc)
-
+          python3 -m pytest -q src/data_station_runtime/test src/lart_bringup/test/test_trigger_state.py src/lart_bringup/test/test_bag_recorder.py tests/test_arm64_workflows.py tests/test_dbc_sync_workflow.py
+          python3 -m data_station_runtime.app --demo --screenshot /tmp/dashboard.png

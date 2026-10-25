@@ -19,6 +19,7 @@ def test_records_all_topics_except_zed_including_hidden_topics(tmp_path):
 
     command = popen.call_args.args[0]
     assert command[:3] == ['ros2', 'bag', 'record']
+    assert command[command.index('-s') + 1] == 'mcap'
     assert '--all-topics' in command
     assert '--include-hidden-topics' in command
     assert '-e' not in command

@@ -12,6 +12,7 @@
   <exec_depend>std_msgs</exec_depend>
   <exec_depend>lart_msgs</exec_depend>
   <exec_depend>python3-can</exec_depend>
+  <exec_depend>rosbag2_storage_mcap</exec_depend>
 
   <!-- cantools has no rosdep/apt key on Ubuntu — install manually via pip
        (see the "pip install cantools" hint logged by can_bridge.py) -->

@@ -1,0 +1,22 @@
+runtime_can:
+  ros__parameters:
+    can_interfaces: [can0, can1]
+    legacy_prefixes: [/data, /pwt]
+    publish_legacy: true
+    stale_after: 1.0
+    precharge_bus: can1
+    precharge_message: Start_PreCharge
+    precharge_signal: Precharge_Request
+
+runtime_dashboard:
+  ros__parameters:
+    autonomous_prefix: /can
+    stale_after: 1.0
+
+runtime_recorder:
+  ros__parameters:
+    precharge_topic: /telemetry/precharge
+    jetson_topic: /can/jetson
+    bag_dir: ~/bags
+    stop_grace_s: 30.0
+    split_duration_s: 0

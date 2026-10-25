@@ -1,6 +1,13 @@
 #!/bin/bash
 # LART Dashboard Autostart Sequence
 
+# The runtime architecture is the default. Keep the compiled UI available for
+# bench comparisons while migration is validated on the car.
+if [[ "${LART_LEGACY_UI:-0}" != "1" ]]; then
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    exec bash "$SCRIPT_DIR/../scripts/start_runtime.sh"
+fi
+
 PROJECT_DIR="/home/lart2026/GIT/data_station/LART_Car_Dashboard_v1"
 
 # Log output for debugging with timestamps

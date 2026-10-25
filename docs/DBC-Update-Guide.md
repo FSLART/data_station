@@ -1,5 +1,53 @@
 # Updating a DBC in Data Station
 
+## Runtime architecture (default)
+
+The Qt/Python stack reads DBC files as runtime data. Its fixed ROS transport
+does not change when a CAN field is added, removed or rescaled.
+
+Start with the checkout's live DBC directory:
+
+```bash
+bash scripts/start_runtime.sh
+```
+
+Replace `dbc_signals/data_t26.dbc` and/or `powertrain_t26.dbc`, then call:
+
+```bash
+ros2 service call /runtime_can/reload_dbc std_srvs/srv/Trigger '{}'
+```
+
+All files must pass strict validation before the schema changes. A failed
+reload leaves the old schema active. Successful reload drops queued old-schema
+frames and reports their count in `/telemetry/status`. The signal catalog,
+source hashes and source contents update on `/telemetry/dbc_manifest`.
+
+New signals appear immediately in Signals and `/telemetry/can`, including in
+bags. No generation or C++ compilation is needed. The compatibility adapter
+continues publishing matching fields through the installed `lart_msgs` types;
+additional fields remain generic until an external schema change is agreed.
+Changing external typed interfaces still requires rebuilding their consumers.
+
+Driver labels and calibration live in
+`src/data_station_runtime/data_station_runtime/presentation.py`. Review these
+bindings when names, meaning, ranges or units change. A renamed driver signal
+becomes unavailable until its binding is changed; the program does not guess.
+
+`autonomous_t26.dbc` describes direct typed DDS inputs. Restart the interface to
+reload that catalog. Existing ROS fields are mapped by name; new typed fields
+must already be installed on both ends. No CAN decoder is involved for Jetson.
+
+When launching without `dbc_dir`, installed DBC copies are used. Editing the
+checkout will not affect those copies. Set `dbc_dir` explicitly or use the
+startup script above. Runtime hashes come from the exact bytes loaded;
+`dbc_signals/source.json` remains provenance for the legacy generation flow.
+
+## Legacy LVGL/EEZ generator path
+
+The remaining sections apply only when maintaining the old compiled stack or
+deliberately updating the shared external ROS interfaces. They are not steps
+for normal runtime CAN DBC updates.
+
 The sources are `dbc_signals/data_t26.dbc`, `powertrain_t26.dbc`, and
 `autonomous_t26.dbc`. `aquisition_boards.dbc` is legacy and is not an input to
 these generators. Run the commands below from the repository root, using the
@@ -56,10 +104,10 @@ input hashes change. Never attribute edited DBC files to an upstream revision.
 There is no scheduled DBC sync. Regenerate locally (above) when
 **FSLART/T26_DBC** changes, adapt consumers and open the PRs by hand.
 
-The **Validate DBC ARM64 build** workflow (`validate-dbc-arm64.yml`)
-runs regeneration, tests and the ARM64 build on dashboard PRs, master pushes,
-and pushes to `automate-dbc-regeneration`. It also supports manual dispatch,
-uses no publication credentials and publishes no releases.
+The **Validate runtime ARM64** workflow (`validate-dbc-arm64.yml`) tests the
+runtime path on PRs and builds only packages under `src/`. It does not run the
+legacy generators or update the external schema. Run the legacy generation and
+build commands in this guide explicitly when maintaining that stack.
 
 The API generator updates `dbc_api.h`, `dbc_api.cpp`, `dbc_api_sub_*.cpp`,
 `src/lart_msgs/dbc_msgs/*.msg` and the generated CMake interface entries.
